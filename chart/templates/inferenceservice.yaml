@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "zoom-enhance.labels" . | nindent 4 }}
     app.kubernetes.io/component: model
-    networking.kserve.io/visibility: exposed
+    networking.kserve.io/visibility: cluster-local
     opendatahub.io/dashboard: "true"
   annotations:
     serving.kserve.io/deploymentMode: "Standard"

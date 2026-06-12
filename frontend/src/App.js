@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import * as THREE from 'three';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, Rectangle } from 'react-leaflet';
+import leafletImage from 'leaflet-image';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
 
 function App() {
-  const [view, setView] = useState('globe'); // 'globe' or 'map'
+  const [view, setView] = useState('globe'); // 'globe', 'map', or 'processing'
   const [enhancementCount, setEnhancementCount] = useState(0);
   const [systemOnline, setSystemOnline] = useState(false);
+  const [captureMode, setCaptureMode] = useState(false);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [enhancedImage, setEnhancedImage] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const globeRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const earthRef = useRef(null);
+  const mapRef = useRef(null);
 
   // API endpoint
   const BACKEND_BASE = window.location.hostname.includes('localhost')
@@ -119,8 +126,102 @@ function App() {
   };
 
   const handleCaptureEnhance = () => {
-    alert('Navigating to Processing page...\n\nIn the final application, this will take you to the image enhancement processing interface.');
+    setCaptureMode(true);
   };
+
+  const handleAreaSelect = async (bounds) => {
+    if (!mapRef.current) return;
+
+    setSelectedArea(bounds);
+    setCaptureMode(false);
+
+    // Capture the map as an image
+    try {
+      const map = mapRef.current;
+
+      leafletImage(map, async (err, canvas) => {
+        if (err) {
+          console.error('Error capturing map:', err);
+          alert('Error capturing map view');
+          return;
+        }
+
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+          // Create FormData
+          const formData = new FormData();
+          formData.append('image', blob, 'capture.png');
+
+          // Show captured image
+          const imageUrl = URL.createObjectURL(blob);
+          setCapturedImage(imageUrl);
+          setView('processing');
+          setProcessing(true);
+
+          try {
+            // Send to backend for enhancement
+            const response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+              responseType: 'blob'
+            });
+
+            // Create URL for enhanced image
+            const enhancedUrl = URL.createObjectURL(response.data);
+            setEnhancedImage(enhancedUrl);
+            setProcessing(false);
+          } catch (error) {
+            console.error('Enhancement failed:', error);
+            alert('Enhancement failed: ' + error.message);
+            setProcessing(false);
+          }
+        }, 'image/png');
+      });
+    } catch (error) {
+      console.error('Capture error:', error);
+      alert('Error: ' + error.message);
+    }
+  };
+
+  // Map selection component
+  function MapSelector() {
+    const [startPos, setStartPos] = useState(null);
+    const [currentPos, setCurrentPos] = useState(null);
+
+    useMapEvents({
+      mousedown: (e) => {
+        if (captureMode) {
+          setStartPos(e.latlng);
+          setCurrentPos(e.latlng);
+        }
+      },
+      mousemove: (e) => {
+        if (captureMode && startPos) {
+          setCurrentPos(e.latlng);
+        }
+      },
+      mouseup: (e) => {
+        if (captureMode && startPos) {
+          const bounds = [
+            [Math.min(startPos.lat, e.latlng.lat), Math.min(startPos.lng, e.latlng.lng)],
+            [Math.max(startPos.lat, e.latlng.lat), Math.max(startPos.lng, e.latlng.lng)]
+          ];
+          handleAreaSelect(bounds);
+          setStartPos(null);
+          setCurrentPos(null);
+        }
+      }
+    });
+
+    if (captureMode && startPos && currentPos) {
+      const bounds = [
+        [Math.min(startPos.lat, currentPos.lat), Math.min(startPos.lng, currentPos.lng)],
+        [Math.max(startPos.lat, currentPos.lat), Math.max(startPos.lng, currentPos.lng)]
+      ];
+      return <Rectangle bounds={bounds} pathOptions={{ color: '#ff4444', weight: 3 }} />;
+    }
+
+    return null;
+  }
 
   return (
     <div className="app-container">
@@ -205,11 +306,12 @@ function App() {
             {view === 'map' && (
               <>
                 <MapContainer
+                  ref={mapRef}
                   center={[37.7749, -122.4194]}
                   zoom={3}
                   minZoom={2}
                   maxZoom={19}
-                  style={{ width: '100%', height: '100%', background: '#000' }}
+                  style={{ width: '100%', height: '100%', background: '#000', cursor: captureMode ? 'crosshair' : 'grab' }}
                   zoomControl={true}
                 >
                   <TileLayer
@@ -217,11 +319,57 @@ function App() {
                     url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                     maxZoom={19}
                   />
+                  <MapSelector />
                 </MapContainer>
-                <button className="capture-btn" onClick={handleCaptureEnhance}>
-                  Capture & Enhance
-                </button>
+                {captureMode && (
+                  <div style={{
+                    position: 'fixed',
+                    top: '60px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(255, 68, 68, 0.9)',
+                    color: '#fff',
+                    padding: '10px 20px',
+                    borderRadius: '20px',
+                    zIndex: 10000,
+                    fontSize: '14px',
+                    fontWeight: 700
+                  }}>
+                    Click and drag to select area to enhance
+                  </div>
+                )}
+                {!captureMode && (
+                  <button className="capture-btn" onClick={handleCaptureEnhance}>
+                    Capture & Enhance
+                  </button>
+                )}
               </>
+            )}
+
+            {/* Processing View */}
+            {view === 'processing' && (
+              <div className="processing-view">
+                <div className="processing-header">
+                  <h2>Image Enhancement</h2>
+                  <button className="back-btn" onClick={() => setView('map')}>← Back to Map</button>
+                </div>
+                <div className="processing-container">
+                  <div className="image-panel">
+                    <h3>Original Capture</h3>
+                    {capturedImage && <img src={capturedImage} alt="Captured" />}
+                  </div>
+                  <div className="image-panel">
+                    <h3>Enhanced Result</h3>
+                    {processing ? (
+                      <div className="loading">Processing with SwinIR...</div>
+                    ) : enhancedImage ? (
+                      <img src={enhancedImage} alt="Enhanced" />
+                    ) : (
+                      <div className="loading">Waiting...</div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
