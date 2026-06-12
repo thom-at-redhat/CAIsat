@@ -15,9 +15,6 @@ function App() {
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [panning, setPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [croppedImage, setCroppedImage] = useState(null);
   const [enhancedImage, setEnhancedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -153,17 +150,14 @@ function App() {
   };
 
   const handleMouseDown = (e) => {
-    if (e.shiftKey || e.button === 1) {
-      // Shift + drag OR middle mouse = pan
-      e.preventDefault();
-      setPanning(true);
-      setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-      return;
-    }
-
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left - pan.x) / zoom;
-    const y = (e.clientY - rect.top - pan.y) / zoom;
+    const img = e.currentTarget.querySelector('.crop-base-image');
+    if (!img) return;
+
+    // Calculate position relative to the scaled image
+    const imgRect = img.getBoundingClientRect();
+    const x = (e.clientX - imgRect.left) / zoom;
+    const y = (e.clientY - imgRect.top) / zoom;
 
     // Check if clicking inside crop box
     if (
@@ -178,25 +172,16 @@ function App() {
   };
 
   const handleMouseMove = (e) => {
-    if (panning) {
-      e.preventDefault();
-      setPan({
-        x: e.clientX - panStart.x,
-        y: e.clientY - panStart.y
-      });
-      return;
-    }
-
     if (!dragging) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left - pan.x) / zoom - dragStart.x;
-    const y = (e.clientY - rect.top - pan.y) / zoom - dragStart.y;
-
-    // Get actual image dimensions
-    const img = e.currentTarget.querySelector('.crop-base-image');
+    const img = document.querySelector('.crop-base-image');
     if (!img) return;
 
+    const imgRect = img.getBoundingClientRect();
+    const x = (e.clientX - imgRect.left) / zoom - dragStart.x;
+    const y = (e.clientY - imgRect.top) / zoom - dragStart.y;
+
+    // Get actual image dimensions
     const maxX = img.naturalWidth - cropArea.size;
     const maxY = img.naturalHeight - cropArea.size;
 
@@ -209,32 +194,12 @@ function App() {
 
   const handleMouseUp = () => {
     setDragging(false);
-    setPanning(false);
   };
 
   const handleWheel = (e) => {
     e.preventDefault();
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    // Calculate point in image coordinates before zoom
-    const pointX = (mouseX - pan.x) / zoom;
-    const pointY = (mouseY - pan.y) / zoom;
-
-    // Calculate new zoom
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newZoom = Math.max(1, Math.min(zoom * delta, 5));
-
-    // Calculate new pan to keep the same point under the mouse
-    const newPan = {
-      x: mouseX - pointX * newZoom,
-      y: mouseY - pointY * newZoom
-    };
-
-    setZoom(newZoom);
-    setPan(newPan);
+    setZoom(prevZoom => Math.max(1, Math.min(prevZoom * delta, 5)));
   };
 
   const handleEnhance = async () => {
@@ -430,13 +395,13 @@ function App() {
                   <div className="crop-section">
                     <h3>Select 256x256 Area to Enhance</h3>
                     <p className="instruction">
-                      Scroll to zoom • Shift+Drag to pan • Drag red box to select area
+                      Scroll to zoom • Drag red box to select area
                     </p>
                     <div className="zoom-controls">
                       <button onClick={() => setZoom(z => Math.min(z + 0.5, 5))}>+ Zoom In</button>
                       <span>{Math.round(zoom * 100)}%</span>
                       <button onClick={() => setZoom(z => Math.max(z - 0.5, 1))}>- Zoom Out</button>
-                      <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
+                      <button onClick={() => setZoom(1)}>Reset Zoom</button>
                     </div>
                     <div className="crop-container">
                       <div
@@ -446,31 +411,30 @@ function App() {
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseUp}
                         onWheel={handleWheel}
-                        onContextMenu={(e) => e.preventDefault()}
                         style={{
-                          cursor: panning ? 'grabbing' : dragging ? 'move' : 'grab',
-                          overflow: 'hidden',
+                          cursor: dragging ? 'move' : 'crosshair',
+                          overflow: 'auto',
                           border: '2px solid rgba(255, 255, 255, 0.2)',
                           borderRadius: '4px',
                           maxWidth: '90%',
                           maxHeight: '70vh',
+                          display: 'inline-block',
                           position: 'relative',
                           userSelect: 'none'
                         }}
                       >
                         <div style={{
-                          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                          transformOrigin: '0 0',
+                          transform: `scale(${zoom})`,
+                          transformOrigin: 'top left',
                           position: 'relative',
-                          display: 'inline-block',
-                          transition: panning || dragging ? 'none' : 'transform 0.1s ease-out'
+                          display: 'inline-block'
                         }}>
                           <img
                             src={capturedImage}
                             alt="Captured map"
                             className="crop-base-image"
                             draggable="false"
-                            style={{ pointerEvents: 'none' }}
+                            style={{ display: 'block' }}
                           />
                           <div
                             className="crop-box"
@@ -478,8 +442,7 @@ function App() {
                               left: `${cropArea.x}px`,
                               top: `${cropArea.y}px`,
                               width: `${cropArea.size}px`,
-                              height: `${cropArea.size}px`,
-                              pointerEvents: 'none'
+                              height: `${cropArea.size}px`
                             }}
                           >
                             <div className="crop-label">256×256</div>
