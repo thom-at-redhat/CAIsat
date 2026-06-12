@@ -321,7 +321,38 @@ body {
 
 .instruction {
     color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 15px;
+}
+
+.zoom-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
     margin-bottom: 20px;
+}
+
+.zoom-controls button {
+    padding: 8px 16px;
+    background: rgba(255, 68, 68, 0.2);
+    border: 1px solid #ff4444;
+    border-radius: 15px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.zoom-controls button:hover {
+    background: rgba(255, 68, 68, 0.4);
+}
+
+.zoom-controls span {
+    color: #fff;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
 }
 
 .crop-container {

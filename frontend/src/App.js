@@ -14,6 +14,10 @@ function App() {
   const [cropArea, setCropArea] = useState({ x: 50, y: 50, size: 256 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [panning, setPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [croppedImage, setCroppedImage] = useState(null);
   const [enhancedImage, setEnhancedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -149,9 +153,16 @@ function App() {
   };
 
   const handleMouseDown = (e) => {
+    if (e.shiftKey) {
+      // Shift + drag = pan
+      setPanning(true);
+      setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      return;
+    }
+
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left - pan.x) / zoom;
+    const y = (e.clientY - rect.top - pan.y) / zoom;
 
     // Check if clicking inside crop box
     if (
@@ -166,15 +177,26 @@ function App() {
   };
 
   const handleMouseMove = (e) => {
+    if (panning) {
+      setPan({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      });
+      return;
+    }
+
     if (!dragging) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left - dragStart.x;
-    const y = e.clientY - rect.top - dragStart.y;
+    const x = (e.clientX - rect.left - pan.x) / zoom - dragStart.x;
+    const y = (e.clientY - rect.top - pan.y) / zoom - dragStart.y;
 
-    // Keep crop box within image bounds
-    const maxX = rect.width - cropArea.size;
-    const maxY = rect.height - cropArea.size;
+    // Get actual image dimensions
+    const img = e.currentTarget.querySelector('.crop-base-image');
+    if (!img) return;
+
+    const maxX = img.naturalWidth - cropArea.size;
+    const maxY = img.naturalHeight - cropArea.size;
 
     setCropArea({
       ...cropArea,
@@ -185,6 +207,13 @@ function App() {
 
   const handleMouseUp = () => {
     setDragging(false);
+    setPanning(false);
+  };
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(prevZoom => Math.max(1, Math.min(prevZoom * delta, 5)));
   };
 
   const handleEnhance = async () => {
@@ -360,7 +389,15 @@ function App() {
                 {!croppedImage && !enhancedImage && (
                   <div className="crop-section">
                     <h3>Select 256x256 Area to Enhance</h3>
-                    <p className="instruction">Drag the red box to select the area you want to enhance</p>
+                    <p className="instruction">
+                      Scroll to zoom • Shift+Drag to pan • Drag red box to select area
+                    </p>
+                    <div className="zoom-controls">
+                      <button onClick={() => setZoom(z => Math.min(z + 0.5, 5))}>+ Zoom In</button>
+                      <span>{Math.round(zoom * 100)}%</span>
+                      <button onClick={() => setZoom(z => Math.max(z - 0.5, 1))}>- Zoom Out</button>
+                      <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
+                    </div>
                     <div className="crop-container">
                       <div
                         className="crop-image-wrapper"
@@ -368,19 +405,30 @@ function App() {
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseUp}
-                        style={{ cursor: dragging ? 'grabbing' : 'grab' }}
+                        onWheel={handleWheel}
+                        style={{
+                          cursor: panning ? 'grabbing' : dragging ? 'grabbing' : 'grab',
+                          overflow: 'hidden'
+                        }}
                       >
-                        <img src={capturedImage} alt="Captured map" className="crop-base-image" />
-                        <div
-                          className="crop-box"
-                          style={{
-                            left: `${cropArea.x}px`,
-                            top: `${cropArea.y}px`,
-                            width: `${cropArea.size}px`,
-                            height: `${cropArea.size}px`
-                          }}
-                        >
-                          <div className="crop-label">256×256</div>
+                        <div style={{
+                          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                          transformOrigin: '0 0',
+                          position: 'relative',
+                          display: 'inline-block'
+                        }}>
+                          <img src={capturedImage} alt="Captured map" className="crop-base-image" />
+                          <div
+                            className="crop-box"
+                            style={{
+                              left: `${cropArea.x}px`,
+                              top: `${cropArea.y}px`,
+                              width: `${cropArea.size}px`,
+                              height: `${cropArea.size}px`
+                            }}
+                          >
+                            <div className="crop-label">256×256</div>
+                          </div>
                         </div>
                       </div>
                     </div>
