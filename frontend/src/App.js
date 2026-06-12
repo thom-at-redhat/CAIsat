@@ -18,6 +18,7 @@ function App() {
   const [croppedImage, setCroppedImage] = useState(null);
   const [enhancedImage, setEnhancedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [popup, setPopup] = useState(null); // 'purpose', 'guide', 'disclaimer', or null
   const globeRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -368,6 +369,31 @@ function App() {
             </div>
             <div className="item-badge">OBS</div>
           </div>
+
+          <div className="divider"></div>
+
+          <div className="section-header">ABOUT</div>
+
+          <div className="list-item" onClick={() => setPopup('purpose')}>
+            <div>
+              <div className="item-title">Purpose</div>
+              <div className="item-subtitle">About this demo</div>
+            </div>
+          </div>
+
+          <div className="list-item" onClick={() => setPopup('guide')}>
+            <div>
+              <div className="item-title">User Guide</div>
+              <div className="item-subtitle">How to use CAIsat</div>
+            </div>
+          </div>
+
+          <div className="list-item" onClick={() => setPopup('disclaimer')}>
+            <div>
+              <div className="item-title">Disclaimer</div>
+              <div className="item-subtitle">Important information</div>
+            </div>
+          </div>
         </div>
 
         {/* Globe/Map Container */}
@@ -523,6 +549,103 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Popup Modal */}
+      {popup && (
+        <div className="popup-overlay" onClick={() => setPopup(null)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <button className="popup-close" onClick={() => setPopup(null)}>×</button>
+
+            {popup === 'purpose' && (
+              <>
+                <h2>Purpose of This Demo</h2>
+                <p>
+                  CAIsat is a demonstration of AI-powered satellite imagery enhancement running on
+                  Red Hat OpenShift AI. This quickstart showcases how to deploy machine learning
+                  models for real-time image super-resolution using KServe and MLServer.
+                </p>
+                <p>
+                  The application uses a SwinIR (Swin Transformer for Image Restoration) model to
+                  enhance low-resolution satellite imagery, demonstrating practical AI/ML workflows
+                  in a cloud-native environment.
+                </p>
+                <h3>Key Features:</h3>
+                <ul>
+                  <li>Real-time satellite imagery capture from interactive maps</li>
+                  <li>AI-powered 2x super-resolution enhancement</li>
+                  <li>Deployed on OpenShift AI with KServe inference serving</li>
+                  <li>Scalable, production-ready architecture</li>
+                </ul>
+              </>
+            )}
+
+            {popup === 'guide' && (
+              <>
+                <h2>User Guide</h2>
+                <h3>Getting Started:</h3>
+                <ol>
+                  <li><strong>View the Globe:</strong> Start with the rotating 3D Earth visualization</li>
+                  <li><strong>Activate Satellite View:</strong> Click "Satellite View" to access the interactive map</li>
+                  <li><strong>Navigate:</strong> Pan and zoom to find an area of interest</li>
+                  <li><strong>Capture:</strong> Click "Capture & Enhance" to take a screenshot</li>
+                </ol>
+
+                <h3>Enhancement Process:</h3>
+                <ol>
+                  <li><strong>Select Area:</strong> Use scroll to zoom, then drag the red 256×256 box to your desired area</li>
+                  <li><strong>Enhance:</strong> Click "Enhance Selected Area" to process with AI</li>
+                  <li><strong>Review Results:</strong> Compare the original and AI-enhanced images side-by-side</li>
+                  <li><strong>Download:</strong> Save the enhanced image for your use</li>
+                </ol>
+
+                <h3>Tips:</h3>
+                <ul>
+                  <li>Zoom in on the map before capturing for better detail</li>
+                  <li>The enhancement works best on areas with visible features</li>
+                  <li>Processing typically takes 5-10 seconds</li>
+                </ul>
+              </>
+            )}
+
+            {popup === 'disclaimer' && (
+              <>
+                <h2>Disclaimer</h2>
+                <p>
+                  <strong>Educational and Demonstration Purpose Only:</strong> This application is
+                  provided as a technical demonstration and quickstart template for deploying AI/ML
+                  workloads on Red Hat OpenShift AI. It is not intended for production use without
+                  proper testing and validation.
+                </p>
+
+                <h3>Satellite Imagery:</h3>
+                <p>
+                  Satellite imagery is sourced from Esri World Imagery service. All imagery rights
+                  belong to their respective owners (Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping,
+                  Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community).
+                </p>
+
+                <h3>AI Model Limitations:</h3>
+                <ul>
+                  <li>Enhancement quality varies based on input image characteristics</li>
+                  <li>The model may introduce artifacts in certain scenarios</li>
+                  <li>Results should not be used for critical decision-making without validation</li>
+                  <li>Enhanced images are AI-generated interpretations, not actual high-resolution captures</li>
+                </ul>
+
+                <h3>Data Privacy:</h3>
+                <p>
+                  Captured images are processed in-memory and not stored permanently. However, users
+                  should avoid capturing sensitive or classified information.
+                </p>
+
+                <p className="disclaimer-footer">
+                  <strong>No Warranty:</strong> This software is provided "as is" without warranty of any kind.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

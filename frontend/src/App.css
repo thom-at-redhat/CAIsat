@@ -518,6 +518,132 @@ body {
     box-shadow: 0 10px 40px rgba(68, 255, 68, 0.6);
 }
 
+/* Popup Modal */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.popup-content {
+    background: rgba(15, 15, 20, 0.98);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.popup-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 32px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.popup-close:hover {
+    color: #fff;
+    background: rgba(255, 68, 68, 0.2);
+    border-radius: 50%;
+}
+
+.popup-content h2 {
+    color: #ff4444;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-right: 40px;
+}
+
+.popup-content h3 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 12px;
+}
+
+.popup-content p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+.popup-content ul,
+.popup-content ol {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.popup-content li {
+    margin-bottom: 8px;
+}
+
+.popup-content strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.disclaimer-footer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.popup-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 68, 68, 0.4);
+    border-radius: 4px;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
