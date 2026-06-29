@@ -26,7 +26,7 @@ Error: ... reading manifest model in quay.io/rh-ai-quickstart/caisat: unauthoriz
 
 ## Notes
 
-Phase 1A committed sanitization **without** `chart/values.yaml` and `chart/README.md` Quay changes.
+Phase 1 committed sanitization **without** `chart/values.yaml` and `chart/README.md` Quay changes.
 
 Follow-up: mirror images to a pullable registry or grant pull access, then re-run gate and commit chart defaults.
 

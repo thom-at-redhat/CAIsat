@@ -54,7 +54,7 @@ Decision and follow-up.
 
 ## GPU tier deferral table
 
-Use when a GPU tier cannot be tested on schedule. Phase 7 merge requires all tiers documented **or** explicit deferral with approver.
+Use when a GPU tier cannot be tested on schedule. Phase 11 merge requires all tiers documented **or** explicit deferral with approver.
 
 | Tier   | Status   | Reason | Approver / date |
 | ------ | -------- | ------ | --------------- |
