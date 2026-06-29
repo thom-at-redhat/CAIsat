@@ -17,6 +17,7 @@ Deploy AI-powered resolution enhancement and object detection for satellite imag
 ## Table of Contents
 
 - [Overview](#overview)
+- [Where to Start](#where-to-start)
 - [Architecture](#architecture)
 - [Requirements](#requirements)
 - [Deploy](#deploy)
@@ -33,6 +34,16 @@ Deploy AI-powered resolution enhancement and object detection for satellite imag
 ## Overview
 
 Welcome to CAIsat, where you can gaze upon Earth from space, enhance satellite imagery, and detect objects with the power of AI. This application lets users navigate live satellite maps, capture regions to enhance from 256×256 to 512×512 resolution using the SwinIR deep learning model, and detect objects like planes, ships, vehicles, and infrastructure using YOLOv8-OBB — all running on Red Hat OpenShift AI.
+
+---
+
+## Where to Start
+
+Contributors and agents: read the in-repo project plan for phase status, merge gates, and spike gates.
+
+→ **[docs/project/PLAN.md](docs/project/PLAN.md)**
+
+Completed foundation work is archived in [docs/project/PLAN_COMPLETED.md](docs/project/PLAN_COMPLETED.md).
 
 ---
 
