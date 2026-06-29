@@ -121,7 +121,7 @@ Phase 4 → 6 → 7 → 8 → 9. Phase 5 → 6. Never Phase 6 before Phase 4 bin
 | **binary**   | 6+     | baseline + binary content-type + decode           |
 | **crop**     | 8+     | baseline/binary + profile default crop size       |
 
-See `docs/validation/baseline-smoke.md` (Phase 3).
+See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 
 ---
 

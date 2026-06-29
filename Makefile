@@ -1,7 +1,7 @@
 # CAIsat developer convenience targets
 # Assisted by: cursor, claude
 
-.PHONY: pre-commit check install-hooks helm-template push-check push
+.PHONY: pre-commit check install-hooks helm-template push-check push smoke
 
 pre-commit:
 	SKIP=no-commit-to-branch pre-commit run --all-files
@@ -24,3 +24,6 @@ push-check: check helm-template
 
 push: push-check
 	git push -u origin HEAD
+
+smoke:
+	bash scripts/smoke-local.sh
