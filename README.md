@@ -8,6 +8,8 @@ Use case: Satellite Image Processing
 
 # AI-Powered Satellite Imagery Enhancement & Object Detection
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIsat/badge)](https://scorecard.dev/viewer/?uri=github.com/thom-at-redhat/CAIsat)
+
 Deploy AI-powered resolution enhancement and object detection for satellite imagery using OpenShift AI on Red Hat OpenShift.
 
 ![CAIsat web interface showing 3D rotating Earth globe, interactive satellite map with live imagery, drag-and-drop selection box for 256×256 regions, zoom controls, and AI-enhanced satellite images with side-by-side comparison](docs/images/CAIsat.png)
