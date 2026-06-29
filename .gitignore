@@ -49,3 +49,4 @@ models/
 # Cursor handover checkpoints (runtime; created by context compaction hooks)
 .cursor/hooks/pending-handoff.md
 .cursor/hooks/last-compaction.txt
+chart/values-quay-local.yaml
