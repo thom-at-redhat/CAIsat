@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `chore/phase-5-close` (2026-06-29). Use feature branches for Phases 4+; never push `main`.
+**Branch:** `main` @ `5312171` (2026-06-29). Phase 6 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -32,11 +32,12 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`           | ok                       |
 | README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)           | ok (fork until upstream) |
 | Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | `pre-commit` + Scorecard required on `main`     | ok (fork)                |
+| Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned     | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started                                     | ok                       |
 
-**Last verified:** `chore/phase-5-close` (2026-06-29); fork `main` merge `f0e582a0063a0253b0bede7e87b699594497e0f8` (PR #24)
+**Last verified:** `main` (2026-06-29); fork `main` merge `5312171ce6b9c7361e7ddaab71847cb2f344ef51` (PR #25 PLAN close @ `0d487bb`; PR #26 markdown-link-check pin @ `5fb25e7`)
 
-**Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `chart/values.yaml`
+**Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
 **Claims not checked:** cluster baseline sign-off; ONNX/binary/GPU runtime (Phase 8 spikes)
 
@@ -132,7 +133,7 @@ README Scorecard badge uses the contributor fork slug (see README badge URL) unt
 Phase 5 — `SECURITY.md` committed, `permissions: contents: read` on pre-commit workflow, README badge live (fork slug until upstream merge).
 Phase 6 — CodeQL workflow green; optional `tests/` + CI job may land in Phase 7 (document waiver if deferred).
 
-**PR sequence (fork):** (1) Phase 4 Scorecard — merged PR #21; (2) Phase 5 quick wins — merged PR #24; (3) Phase 6 CodeQL + branch-protection follow-ups.
+**PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; Phase 6 CodeQL next.
 
 ---
 
