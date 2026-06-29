@@ -3,6 +3,9 @@
 ---
 name: pre-commit
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
