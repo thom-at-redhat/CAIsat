@@ -23,7 +23,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 | Gate commit | `bf67549`                                                       |
 | Branch      | `chore/pre-commit-and-handover`                                 |
 
-Deliverables: `.pre-commit-config.yaml`, `.cursor/rules/handover.mdc` (in-repo stub), local `.cursor/rules/handover-notes.mdc` (gitignored), `Makefile` (`check`, `pre-commit`, `install-hooks`).
+Deliverables: `.pre-commit-config.yaml`, local Cursor rules (`.cursor/rules/` gitignored — copy from `~/.cursor/rule-templates/` or project bootstrap), `Makefile` (`check`, `pre-commit`, `install-hooks`).
 
 ---
 

@@ -46,8 +46,8 @@ models/
 *.tmp
 *.bak
 
-# Cursor handover (local session state; not committed)
-.cursor/rules/handover-notes.mdc
+# Cursor rules and handover (local-only; copy from ~/.cursor/rule-templates/ or project bootstrap)
+.cursor/rules/
 .cursor/hooks/pending-handoff.md
 .cursor/hooks/last-compaction.txt
 chart/values-quay-local.yaml
