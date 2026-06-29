@@ -6,7 +6,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-29):** Serial suffixes removed (`1A`/`1B` → Phases 1–2). OpenSSF = Phases 4–6. Former phases 3–18 → 7–19.
 
-**Branch tip (2026-06-29):** `chore/phase-3-plan-close` @ `af59b80`. Phase 0 Quay gate **fail** for `rh-ai-quickstart`; personal mirror documented in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-29):** `chore/phase-3-plan-close` @ `e933394`. Phase 0 Quay gate **fail** for `rh-ai-quickstart`; personal mirror documented in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -66,7 +66,7 @@ Deliverables:
 | ------ | -------------------------------------------------------------------------------------------- |
 | Goal   | In-repo PLAN, spike templates, phase-ID sync, smoke automation table, Cycle 5 plan revisions |
 | Branch | `chore/phase-3-plan-close`                                                                   |
-| Commit | `af59b80`                                                                                    |
+| Commit | `e933394`                                                                                    |
 | Gate   | `make check`                                                                                 |
 
 Deliverables:

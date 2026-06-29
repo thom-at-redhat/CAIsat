@@ -30,13 +30,13 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | OpenSSF workflows       | `.github/workflows/`                                                                       | only `pre-commit.yaml`         | not started (Ph. 4) |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                               | not started                    | ok                  |
 
-**Last verified:** `af59b80` on `chore/phase-3-plan-close` (2026-06-29)
+**Last verified:** `e933394` on `chore/phase-3-plan-close` (2026-06-29)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `chart/values.yaml`
 
 **Claims not checked:** fork Scorecard run; cluster baseline sign-off; ONNX/binary/GPU runtime (Phase 8 spikes)
 
-**Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 3 committed @ `af59b80`; Phase 4 fork Scorecard is next gate.
+**Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 3 committed @ `e933394`; Phase 4 fork Scorecard is next gate.
 
 ---
 
