@@ -1,0 +1,5 @@
+# CAIsat Python tooling configuration
+# Assisted by: cursor, claude
+
+[tool.ruff]
+line-length = 200

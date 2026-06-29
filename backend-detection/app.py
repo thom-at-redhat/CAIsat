@@ -36,10 +36,7 @@ app.add_middleware(
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
 
 if not MODEL_ENDPOINT:
-    raise ValueError(
-        "MODEL_ENDPOINT environment variable must be set. "
-        "Example: http://<predictor>.<namespace>.svc.cluster.local:8080/v2/models/<model-name>/infer"
-    )
+    raise ValueError("MODEL_ENDPOINT environment variable must be set. Example: http://<predictor>.<namespace>.svc.cluster.local:8080/v2/models/<model-name>/infer")
 
 # DOTA class names (15 classes for YOLOv8-OBB)
 CLASS_NAMES = [
@@ -216,9 +213,7 @@ def postprocess_yolov8_obb(
     boxes_xyxy = np.stack([x1, y1, x2, y2], axis=1)
 
     # Apply NMS
-    boxes, scores, class_ids = non_max_suppression(
-        boxes_xyxy, scores, class_ids, iou_threshold
-    )
+    boxes, scores, class_ids = non_max_suppression(boxes_xyxy, scores, class_ids, iou_threshold)
 
     if len(boxes) == 0:
         return []
@@ -257,11 +252,7 @@ def postprocess_yolov8_obb(
         box = boxes[i]
         score = float(scores[i])
         class_id = int(class_ids[i])
-        class_name = (
-            CLASS_NAMES[class_id]
-            if class_id < len(CLASS_NAMES)
-            else f"Class {class_id}"
-        )
+        class_name = CLASS_NAMES[class_id] if class_id < len(CLASS_NAMES) else f"Class {class_id}"
 
         detections.append(
             {
@@ -348,9 +339,7 @@ async def detect_objects(image: UploadFile = File(...)):
                 if response.status != 200:
                     error_text = await response.text()
                     print(f"Model endpoint error: {error_text}")
-                    raise HTTPException(
-                        status_code=502, detail=f"Model inference failed: {error_text}"
-                    )
+                    raise HTTPException(status_code=502, detail=f"Model inference failed: {error_text}")
 
                 result = await response.json()
                 print(f"Response keys: {list(result.keys())}")

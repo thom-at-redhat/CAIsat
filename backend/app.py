@@ -35,10 +35,7 @@ app.add_middleware(
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
 
 if not MODEL_ENDPOINT:
-    raise ValueError(
-        "MODEL_ENDPOINT environment variable must be set. "
-        "Example: http://model-service.namespace.svc.cluster.local:8080/v2/models/model-name/infer"
-    )
+    raise ValueError("MODEL_ENDPOINT environment variable must be set. Example: http://model-service.namespace.svc.cluster.local:8080/v2/models/model-name/infer")
 
 
 def preprocess_image(image: Image.Image) -> dict:
@@ -174,17 +171,13 @@ async def enhance_image(image: UploadFile = File(...)):
             async with session.post(
                 MODEL_ENDPOINT,
                 json=request_data,
-                timeout=aiohttp.ClientTimeout(
-                    total=300
-                ),  # 5 minutes for model inference
+                timeout=aiohttp.ClientTimeout(total=300),  # 5 minutes for model inference
             ) as response:
                 print(f"Model response status: {response.status}")
                 if response.status != 200:
                     error_text = await response.text()
                     print(f"Model endpoint error: {error_text}")
-                    raise HTTPException(
-                        status_code=502, detail=f"Model inference failed: {error_text}"
-                    )
+                    raise HTTPException(status_code=502, detail=f"Model inference failed: {error_text}")
 
                 print("Reading JSON response...")
                 result = await response.json()
@@ -195,9 +188,7 @@ async def enhance_image(image: UploadFile = File(...)):
         # Postprocess output
         print("Starting postprocess...")
         enhanced_img = postprocess_output(result)
-        print(
-            f"Enhanced image from model: {enhanced_img.size[0]}x{enhanced_img.size[1]}"
-        )
+        print(f"Enhanced image from model: {enhanced_img.size[0]}x{enhanced_img.size[1]}")
 
         # Resize to 512x512 (2x instead of 4x) for better usability
         enhanced_img = enhanced_img.resize((512, 512), Image.LANCZOS)
