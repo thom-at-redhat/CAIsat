@@ -70,10 +70,10 @@ helm install zoom-enhance ./helm/zoom-enhance -f my-values.yaml
 | `model.name` | Model name | `swinir` |
 | `model.port` | Model service port | `8080` |
 | `backend.replicaCount` | Backend replica count | `2` |
-| `backend.image.repository` | Backend image repository | `quay.io/sara_banderby/csi-backend` |
+| `backend.image.repository` | Backend image repository | `quay.io/rh-ai-quickstart/caisat` |
 | `backend.image.tag` | Backend image tag | `latest` |
 | `frontend.replicaCount` | Frontend replica count | `2` |
-| `frontend.image.repository` | Frontend image repository | `quay.io/sara_banderby/csi-frontend` |
+| `frontend.image.repository` | Frontend image repository | `quay.io/rh-ai-quickstart/caisat` |
 | `frontend.image.tag` | Frontend image tag | `latest` |
 | `frontend.route.enabled` | Enable OpenShift route | `true` |
 | `frontend.route.host` | Custom hostname | `""` (auto-generated) |

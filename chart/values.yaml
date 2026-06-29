@@ -9,7 +9,7 @@ model:
 
   # OCI image with the ONNX model
   image:
-    repository: quay.io/sara_banderby/csi_cai
+    repository: quay.io/rh-ai-quickstart/caisat
     tag: "model"
 
   # InferenceService name
@@ -44,7 +44,7 @@ detection:
 
   # OCI image with the ONNX model
   image:
-    repository: quay.io/sara_banderby/caisat
+    repository: quay.io/rh-ai-quickstart/caisat
     tag: "yoloobb"
 
   # InferenceService name
@@ -66,9 +66,6 @@ detection:
   # Model runtime
   runtime: mlserver
 
-  # Model runtime
-  runtime: mlserver
-
   # Resources for the model server
   resources:
     requests:
@@ -83,7 +80,7 @@ backend:
   replicaCount: 1
 
   image:
-    repository: quay.io/sara_banderby/caisat
+    repository: quay.io/rh-ai-quickstart/caisat
     pullPolicy: Always
     tag: "backend"
 
@@ -111,7 +108,7 @@ detectionBackend:
   replicaCount: 1
 
   image:
-    repository: quay.io/sara_banderby/caisat
+    repository: quay.io/rh-ai-quickstart/caisat
     pullPolicy: Always
     tag: "detection-backend"
 
@@ -144,7 +141,7 @@ frontend:
   replicaCount: 1
 
   image:
-    repository: quay.io/sara_banderby/caisat
+    repository: quay.io/rh-ai-quickstart/caisat
     pullPolicy: Always
     tag: "frontend"
 
