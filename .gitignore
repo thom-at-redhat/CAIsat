@@ -46,7 +46,8 @@ models/
 *.tmp
 *.bak
 
-# Cursor handover checkpoints (runtime; created by context compaction hooks)
+# Cursor handover (local session state; not committed)
+.cursor/rules/handover-notes.mdc
 .cursor/hooks/pending-handoff.md
 .cursor/hooks/last-compaction.txt
 chart/values-quay-local.yaml

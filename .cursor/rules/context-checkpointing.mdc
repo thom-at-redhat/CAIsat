@@ -22,11 +22,10 @@ Optional: after **post-merge cleanup** (worktree remove, branch delete), add a o
 
 At each checkpoint:
 
-1. Update handover notes with current progress (open items, data points, plan references).
+1. Update local handover notes (`.cursor/rules/handover-notes.mdc`, gitignored) with current progress (open items, data points, plan references).
    If the notes file grows long or repetitive (roughly past one screen, on the order of ~80 lines),
    condense existing items or move detail into a plan file rather than letting it sprawl.
-2. Commit the handover update.
-3. Briefly inform the user: "Checkpoint: [what was completed], handover notes updated.
+2. Briefly inform the user: "Checkpoint: [what was completed], handover notes updated.
    Assessing next task." One sentence is enough -- do not produce a full session-end summary.
 
 ## When to defer
@@ -51,9 +50,8 @@ from earlier reads.
 1. Create a plan file (`CreatePlan` tool) with enough detail that a fresh agent can execute
    mechanically -- exact file paths, line numbers, text snippets for changes, cross-references
    to verify, and the full todo list.
-2. Update handover notes with the plan file reference and a 1-2 sentence summary.
-3. Commit the handover update.
-4. Inform the user that the work is deferred and why.
+2. Update local handover notes with the plan file reference and a 1-2 sentence summary.
+3. Inform the user that the work is deferred and why.
 
 ## What this rule does NOT do
 

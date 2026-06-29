@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Session start
 
-1. Read `.cursor/rules/handover-notes.mdc` before other work.
+1. Read `.cursor/rules/handover-notes.mdc` before other work (local-only, gitignored; bootstrap from `~/.cursor/rule-templates/handover.mdc` if missing).
 2. If `.cursor/hooks/pending-handoff.md` exists, follow the **Context nearly full** flow in the full protocol (ask stop_work / finish_first / custom before continuing).
 3. Confirm notes read in your first substantive reply (1–2 sentences).
 
@@ -23,4 +23,4 @@ Per-project checkpoints: `.cursor/hooks/pending-handoff.md`, `.cursor/hooks/last
 
 ## Session end
 
-Post a brief 4-part handoff (Done, Remaining, Flags, Notes status). Update `handover-notes.mdc` when facts or open items changed.
+Post a brief 4-part handoff (Done, Remaining, Flags, Notes status). Update local `handover-notes.mdc` when facts or open items changed (do not commit it).
