@@ -4,6 +4,9 @@
 name: Scorecard analysis
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
