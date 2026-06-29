@@ -15,7 +15,6 @@ import cv2
 import io
 import os
 from dotenv import load_dotenv
-from typing import List, Dict
 
 load_dotenv()
 
@@ -36,15 +35,26 @@ app.add_middleware(
 # Model endpoint from environment variable
 MODEL_ENDPOINT = os.getenv(
     "MODEL_ENDPOINT",
-    "http://yolov8m-satelite-predictor.caisat.svc.cluster.local:8080/v2/models/yolov8m-satelite/infer"
+    "http://yolov8m-satelite-predictor.caisat.svc.cluster.local:8080/v2/models/yolov8m-satelite/infer",
 )
 
 # DOTA class names (15 classes for YOLOv8-OBB)
 CLASS_NAMES = [
-    'plane', 'ship', 'storage-tank', 'baseball-diamond', 'tennis-court',
-    'basketball-court', 'ground-track-field', 'harbor', 'bridge',
-    'large-vehicle', 'small-vehicle', 'helicopter', 'roundabout',
-    'soccer-ball-field', 'swimming-pool'
+    "plane",
+    "ship",
+    "storage-tank",
+    "baseball-diamond",
+    "tennis-court",
+    "basketball-court",
+    "ground-track-field",
+    "harbor",
+    "bridge",
+    "large-vehicle",
+    "small-vehicle",
+    "helicopter",
+    "roundabout",
+    "soccer-ball-field",
+    "swimming-pool",
 ]
 
 # Detection thresholds
@@ -64,8 +74,8 @@ def preprocess_image(image: Image.Image, input_size: int = 640) -> tuple:
         Tuple of (request_data, scale, padding, original_shape)
     """
     # Convert to RGB if needed
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
+    if image.mode != "RGB":
+        image = image.convert("RGB")
 
     # Convert to numpy array
     img_array = np.array(image)
@@ -89,7 +99,7 @@ def preprocess_image(image: Image.Image, input_size: int = 640) -> tuple:
     pad_h = (input_size - new_h) // 2
 
     # Place resized image in center
-    padded[pad_h:pad_h+new_h, pad_w:pad_w+new_w] = resized
+    padded[pad_h : pad_h + new_h, pad_w : pad_w + new_w] = resized
 
     # Convert to float32 and normalize to [0, 1]
     preprocessed = padded.astype(np.float32) / 255.0
@@ -107,7 +117,7 @@ def preprocess_image(image: Image.Image, input_size: int = 640) -> tuple:
                 "name": "images",
                 "shape": list(preprocessed.shape),
                 "datatype": "FP32",
-                "data": preprocessed.flatten().tolist()
+                "data": preprocessed.flatten().tolist(),
             }
         ]
     }
@@ -115,8 +125,12 @@ def preprocess_image(image: Image.Image, input_size: int = 640) -> tuple:
     return request_data, scale, (pad_w, pad_h), (orig_w, orig_h)
 
 
-def non_max_suppression(boxes: np.ndarray, scores: np.ndarray, classes: np.ndarray,
-                        iou_threshold: float = 0.45) -> tuple:
+def non_max_suppression(
+    boxes: np.ndarray,
+    scores: np.ndarray,
+    classes: np.ndarray,
+    iou_threshold: float = 0.45,
+) -> tuple:
     """
     Apply Non-Maximum Suppression to remove overlapping boxes.
 
@@ -131,7 +145,7 @@ def non_max_suppression(boxes: np.ndarray, scores: np.ndarray, classes: np.ndarr
         boxes.tolist(),
         scores.tolist(),
         score_threshold=CONFIDENCE_THRESHOLD,
-        nms_threshold=iou_threshold
+        nms_threshold=iou_threshold,
     )
 
     if len(indices) > 0:
@@ -141,9 +155,14 @@ def non_max_suppression(boxes: np.ndarray, scores: np.ndarray, classes: np.ndarr
         return np.array([]), np.array([]), np.array([])
 
 
-def postprocess_yolov8_obb(output_data: dict, scale: float, padding: tuple,
-                          original_shape: tuple, conf_threshold: float = 0.5,
-                          iou_threshold: float = 0.45) -> List[Dict]:
+def postprocess_yolov8_obb(
+    output_data: dict,
+    scale: float,
+    padding: tuple,
+    original_shape: tuple,
+    conf_threshold: float = 0.5,
+    iou_threshold: float = 0.45,
+) -> list[dict]:
     """
     Post-process YOLOv8-OBB output.
 
@@ -170,8 +189,8 @@ def postprocess_yolov8_obb(output_data: dict, scale: float, padding: tuple,
     output = output.squeeze(0).T  # (8400, 20)
 
     # Split: bbox[0-3], classes[4-18], angle[19]
-    boxes_cxcywh = output[:, :4]      # indices 0-3: bbox (cx, cy, w, h)
-    class_scores = output[:, 4:19]    # indices 4-18: 15 class scores
+    boxes_cxcywh = output[:, :4]  # indices 0-3: bbox (cx, cy, w, h)
+    class_scores = output[:, 4:19]  # indices 4-18: 15 class scores
 
     # Get max class score and ID
     max_scores = np.max(class_scores, axis=1)
@@ -194,7 +213,9 @@ def postprocess_yolov8_obb(output_data: dict, scale: float, padding: tuple,
     boxes_xyxy = np.stack([x1, y1, x2, y2], axis=1)
 
     # Apply NMS
-    boxes, scores, class_ids = non_max_suppression(boxes_xyxy, scores, class_ids, iou_threshold)
+    boxes, scores, class_ids = non_max_suppression(
+        boxes_xyxy, scores, class_ids, iou_threshold
+    )
 
     if len(boxes) == 0:
         return []
@@ -233,13 +254,19 @@ def postprocess_yolov8_obb(output_data: dict, scale: float, padding: tuple,
         box = boxes[i]
         score = float(scores[i])
         class_id = int(class_ids[i])
-        class_name = CLASS_NAMES[class_id] if class_id < len(CLASS_NAMES) else f"Class {class_id}"
+        class_name = (
+            CLASS_NAMES[class_id]
+            if class_id < len(CLASS_NAMES)
+            else f"Class {class_id}"
+        )
 
-        detections.append({
-            "class": class_name,
-            "confidence": score,
-            "box": [float(box[0]), float(box[1]), float(box[2]), float(box[3])]
-        })
+        detections.append(
+            {
+                "class": class_name,
+                "confidence": score,
+                "box": [float(box[0]), float(box[1]), float(box[2]), float(box[3])],
+            }
+        )
 
     # Sort by confidence (highest first)
     detections.sort(key=lambda x: x["confidence"], reverse=True)
@@ -255,7 +282,7 @@ async def root():
         "status": "operational",
         "model_endpoint": MODEL_ENDPOINT,
         "classes": CLASS_NAMES,
-        "confidence_threshold": CONFIDENCE_THRESHOLD
+        "confidence_threshold": CONFIDENCE_THRESHOLD,
     }
 
 
@@ -272,7 +299,7 @@ async def get_stats():
         "total_detections": detection_counter,
         "status": "operational",
         "confidence_threshold": CONFIDENCE_THRESHOLD,
-        "classes": len(CLASS_NAMES)
+        "classes": len(CLASS_NAMES),
     }
 
 
@@ -313,15 +340,14 @@ async def detect_objects(image: UploadFile = File(...)):
             async with session.post(
                 MODEL_ENDPOINT,
                 json=request_data,
-                timeout=aiohttp.ClientTimeout(total=60)
+                timeout=aiohttp.ClientTimeout(total=60),
             ) as response:
                 print(f"Model response status: {response.status}")
                 if response.status != 200:
                     error_text = await response.text()
                     print(f"Model endpoint error: {error_text}")
                     raise HTTPException(
-                        status_code=502,
-                        detail=f"Model inference failed: {error_text}"
+                        status_code=502, detail=f"Model inference failed: {error_text}"
                     )
 
                 result = await response.json()
@@ -337,7 +363,7 @@ async def detect_objects(image: UploadFile = File(...)):
             padding,
             original_shape,
             conf_threshold=CONFIDENCE_THRESHOLD,
-            iou_threshold=IOU_THRESHOLD
+            iou_threshold=IOU_THRESHOLD,
         )
         print(f"Found {len(detections)} objects")
 
@@ -349,7 +375,7 @@ async def detect_objects(image: UploadFile = File(...)):
         response_data = {
             "detections": detections,
             "count": len(detections),
-            "image_size": {"width": original_shape[0], "height": original_shape[1]}
+            "image_size": {"width": original_shape[0], "height": original_shape[1]},
         }
 
         print("=== DETECTION REQUEST COMPLETED ===")
@@ -359,6 +385,7 @@ async def detect_objects(image: UploadFile = File(...)):
         raise
     except Exception as e:
         import traceback
+
         error_detail = f"{type(e).__name__}: {str(e)}"
         print(f"Error processing image: {error_detail}")
         print(traceback.format_exc())
@@ -367,4 +394,5 @@ async def detect_objects(image: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

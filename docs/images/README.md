@@ -7,9 +7,10 @@ This directory should contain the architecture diagram referenced in the main RE
 **File**: `architecture-diagram.png`
 
 **Content**: The diagram should illustrate:
+
 - User interaction with web browser
 - Frontend (React) component
-- Backend (FastAPI) component  
+- Backend (FastAPI) component
 - Model Server (MLServer/ONNX) component
 - Data flow showing:
   - Image upload from user
@@ -20,11 +21,13 @@ This directory should contain the architecture diagram referenced in the main RE
 **Format**: PNG, 1200-1600px wide recommended
 
 **Alt Text**: Already included in main README as:
+
 > "CAIsat Architecture"
 
 ## Tools
 
 You can create the diagram using:
+
 - Draw.io / diagrams.net
 - Lucidchart
 - Microsoft Visio

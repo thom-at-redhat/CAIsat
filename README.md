@@ -110,25 +110,28 @@ Activate satellite view to browse satellite imagery, capture a screenshot, selec
 
 ### Prerequisites
 
-1. **Red Hat OpenShift 4.2x cluster** 
-2. **OpenShift AI 3.x** 
+1. **Red Hat OpenShift 4.2x cluster**
+2. **OpenShift AI 3.x**
 3. **oc CLI** authenticated to your cluster
 4. **Helm 3.10+** installed locally
 
 ### Installation
 
 1. **Clone this repository**:
+
    ```bash
    git clone https://github.com/rh-ai-quickstart/caisat.git
    cd caisat
    ```
 
 2. **Create a namespace**:
+
    ```bash
    oc new-project caisat
    ```
 
 3. **Deploy the application using Helm**:
+
    ```bash
    helm install caisat ./chart \
      --namespace caisat \
@@ -136,6 +139,7 @@ Activate satellite view to browse satellite imagery, capture a screenshot, selec
    ```
 
 4. **Wait for all pods to be ready** (this may take 2-3 minutes):
+
    ```bash
    oc get pods -n caisat -w
    ```
@@ -148,11 +152,13 @@ Activate satellite view to browse satellite imagery, capture a screenshot, selec
 ### Validation
 
 1. **Check that all pods are running**:
+
    ```bash
    oc get pods -n caisat
    ```
-   
+
    Expected output showing 5 running pods:
+
    ```
    NAME                                          READY   STATUS    RESTARTS   AGE
    caisat-backend-xxxxxxxxx-xxxxx                1/1     Running   0          2m
@@ -163,10 +169,11 @@ Activate satellite view to browse satellite imagery, capture a screenshot, selec
    ```
 
 2. **Verify both model servers are ready**:
+
    ```bash
    oc get inferenceservice -n caisat
    ```
-   
+
    Both InferenceServices should show `READY: True`.
 
 3. **Access the application**:
@@ -216,18 +223,23 @@ Processing time: ~7-15 seconds per image on CPU.
 ## Use Cases
 
 ### Agriculture & Crop Monitoring
+
 Enhance satellite imagery of agricultural fields to detect crop stress, improve field boundary detection, and analyze historical low-resolution archives. Detect vehicles, storage tanks, and infrastructure to monitor farm operations and equipment distribution.
 
 ### Urban Planning & Development
+
 Improve resolution of building and infrastructure details for development zone analysis. Detect vehicles, bridges, roundabouts, and sports facilities to analyze urban infrastructure distribution and monitor city growth patterns.
 
 ### Maritime & Infrastructure Monitoring
+
 Detect ships, harbors, bridges, and storage tanks for maritime traffic analysis, port activity monitoring, and coastal infrastructure assessment. Track vessel movements and monitor harbor capacity utilization.
 
 ### Aviation & Transportation
+
 Detect planes, helicopters, and vehicles at airports and transportation hubs. Monitor aircraft parking positions, analyze airport capacity, and track vehicle movements in large facilities.
 
 ### Education & Demonstration
+
 Demonstrate AI image processing techniques in Earth observation courses. Show students how deep learning models can be applied to satellite imagery and explore the capabilities and limitations of AI-based enhancement.
 
 ---

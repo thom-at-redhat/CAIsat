@@ -1,0 +1,46 @@
+---
+description: Handover notes for CAIsat
+alwaysApply: true
+---
+
+<!-- Assisted by: cursor, claude -->
+
+# CAIsat
+
+AI-powered satellite imagery enhancement and object detection on Red Hat OpenShift AI (SwinIR upscaling + YOLOv8-OBB detection).
+
+## Project context
+
+### Layout
+
+- `frontend/` — React app (Three.js globe, Leaflet map, CRA)
+- `backend/` — FastAPI enhancement API
+- `backend-detection/` — FastAPI detection API
+- `chart/` — Helm chart (OpenShift Deployments, Routes, InferenceServices)
+- `docs/` — README assets and HTML
+
+### Tooling
+
+- **Containers**: Podman; project uses `Containerfile` (not Dockerfile)
+- **Deploy**: Helm 3 + `oc`; see root `README.md`
+- **Pre-commit**: `.pre-commit-config.yaml` (base, python, javascript, markdown, yaml, shell, security, github, container)
+- **Handover**: `.cursor/rules/handover-notes.mdc` + thin `handover.mdc`; context compaction hooks installed globally via `install-cursor.sh`
+
+### Git remotes
+
+- **upstream**: [rh-ai-quickstart/CAIsat](https://github.com/rh-ai-quickstart/CAIsat) — open PRs against this repo
+- **origin**: `thom-at-redhat/CAIsat` — fork; push feature branches here
+- Sync: `git fetch upstream && git merge upstream/main` (on feature branch before PR)
+
+### Conventions
+- Line length 200 (Markdown, YAML, Python via ruff)
+- Never commit `.env`, model weights (`*.onnx`, `*.pt`), or secrets
+
+### Docs index
+
+- `README.md` — deploy, architecture, validation
+- `chart/README.md` — Helm values and templates
+
+## Open items for future sessions
+
+1. **Pre-commit cleanup**: Frontend excluded from prettier/jshint until ESLint flat config for CRA. README and chart/README excluded from markdownlint. Helm `chart/` excluded from YAML hooks. Run `make check` twice on first use if ruff auto-fixes apply.

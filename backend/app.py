@@ -52,8 +52,8 @@ def preprocess_image(image: Image.Image) -> dict:
         JSON payload for KServe v2 inference protocol
     """
     # Convert to RGB if needed
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
+    if image.mode != "RGB":
+        image = image.convert("RGB")
 
     # Resize to 256x256 for consistent processing
     image = image.resize((256, 256), Image.LANCZOS)
@@ -75,7 +75,7 @@ def preprocess_image(image: Image.Image) -> dict:
                 "name": "input",
                 "shape": list(img_array.shape),
                 "datatype": "FP32",
-                "data": img_array.flatten().tolist()
+                "data": img_array.flatten().tolist(),
             }
         ]
     }
@@ -120,7 +120,7 @@ async def root():
     return {
         "service": "Zoom & Enhance API",
         "status": "operational",
-        "model_endpoint": MODEL_ENDPOINT
+        "model_endpoint": MODEL_ENDPOINT,
     }
 
 
@@ -133,10 +133,7 @@ async def health():
 @app.get("/api/stats")
 async def get_stats():
     """Get enhancement statistics."""
-    return {
-        "total_enhancements": enhancement_counter,
-        "status": "operational"
-    }
+    return {"total_enhancements": enhancement_counter, "status": "operational"}
 
 
 @app.post("/api/enhance")
@@ -178,15 +175,16 @@ async def enhance_image(image: UploadFile = File(...)):
             async with session.post(
                 MODEL_ENDPOINT,
                 json=request_data,
-                timeout=aiohttp.ClientTimeout(total=300)  # 5 minutes for model inference
+                timeout=aiohttp.ClientTimeout(
+                    total=300
+                ),  # 5 minutes for model inference
             ) as response:
                 print(f"Model response status: {response.status}")
                 if response.status != 200:
                     error_text = await response.text()
                     print(f"Model endpoint error: {error_text}")
                     raise HTTPException(
-                        status_code=502,
-                        detail=f"Model inference failed: {error_text}"
+                        status_code=502, detail=f"Model inference failed: {error_text}"
                     )
 
                 print("Reading JSON response...")
@@ -198,7 +196,9 @@ async def enhance_image(image: UploadFile = File(...)):
         # Postprocess output
         print("Starting postprocess...")
         enhanced_img = postprocess_output(result)
-        print(f"Enhanced image from model: {enhanced_img.size[0]}x{enhanced_img.size[1]}")
+        print(
+            f"Enhanced image from model: {enhanced_img.size[0]}x{enhanced_img.size[1]}"
+        )
 
         # Resize to 512x512 (2x instead of 4x) for better usability
         enhanced_img = enhanced_img.resize((512, 512), Image.LANCZOS)
@@ -207,7 +207,7 @@ async def enhance_image(image: UploadFile = File(...)):
         # Convert to bytes
         print("Converting to PNG bytes...")
         img_byte_arr = io.BytesIO()
-        enhanced_img.save(img_byte_arr, format='PNG')
+        enhanced_img.save(img_byte_arr, format="PNG")
         png_size = img_byte_arr.tell()  # Get size BEFORE seek
         img_byte_arr.seek(0)
         print(f"PNG size: {png_size} bytes")
@@ -221,7 +221,7 @@ async def enhance_image(image: UploadFile = File(...)):
         response = StreamingResponse(
             img_byte_arr,
             media_type="image/png",
-            headers={"Content-Disposition": "inline; filename=enhanced.png"}
+            headers={"Content-Disposition": "inline; filename=enhanced.png"},
         )
         print("=== ENHANCE REQUEST COMPLETED ===")
         return response
@@ -230,6 +230,7 @@ async def enhance_image(image: UploadFile = File(...)):
         raise
     except Exception as e:
         import traceback
+
         error_detail = f"{type(e).__name__}: {str(e)}"
         print(f"Error processing image: {error_detail}")
         print(traceback.format_exc())
@@ -238,4 +239,5 @@ async def enhance_image(image: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

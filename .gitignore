@@ -44,3 +44,7 @@ models/
 # Temporary files
 *.tmp
 *.bak
+
+# Cursor handover checkpoints (runtime; created by context compaction hooks)
+.cursor/hooks/pending-handoff.md
+.cursor/hooks/last-compaction.txt

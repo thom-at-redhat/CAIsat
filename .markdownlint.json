@@ -1,0 +1,4 @@
+{
+  "line_length": { "line_length": 200, "heading_line_length": 200 },
+  "no-duplicate-heading": { "siblings_only": true }
+}

@@ -1,0 +1,47 @@
+---
+description: Markdown project linting, line-length, and link checking rules
+alwaysApply: true
+---
+
+# Language: Markdown
+
+## Linting
+
+- **Tool**: `markdownlint-cli` (Node.js variant by igorshubovych), not the Ruby `markdownlint` gem.
+- **Config**: `.markdownlint.json` in the project root. Must set `line_length` and `heading_line_length` to 200.
+- **Exclusions**: Exclude auto-generated files (e.g. `.gitlab/*.md`, `FEATURE_SUMMARY.md`) via the `exclude` key on the hook.
+
+Example `.markdownlint.json`:
+
+```json
+{
+  "line_length": { "line_length": 200, "heading_line_length": 200 },
+  "no-duplicate-heading": { "siblings_only": true }
+}
+```
+
+## Line length
+
+- 200 characters for all Markdown files. This is consistent with the project-wide line-length standard.
+- Do not disable line-length checks globally; use per-file or per-rule exceptions only if necessary.
+
+## Link checking
+
+- Use `markdown-link-check` (local hook via npx) to validate relative links.
+- Config: `.markdown-link-check.json` in the project root.
+- Only check relative links by default (external link checking is slow and flaky in CI).
+
+## Spell checking
+
+- `codespell` catches common typos. Add project-specific words to `--ignore-words-list`.
+
+## Fenced code blocks
+
+- Every fenced code block must specify a language (e.g. `bash`, `yaml`, `python`, `text`, `json`).
+- This is enforced by markdownlint rule MD040.
+
+## Pre-commit hooks
+
+```bash
+assemble.sh --base --markdown --yaml --security
+```

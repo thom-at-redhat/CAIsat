@@ -1,0 +1,66 @@
+---
+description: Monitor context depth and checkpoint progress before starting new multi-step work
+alwaysApply: true
+---
+
+<!-- Assisted by: cursor, claude -->
+
+# Context Checkpointing
+
+Proactively save session state so complex work starts with a fresh context budget.
+
+## When to checkpoint
+
+After completing a significant unit of work, pause and assess before starting the next one.
+A significant unit is any of:
+
+- A phase committed on a feature branch with handover notes updated, ready to merge (same pause as steps 1–2 of **Merge sequence (ordered)** in `git-worktree-workflow.mdc` — before `git merge` into `main`)
+- A multi-file investigation that produced findings or a plan
+- A CI/pre-commit cycle that consumed substantial wall time
+
+Optional: after **post-merge cleanup** (worktree remove, branch delete), add a one-line handover touch if the session continues and cleanup changed something worth recording — not a substitute for pre-merge checks.
+
+At each checkpoint:
+
+1. Update handover notes with current progress (open items, data points, plan references).
+   If the notes file grows long or repetitive (roughly past one screen, on the order of ~80 lines),
+   condense existing items or move detail into a plan file rather than letting it sprawl.
+2. Commit the handover update.
+3. Briefly inform the user: "Checkpoint: [what was completed], handover notes updated.
+   Assessing next task." One sentence is enough -- do not produce a full session-end summary.
+
+## When to defer
+
+Before starting a new multi-step task (a phase, a restructure, a multi-file refactor),
+assess whether the remaining context budget can accommodate:
+
+- Reading the target files fresh (they may have shifted from earlier reads)
+- The full implementation, including self-review
+- `make check`, `pre-commit`, and `make ci`
+- PLAN.md and PLAN_COMPLETED.md bookkeeping
+- Handover notes update
+
+If the session has already completed one or more phases plus investigations, and the new
+task involves reordering, moving, or restructuring content across files, prefer creating
+a detailed plan file and deferring to a fresh session. Content-reordering tasks are
+especially error-prone in deep context because the agent holds stale line-number references
+from earlier reads.
+
+## How to defer cleanly
+
+1. Create a plan file (`CreatePlan` tool) with enough detail that a fresh agent can execute
+   mechanically -- exact file paths, line numbers, text snippets for changes, cross-references
+   to verify, and the full todo list.
+2. Update handover notes with the plan file reference and a 1-2 sentence summary.
+3. Commit the handover update.
+4. Inform the user that the work is deferred and why.
+
+## What this rule does NOT do
+
+- It does not block small tasks. A single-file edit, a quick investigation, or answering a
+  question should never be deferred just because context is deep.
+- It does not require counting tokens or tool calls. The assessment is qualitative: "have I
+  done substantial work already, and is the next task complex enough to benefit from fresh
+  context?"
+- It does not override the user. If the user says "do it now", do it. The rule is a nudge,
+  not a gate.
