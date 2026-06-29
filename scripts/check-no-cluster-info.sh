@@ -61,8 +61,8 @@ check_pattern "Personal Quay org reference" \
     'quay\.io/sara_banderby' \
     "${FILTERED[@]}"
 
-check_pattern "Personal GitHub fork reference" \
-    'thom-at-redhat' \
+check_pattern "Personal identifier (GitHub fork / Quay user)" \
+    '(thom-at-redhat|thom_at_redhat|quay\.io/thom_at_redhat)' \
     "${FILTERED[@]}"
 
 check_pattern "kubeconfig file path" \
