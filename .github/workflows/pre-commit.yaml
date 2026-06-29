@@ -1,0 +1,35 @@
+# Pre-commit and Helm template validation on push.
+# Assisted by: cursor, claude
+---
+name: pre-commit
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364e1ed6af # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2bca5991ddfbc5c6c8b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit
+        run: SKIP=no-commit-to-branch pre-commit run --all-files
+
+      - name: Install Helm
+        uses: azure/setup-helm@511ed8e08ed9e1c83e08b5dd9c1f8c7b2c4c0e0a # v4.2.0
+        with:
+          version: v3.16.4
+
+      - name: Helm template test
+        run: helm template test ./chart
