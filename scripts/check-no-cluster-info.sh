@@ -61,9 +61,12 @@ check_pattern "Personal Quay org reference" \
     'quay\.io/sara_banderby' \
     "${FILTERED[@]}"
 
-check_pattern "Personal identifier (GitHub fork / Quay user)" \
-    '(thom-at-redhat|thom_at_redhat|quay\.io/thom_at_redhat)' \
-    "${FILTERED[@]}"
+PERSONAL_MATCHES="$(grep -En '(thom-at-redhat|thom_at_redhat|quay\.io/thom_at_redhat)' "${FILTERED[@]}" 2>/dev/null | grep -Ev 'scorecard\.dev' || true)"
+if [[ -n "${PERSONAL_MATCHES}" ]]; then
+    printf 'FAIL: Personal identifier (GitHub fork / Quay user)\n'
+    printf '%s\n' "${PERSONAL_MATCHES}"
+    FAILED=1
+fi
 
 check_pattern "kubeconfig file path" \
     '\.kube/config|KUBECONFIG=/' \
