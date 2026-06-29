@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `5312171` (2026-06-29). Phase 6 next — use feature branches; never push `main`.
+**Branch:** `feat/phase-6-codeql` (2026-06-29). Phase 6 in progress — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -58,7 +58,7 @@ Sync with bootstrap plan frontmatter; update on phase close.
 | 3-review | Skeptical re-review | **completed**           | Cycle 5 light delta → Proceed                       |
 | 4        | OpenSSF Scorecard   | **completed**           | —                                                   |
 | 5        | OpenSSF quick wins  | **completed**           | —                                                   |
-| 6        | OpenSSF CodeQL      | pending                 | CodeQL workflow (Phase 6)                           |
+| 6        | OpenSSF CodeQL      | **in progress**         | CodeQL workflow PR; CI-Tests deferred to Phase 7    |
 | 7        | Baseline smoke      | pending                 | `make smoke` health + optional cluster sign-off     |
 | 8        | Spikes              | pending                 | Parallel `8-onnx` + `8-binary`                      |
 | 9–13     | Core ML             | pending                 | Per merge gates (health + manual checklists)        |
@@ -76,7 +76,7 @@ Sync with bootstrap plan frontmatter; update on phase close.
 | 3     | PLAN bootstrap            | **Done**           | `make check` + Phase 3 close checklist (see below)                                                       |
 | 4     | OpenSSF Scorecard install | **Done**           | `make check` + green Scorecard on fork `main`; ruleset `protect-main` requires Scorecard                 |
 | 5     | OpenSSF quick wins        | **Done**           | `make check` + Phase 5 checklist (see OpenSSF section)                                                   |
-| 6     | OpenSSF broader           | Planned            | `make check` + CodeQL green (CI-Tests defers to Phase 7)                                                 |
+| 6     | OpenSSF broader           | **In progress**    | `make check` + CodeQL green (CI-Tests defers to Phase 7)                                                 |
 | 7     | Baseline smoke            | Planned            | `make check` + `make smoke` (**health** only; see smoke note)                                            |
 | 8     | ONNX + binary spikes      | Planned            | Spike docs with pass/fail                                                                                |
 | 9     | Capture/zoom (#5)         | Planned            | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md` |
@@ -133,7 +133,7 @@ README Scorecard badge uses the contributor fork slug (see README badge URL) unt
 Phase 5 — `SECURITY.md` committed, `permissions: contents: read` on pre-commit workflow, README badge live (fork slug until upstream merge).
 Phase 6 — CodeQL workflow green; optional `tests/` + CI job may land in Phase 7 (document waiver if deferred).
 
-**PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; Phase 6 CodeQL next.
+**PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; #28 PLAN archive cross-ref; Phase 6 CodeQL (in progress).
 
 ---
 
