@@ -5,9 +5,10 @@ import { MapContainer, TileLayer, useMapEvents, Rectangle } from 'react-leaflet'
 import leafletImage from 'leaflet-image';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
+import MonitoredAreas from './MonitoredAreas';
 
 function App() {
-  const [view, setView] = useState('globe'); // 'globe', 'map', or 'processing'
+  const [view, setView] = useState('globe'); // 'globe', 'map', 'processing', or 'monitored'
   const [enhancementCount, setEnhancementCount] = useState(0);
   const [systemOnline, setSystemOnline] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -48,6 +49,10 @@ function App() {
   const DETECTION_BASE = window.location.hostname.includes('localhost')
     ? 'http://localhost:8081'
     : `${window.location.protocol}//${window.location.hostname.replace('caisat', 'caisat-detection-backend')}`;
+
+  const CHANGEDETECTION_BASE = window.location.hostname.includes('localhost')
+    ? 'http://localhost:8082'
+    : `${window.location.protocol}//${window.location.hostname.replace('caisat', 'caisat-backend-changedetection')}`;
 
   // Check system health
   useEffect(() => {
@@ -410,6 +415,12 @@ function App() {
           >
             Processing
           </div>
+          <div
+            className={`nav-item ${view === 'monitored' ? 'active' : ''}`}
+            onClick={() => setView('monitored')}
+          >
+            Monitored Areas
+          </div>
         </div>
         <div className="status">
           <div className={`status-dot ${systemOnline ? 'online' : ''}`}></div>
@@ -767,6 +778,11 @@ function App() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Monitored Areas View */}
+            {view === 'monitored' && (
+              <MonitoredAreas backendUrl={CHANGEDETECTION_BASE} />
             )}
           </div>
         </div>

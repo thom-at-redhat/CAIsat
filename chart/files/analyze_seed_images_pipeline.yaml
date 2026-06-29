@@ -1,0 +1,945 @@
+# PIPELINE DEFINITION
+# Name: analyze-seed-images
+# Description: Analyze all seed satellite images using SatlasPretrain and generate statistics for CAIsat frontend
+# Inputs:
+#    bucket_name: str
+#    model_endpoint: str
+#    s3_access_key: str
+#    s3_endpoint: str
+#    s3_secret_key: str
+components:
+  comp-analyze-location:
+    executorLabel: exec-analyze-location
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        location_name:
+          parameterType: STRING
+        model_endpoint:
+          parameterType: STRING
+        s3_access_key:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_secret_key:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRUCT
+  comp-analyze-location-2:
+    executorLabel: exec-analyze-location-2
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        location_name:
+          parameterType: STRING
+        model_endpoint:
+          parameterType: STRING
+        s3_access_key:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_secret_key:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRUCT
+  comp-analyze-location-3:
+    executorLabel: exec-analyze-location-3
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        location_name:
+          parameterType: STRING
+        model_endpoint:
+          parameterType: STRING
+        s3_access_key:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_secret_key:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRUCT
+  comp-analyze-location-4:
+    executorLabel: exec-analyze-location-4
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        location_name:
+          parameterType: STRING
+        model_endpoint:
+          parameterType: STRING
+        s3_access_key:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_secret_key:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRUCT
+  comp-update-areas-summary:
+    executorLabel: exec-update-areas-summary
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        death_valley_stats:
+          parameterType: STRUCT
+        dubai_stats:
+          parameterType: STRUCT
+        las_vegas_stats:
+          parameterType: STRUCT
+        phoenix_stats:
+          parameterType: STRUCT
+        s3_access_key:
+          parameterType: STRING
+        s3_endpoint:
+          parameterType: STRING
+        s3_secret_key:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-analyze-location:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - analyze_location
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3' 'pillow'\
+          \ 'numpy' 'scikit-learn' 'requests'  &&  python3 -m pip install --quiet\
+          \ --no-warn-script-location 'kfp==2.16.0' '--no-deps' 'typing-extensions>=3.7.4,<5;\
+          \ python_version<\"3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef analyze_location(\n    location_name: str,\n    s3_endpoint:\
+          \ str,\n    s3_access_key: str,\n    s3_secret_key: str,\n    model_endpoint:\
+          \ str,\n    bucket_name: str\n) -> dict:\n    \"\"\"Analyze all images for\
+          \ one location and return statistics.\"\"\"\n    import boto3\n    import\
+          \ numpy as np\n    import json\n    from io import BytesIO\n    from PIL\
+          \ import Image\n    from sklearn.metrics.pairwise import cosine_similarity\n\
+          \    import requests\n\n    # S3 client\n    print(f\"\\nConnecting to S3:\"\
+          )\n    print(f\"  Endpoint: {s3_endpoint}\")\n    print(f\"  Bucket: {bucket_name}\"\
+          )\n    print(f\"  Access Key: {s3_access_key[:8]}...\")\n\n    try:\n  \
+          \      s3 = boto3.client(\n            's3',\n            endpoint_url=s3_endpoint,\n\
+          \            aws_access_key_id=s3_access_key,\n            aws_secret_access_key=s3_secret_key\n\
+          \        )\n        print(\" S3 client created\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR creating S3 client: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    # Helper\
+          \ functions\n    def preprocess_for_satlas(image, size=256):\n        \"\
+          \"\"Preprocess PIL Image for SatlasPretrain model.\"\"\"\n        if image.size\
+          \ != (size, size):\n            image = image.resize((size, size), Image.LANCZOS)\n\
+          \        if image.mode != 'RGB':\n            image = image.convert('RGB')\n\
+          \        img_array = np.array(image).astype(np.float32) / 255.0\n      \
+          \  img_array = np.transpose(img_array, (2, 0, 1))\n        img_array = np.expand_dims(img_array,\
+          \ 0)\n        return img_array\n\n    def get_embedding(image_array, model_name=\"\
+          sentinel2-model\"):\n        \"\"\"Get semantic embedding from SatlasPretrain\
+          \ model.\"\"\"\n        payload = {\n            \"inputs\": [{\n      \
+          \          \"name\": \"input\",\n                \"shape\": list(image_array.shape),\n\
+          \                \"datatype\": \"FP32\",\n                \"data\": image_array.flatten().tolist()\n\
+          \            }]\n        }\n        url = f\"{model_endpoint}/v2/models/{model_name}/infer\"\
+          \n\n        try:\n            response = requests.post(url, json=payload,\
+          \ timeout=60)\n            if response.status_code == 200:\n           \
+          \     result = response.json()\n                embedding_data = result['outputs'][0]['data']\n\
+          \                embedding_shape = result['outputs'][0]['shape']\n     \
+          \           return np.array(embedding_data).reshape(embedding_shape)\n \
+          \           else:\n                print(f\"    Model returned HTTP {response.status_code}\"\
+          )\n                print(f\"    Response: {response.text[:200]}\")\n   \
+          \             raise Exception(f\"Model inference failed: {response.status_code}\"\
+          )\n        except requests.exceptions.Timeout:\n            print(f\"  \
+          \  Model request timed out after 60s\")\n            raise\n        except\
+          \ requests.exceptions.ConnectionError as e:\n            print(f\"    Cannot\
+          \ connect to model: {e}\")\n            raise\n        except Exception\
+          \ as e:\n            print(f\"    Model inference error: {e}\")\n      \
+          \      raise\n\n    print(f\"=\" * 80)\n    print(f\"ANALYZING LOCATION:\
+          \ {location_name.upper()}\")\n    print(f\"=\" * 80)\n\n    # List all images\
+          \ for this location (flat structure: location-date.png)\n    prefix = f\"\
+          {location_name}-\"\n    print(f\"\\nListing objects with prefix: {prefix}\"\
+          )\n\n    try:\n        response = s3.list_objects_v2(Bucket=bucket_name,\
+          \ Prefix=prefix)\n        print(f\" S3 list_objects_v2 response received\"\
+          )\n    except Exception as e:\n        print(f\" ERROR listing S3 objects:\
+          \ {e}\")\n        import traceback\n        traceback.print_exc()\n    \
+          \    raise\n\n    if 'Contents' not in response:\n        print(f\" ERROR:\
+          \ No images found for {location_name}\")\n        print(f\" Response keys:\
+          \ {list(response.keys())}\")\n        return {\"error\": \"No images found\"\
+          , \"location\": location_name}\n\n    # Sort by filename (date order)\n\
+          \    image_keys = sorted([obj['Key'] for obj in response['Contents'] if\
+          \ obj['Key'].endswith('.png')])\n    print(f\"\\nFound {len(image_keys)}\
+          \ images\")\n\n    if len(image_keys) == 0:\n        return {\"error\":\
+          \ \"No PNG images found\", \"location\": location_name}\n\n    # Get baseline\
+          \ (first image)\n    baseline_key = image_keys[0]\n    print(f\"\\nBaseline:\
+          \ {baseline_key}\")\n\n    try:\n        print(\"  Downloading baseline\
+          \ image from S3...\")\n        baseline_obj = s3.get_object(Bucket=bucket_name,\
+          \ Key=baseline_key)\n        baseline_bytes = baseline_obj['Body'].read()\n\
+          \        print(f\"   Downloaded {len(baseline_bytes)} bytes\")\n\n     \
+          \   print(\"  Loading image with PIL...\")\n        baseline_img = Image.open(BytesIO(baseline_bytes))\n\
+          \        print(f\"   Image loaded: {baseline_img.size} {baseline_img.mode}\"\
+          )\n\n        print(\"  Preprocessing for SatlasPretrain...\")\n        baseline_preprocessed\
+          \ = preprocess_for_satlas(baseline_img)\n        print(f\"   Preprocessed\
+          \ shape: {baseline_preprocessed.shape}\")\n    except Exception as e:\n\
+          \        print(f\" ERROR processing baseline image: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    try:\n\
+          \        print(\"\\nGetting baseline embedding from SatlasPretrain...\"\
+          )\n        print(f\"  Model endpoint: {model_endpoint}\")\n        baseline_embedding\
+          \ = get_embedding(baseline_preprocessed)\n        baseline_flat = baseline_embedding.reshape(baseline_embedding.shape[0],\
+          \ -1)\n        print(f\" Baseline embedding shape: {baseline_embedding.shape}\"\
+          )\n    except Exception as e:\n        print(f\" ERROR getting baseline\
+          \ embedding: {e}\")\n        import traceback\n        traceback.print_exc()\n\
+          \        raise\n\n    # Analyze all images\n    print(f\"\\nAnalyzing {len(image_keys)}\
+          \ images:\")\n    results = []\n\n    for idx, img_key in enumerate(image_keys,\
+          \ 1):\n        date_str = img_key.replace(f\"{location_name}-\", \"\").replace(\"\
+          .png\", \"\")\n\n        try:\n            # Load image\n            img_obj\
+          \ = s3.get_object(Bucket=bucket_name, Key=img_key)\n            img = Image.open(BytesIO(img_obj['Body'].read()))\n\
+          \            img_preprocessed = preprocess_for_satlas(img)\n\n         \
+          \   # Get embedding\n            embedding = get_embedding(img_preprocessed)\n\
+          \            embedding_flat = embedding.reshape(embedding.shape[0], -1)\n\
+          \        except Exception as e:\n            print(f\"   [{idx:2d}/{len(image_keys)}]\
+          \ {date_str}: ERROR - {e}\")\n            continue\n\n        # Calculate\
+          \ metrics vs baseline\n        cosine_sim = cosine_similarity(baseline_flat,\
+          \ embedding_flat)[0][0]\n        l2_distance = np.linalg.norm(baseline_flat\
+          \ - embedding_flat)\n        max_possible_distance = np.sqrt(embedding_flat.shape[1])\n\
+          \        change_pct = min(100, (l2_distance / max_possible_distance) * 100)\n\
+          \n        # Classify change level\n        if change_pct < 2:\n        \
+          \    change_level = \"STABLE\"\n        elif change_pct < 5:\n         \
+          \   change_level = \"MINIMAL\"\n        elif change_pct < 10:\n        \
+          \    change_level = \"MODERATE\"\n        else:\n            change_level\
+          \ = \"SEVERE\"\n\n        results.append({\n            'date': date_str,\n\
+          \            'change_pct': float(change_pct),\n            'cosine_sim':\
+          \ float(cosine_sim),\n            'l2_distance': float(l2_distance),\n \
+          \           'classification': change_level\n        })\n\n        print(f\"\
+          \  [{idx:2d}/{len(image_keys)}] {date_str}: {change_pct:5.2f}% - {change_level}\"\
+          )\n\n    # Calculate statistics (exclude baseline from averages)\n    changes\
+          \ = [r['change_pct'] for r in results[1:]]\n    avg_change = float(np.mean(changes))\
+          \ if changes else 0.0\n    max_change = float(np.max(changes)) if changes\
+          \ else 0.0\n    min_change = float(np.min(changes)) if changes else 0.0\n\
+          \    std_change = float(np.std(changes)) if changes else 0.0\n\n    # Overall\
+          \ classification based on average\n    if avg_change < 2:\n        overall\
+          \ = \"STABLE\"\n    elif avg_change < 5:\n        overall = \"MINIMAL\"\n\
+          \    elif avg_change < 10:\n        overall = \"MODERATE\"\n    else:\n\
+          \        overall = \"SEVERE\"\n\n    stats = {\n        'location': location_name,\n\
+          \        'imageCount': len(results),\n        'dateRange': {\n         \
+          \   'start': results[-1]['date'],\n            'end': results[0]['date']\n\
+          \        },\n        'avgChange': avg_change,\n        'maxChange': max_change,\n\
+          \        'minChange': min_change,\n        'stdChange': std_change,\n  \
+          \      'classification': overall,\n        'timeSeries': results\n    }\n\
+          \n    # Write stats to S3\n    stats_key = f\"metadata/{location_name}-stats.json\"\
+          \n    print(f\"\\nWriting statistics to S3...\")\n    print(f\"  Key: {stats_key}\"\
+          )\n    print(f\"  Size: {len(json.dumps(stats, indent=2))} bytes\")\n\n\
+          \    try:\n        s3.put_object(\n            Bucket=bucket_name,\n   \
+          \         Key=stats_key,\n            Body=json.dumps(stats, indent=2),\n\
+          \            ContentType='application/json'\n        )\n        print(f\"\
+          \ Statistics written to s3://{bucket_name}/{stats_key}\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR writing stats to S3: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    print(f\"\
+          \\n{'='*80}\")\n    print(f\"SUMMARY FOR {location_name.upper()}\")\n  \
+          \  print(f\"{'='*80}\")\n    print(f\"  Overall Classification: {overall}\"\
+          )\n    print(f\"  Average Change: {avg_change:.2f}%\")\n    print(f\"  Max\
+          \ Change: {max_change:.2f}%\")\n    print(f\"  Min Change: {min_change:.2f}%\"\
+          )\n    print(f\"  Images Processed: {len(results)}\")\n    print(f\"{'='*80}\\\
+          n\")\n\n    return stats\n\n"
+        image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    exec-analyze-location-2:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - analyze_location
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3' 'pillow'\
+          \ 'numpy' 'scikit-learn' 'requests'  &&  python3 -m pip install --quiet\
+          \ --no-warn-script-location 'kfp==2.16.0' '--no-deps' 'typing-extensions>=3.7.4,<5;\
+          \ python_version<\"3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef analyze_location(\n    location_name: str,\n    s3_endpoint:\
+          \ str,\n    s3_access_key: str,\n    s3_secret_key: str,\n    model_endpoint:\
+          \ str,\n    bucket_name: str\n) -> dict:\n    \"\"\"Analyze all images for\
+          \ one location and return statistics.\"\"\"\n    import boto3\n    import\
+          \ numpy as np\n    import json\n    from io import BytesIO\n    from PIL\
+          \ import Image\n    from sklearn.metrics.pairwise import cosine_similarity\n\
+          \    import requests\n\n    # S3 client\n    print(f\"\\nConnecting to S3:\"\
+          )\n    print(f\"  Endpoint: {s3_endpoint}\")\n    print(f\"  Bucket: {bucket_name}\"\
+          )\n    print(f\"  Access Key: {s3_access_key[:8]}...\")\n\n    try:\n  \
+          \      s3 = boto3.client(\n            's3',\n            endpoint_url=s3_endpoint,\n\
+          \            aws_access_key_id=s3_access_key,\n            aws_secret_access_key=s3_secret_key\n\
+          \        )\n        print(\" S3 client created\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR creating S3 client: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    # Helper\
+          \ functions\n    def preprocess_for_satlas(image, size=256):\n        \"\
+          \"\"Preprocess PIL Image for SatlasPretrain model.\"\"\"\n        if image.size\
+          \ != (size, size):\n            image = image.resize((size, size), Image.LANCZOS)\n\
+          \        if image.mode != 'RGB':\n            image = image.convert('RGB')\n\
+          \        img_array = np.array(image).astype(np.float32) / 255.0\n      \
+          \  img_array = np.transpose(img_array, (2, 0, 1))\n        img_array = np.expand_dims(img_array,\
+          \ 0)\n        return img_array\n\n    def get_embedding(image_array, model_name=\"\
+          sentinel2-model\"):\n        \"\"\"Get semantic embedding from SatlasPretrain\
+          \ model.\"\"\"\n        payload = {\n            \"inputs\": [{\n      \
+          \          \"name\": \"input\",\n                \"shape\": list(image_array.shape),\n\
+          \                \"datatype\": \"FP32\",\n                \"data\": image_array.flatten().tolist()\n\
+          \            }]\n        }\n        url = f\"{model_endpoint}/v2/models/{model_name}/infer\"\
+          \n\n        try:\n            response = requests.post(url, json=payload,\
+          \ timeout=60)\n            if response.status_code == 200:\n           \
+          \     result = response.json()\n                embedding_data = result['outputs'][0]['data']\n\
+          \                embedding_shape = result['outputs'][0]['shape']\n     \
+          \           return np.array(embedding_data).reshape(embedding_shape)\n \
+          \           else:\n                print(f\"    Model returned HTTP {response.status_code}\"\
+          )\n                print(f\"    Response: {response.text[:200]}\")\n   \
+          \             raise Exception(f\"Model inference failed: {response.status_code}\"\
+          )\n        except requests.exceptions.Timeout:\n            print(f\"  \
+          \  Model request timed out after 60s\")\n            raise\n        except\
+          \ requests.exceptions.ConnectionError as e:\n            print(f\"    Cannot\
+          \ connect to model: {e}\")\n            raise\n        except Exception\
+          \ as e:\n            print(f\"    Model inference error: {e}\")\n      \
+          \      raise\n\n    print(f\"=\" * 80)\n    print(f\"ANALYZING LOCATION:\
+          \ {location_name.upper()}\")\n    print(f\"=\" * 80)\n\n    # List all images\
+          \ for this location (flat structure: location-date.png)\n    prefix = f\"\
+          {location_name}-\"\n    print(f\"\\nListing objects with prefix: {prefix}\"\
+          )\n\n    try:\n        response = s3.list_objects_v2(Bucket=bucket_name,\
+          \ Prefix=prefix)\n        print(f\" S3 list_objects_v2 response received\"\
+          )\n    except Exception as e:\n        print(f\" ERROR listing S3 objects:\
+          \ {e}\")\n        import traceback\n        traceback.print_exc()\n    \
+          \    raise\n\n    if 'Contents' not in response:\n        print(f\" ERROR:\
+          \ No images found for {location_name}\")\n        print(f\" Response keys:\
+          \ {list(response.keys())}\")\n        return {\"error\": \"No images found\"\
+          , \"location\": location_name}\n\n    # Sort by filename (date order)\n\
+          \    image_keys = sorted([obj['Key'] for obj in response['Contents'] if\
+          \ obj['Key'].endswith('.png')])\n    print(f\"\\nFound {len(image_keys)}\
+          \ images\")\n\n    if len(image_keys) == 0:\n        return {\"error\":\
+          \ \"No PNG images found\", \"location\": location_name}\n\n    # Get baseline\
+          \ (first image)\n    baseline_key = image_keys[0]\n    print(f\"\\nBaseline:\
+          \ {baseline_key}\")\n\n    try:\n        print(\"  Downloading baseline\
+          \ image from S3...\")\n        baseline_obj = s3.get_object(Bucket=bucket_name,\
+          \ Key=baseline_key)\n        baseline_bytes = baseline_obj['Body'].read()\n\
+          \        print(f\"   Downloaded {len(baseline_bytes)} bytes\")\n\n     \
+          \   print(\"  Loading image with PIL...\")\n        baseline_img = Image.open(BytesIO(baseline_bytes))\n\
+          \        print(f\"   Image loaded: {baseline_img.size} {baseline_img.mode}\"\
+          )\n\n        print(\"  Preprocessing for SatlasPretrain...\")\n        baseline_preprocessed\
+          \ = preprocess_for_satlas(baseline_img)\n        print(f\"   Preprocessed\
+          \ shape: {baseline_preprocessed.shape}\")\n    except Exception as e:\n\
+          \        print(f\" ERROR processing baseline image: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    try:\n\
+          \        print(\"\\nGetting baseline embedding from SatlasPretrain...\"\
+          )\n        print(f\"  Model endpoint: {model_endpoint}\")\n        baseline_embedding\
+          \ = get_embedding(baseline_preprocessed)\n        baseline_flat = baseline_embedding.reshape(baseline_embedding.shape[0],\
+          \ -1)\n        print(f\" Baseline embedding shape: {baseline_embedding.shape}\"\
+          )\n    except Exception as e:\n        print(f\" ERROR getting baseline\
+          \ embedding: {e}\")\n        import traceback\n        traceback.print_exc()\n\
+          \        raise\n\n    # Analyze all images\n    print(f\"\\nAnalyzing {len(image_keys)}\
+          \ images:\")\n    results = []\n\n    for idx, img_key in enumerate(image_keys,\
+          \ 1):\n        date_str = img_key.replace(f\"{location_name}-\", \"\").replace(\"\
+          .png\", \"\")\n\n        try:\n            # Load image\n            img_obj\
+          \ = s3.get_object(Bucket=bucket_name, Key=img_key)\n            img = Image.open(BytesIO(img_obj['Body'].read()))\n\
+          \            img_preprocessed = preprocess_for_satlas(img)\n\n         \
+          \   # Get embedding\n            embedding = get_embedding(img_preprocessed)\n\
+          \            embedding_flat = embedding.reshape(embedding.shape[0], -1)\n\
+          \        except Exception as e:\n            print(f\"   [{idx:2d}/{len(image_keys)}]\
+          \ {date_str}: ERROR - {e}\")\n            continue\n\n        # Calculate\
+          \ metrics vs baseline\n        cosine_sim = cosine_similarity(baseline_flat,\
+          \ embedding_flat)[0][0]\n        l2_distance = np.linalg.norm(baseline_flat\
+          \ - embedding_flat)\n        max_possible_distance = np.sqrt(embedding_flat.shape[1])\n\
+          \        change_pct = min(100, (l2_distance / max_possible_distance) * 100)\n\
+          \n        # Classify change level\n        if change_pct < 2:\n        \
+          \    change_level = \"STABLE\"\n        elif change_pct < 5:\n         \
+          \   change_level = \"MINIMAL\"\n        elif change_pct < 10:\n        \
+          \    change_level = \"MODERATE\"\n        else:\n            change_level\
+          \ = \"SEVERE\"\n\n        results.append({\n            'date': date_str,\n\
+          \            'change_pct': float(change_pct),\n            'cosine_sim':\
+          \ float(cosine_sim),\n            'l2_distance': float(l2_distance),\n \
+          \           'classification': change_level\n        })\n\n        print(f\"\
+          \  [{idx:2d}/{len(image_keys)}] {date_str}: {change_pct:5.2f}% - {change_level}\"\
+          )\n\n    # Calculate statistics (exclude baseline from averages)\n    changes\
+          \ = [r['change_pct'] for r in results[1:]]\n    avg_change = float(np.mean(changes))\
+          \ if changes else 0.0\n    max_change = float(np.max(changes)) if changes\
+          \ else 0.0\n    min_change = float(np.min(changes)) if changes else 0.0\n\
+          \    std_change = float(np.std(changes)) if changes else 0.0\n\n    # Overall\
+          \ classification based on average\n    if avg_change < 2:\n        overall\
+          \ = \"STABLE\"\n    elif avg_change < 5:\n        overall = \"MINIMAL\"\n\
+          \    elif avg_change < 10:\n        overall = \"MODERATE\"\n    else:\n\
+          \        overall = \"SEVERE\"\n\n    stats = {\n        'location': location_name,\n\
+          \        'imageCount': len(results),\n        'dateRange': {\n         \
+          \   'start': results[-1]['date'],\n            'end': results[0]['date']\n\
+          \        },\n        'avgChange': avg_change,\n        'maxChange': max_change,\n\
+          \        'minChange': min_change,\n        'stdChange': std_change,\n  \
+          \      'classification': overall,\n        'timeSeries': results\n    }\n\
+          \n    # Write stats to S3\n    stats_key = f\"metadata/{location_name}-stats.json\"\
+          \n    print(f\"\\nWriting statistics to S3...\")\n    print(f\"  Key: {stats_key}\"\
+          )\n    print(f\"  Size: {len(json.dumps(stats, indent=2))} bytes\")\n\n\
+          \    try:\n        s3.put_object(\n            Bucket=bucket_name,\n   \
+          \         Key=stats_key,\n            Body=json.dumps(stats, indent=2),\n\
+          \            ContentType='application/json'\n        )\n        print(f\"\
+          \ Statistics written to s3://{bucket_name}/{stats_key}\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR writing stats to S3: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    print(f\"\
+          \\n{'='*80}\")\n    print(f\"SUMMARY FOR {location_name.upper()}\")\n  \
+          \  print(f\"{'='*80}\")\n    print(f\"  Overall Classification: {overall}\"\
+          )\n    print(f\"  Average Change: {avg_change:.2f}%\")\n    print(f\"  Max\
+          \ Change: {max_change:.2f}%\")\n    print(f\"  Min Change: {min_change:.2f}%\"\
+          )\n    print(f\"  Images Processed: {len(results)}\")\n    print(f\"{'='*80}\\\
+          n\")\n\n    return stats\n\n"
+        image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    exec-analyze-location-3:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - analyze_location
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3' 'pillow'\
+          \ 'numpy' 'scikit-learn' 'requests'  &&  python3 -m pip install --quiet\
+          \ --no-warn-script-location 'kfp==2.16.0' '--no-deps' 'typing-extensions>=3.7.4,<5;\
+          \ python_version<\"3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef analyze_location(\n    location_name: str,\n    s3_endpoint:\
+          \ str,\n    s3_access_key: str,\n    s3_secret_key: str,\n    model_endpoint:\
+          \ str,\n    bucket_name: str\n) -> dict:\n    \"\"\"Analyze all images for\
+          \ one location and return statistics.\"\"\"\n    import boto3\n    import\
+          \ numpy as np\n    import json\n    from io import BytesIO\n    from PIL\
+          \ import Image\n    from sklearn.metrics.pairwise import cosine_similarity\n\
+          \    import requests\n\n    # S3 client\n    print(f\"\\nConnecting to S3:\"\
+          )\n    print(f\"  Endpoint: {s3_endpoint}\")\n    print(f\"  Bucket: {bucket_name}\"\
+          )\n    print(f\"  Access Key: {s3_access_key[:8]}...\")\n\n    try:\n  \
+          \      s3 = boto3.client(\n            's3',\n            endpoint_url=s3_endpoint,\n\
+          \            aws_access_key_id=s3_access_key,\n            aws_secret_access_key=s3_secret_key\n\
+          \        )\n        print(\" S3 client created\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR creating S3 client: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    # Helper\
+          \ functions\n    def preprocess_for_satlas(image, size=256):\n        \"\
+          \"\"Preprocess PIL Image for SatlasPretrain model.\"\"\"\n        if image.size\
+          \ != (size, size):\n            image = image.resize((size, size), Image.LANCZOS)\n\
+          \        if image.mode != 'RGB':\n            image = image.convert('RGB')\n\
+          \        img_array = np.array(image).astype(np.float32) / 255.0\n      \
+          \  img_array = np.transpose(img_array, (2, 0, 1))\n        img_array = np.expand_dims(img_array,\
+          \ 0)\n        return img_array\n\n    def get_embedding(image_array, model_name=\"\
+          sentinel2-model\"):\n        \"\"\"Get semantic embedding from SatlasPretrain\
+          \ model.\"\"\"\n        payload = {\n            \"inputs\": [{\n      \
+          \          \"name\": \"input\",\n                \"shape\": list(image_array.shape),\n\
+          \                \"datatype\": \"FP32\",\n                \"data\": image_array.flatten().tolist()\n\
+          \            }]\n        }\n        url = f\"{model_endpoint}/v2/models/{model_name}/infer\"\
+          \n\n        try:\n            response = requests.post(url, json=payload,\
+          \ timeout=60)\n            if response.status_code == 200:\n           \
+          \     result = response.json()\n                embedding_data = result['outputs'][0]['data']\n\
+          \                embedding_shape = result['outputs'][0]['shape']\n     \
+          \           return np.array(embedding_data).reshape(embedding_shape)\n \
+          \           else:\n                print(f\"    Model returned HTTP {response.status_code}\"\
+          )\n                print(f\"    Response: {response.text[:200]}\")\n   \
+          \             raise Exception(f\"Model inference failed: {response.status_code}\"\
+          )\n        except requests.exceptions.Timeout:\n            print(f\"  \
+          \  Model request timed out after 60s\")\n            raise\n        except\
+          \ requests.exceptions.ConnectionError as e:\n            print(f\"    Cannot\
+          \ connect to model: {e}\")\n            raise\n        except Exception\
+          \ as e:\n            print(f\"    Model inference error: {e}\")\n      \
+          \      raise\n\n    print(f\"=\" * 80)\n    print(f\"ANALYZING LOCATION:\
+          \ {location_name.upper()}\")\n    print(f\"=\" * 80)\n\n    # List all images\
+          \ for this location (flat structure: location-date.png)\n    prefix = f\"\
+          {location_name}-\"\n    print(f\"\\nListing objects with prefix: {prefix}\"\
+          )\n\n    try:\n        response = s3.list_objects_v2(Bucket=bucket_name,\
+          \ Prefix=prefix)\n        print(f\" S3 list_objects_v2 response received\"\
+          )\n    except Exception as e:\n        print(f\" ERROR listing S3 objects:\
+          \ {e}\")\n        import traceback\n        traceback.print_exc()\n    \
+          \    raise\n\n    if 'Contents' not in response:\n        print(f\" ERROR:\
+          \ No images found for {location_name}\")\n        print(f\" Response keys:\
+          \ {list(response.keys())}\")\n        return {\"error\": \"No images found\"\
+          , \"location\": location_name}\n\n    # Sort by filename (date order)\n\
+          \    image_keys = sorted([obj['Key'] for obj in response['Contents'] if\
+          \ obj['Key'].endswith('.png')])\n    print(f\"\\nFound {len(image_keys)}\
+          \ images\")\n\n    if len(image_keys) == 0:\n        return {\"error\":\
+          \ \"No PNG images found\", \"location\": location_name}\n\n    # Get baseline\
+          \ (first image)\n    baseline_key = image_keys[0]\n    print(f\"\\nBaseline:\
+          \ {baseline_key}\")\n\n    try:\n        print(\"  Downloading baseline\
+          \ image from S3...\")\n        baseline_obj = s3.get_object(Bucket=bucket_name,\
+          \ Key=baseline_key)\n        baseline_bytes = baseline_obj['Body'].read()\n\
+          \        print(f\"   Downloaded {len(baseline_bytes)} bytes\")\n\n     \
+          \   print(\"  Loading image with PIL...\")\n        baseline_img = Image.open(BytesIO(baseline_bytes))\n\
+          \        print(f\"   Image loaded: {baseline_img.size} {baseline_img.mode}\"\
+          )\n\n        print(\"  Preprocessing for SatlasPretrain...\")\n        baseline_preprocessed\
+          \ = preprocess_for_satlas(baseline_img)\n        print(f\"   Preprocessed\
+          \ shape: {baseline_preprocessed.shape}\")\n    except Exception as e:\n\
+          \        print(f\" ERROR processing baseline image: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    try:\n\
+          \        print(\"\\nGetting baseline embedding from SatlasPretrain...\"\
+          )\n        print(f\"  Model endpoint: {model_endpoint}\")\n        baseline_embedding\
+          \ = get_embedding(baseline_preprocessed)\n        baseline_flat = baseline_embedding.reshape(baseline_embedding.shape[0],\
+          \ -1)\n        print(f\" Baseline embedding shape: {baseline_embedding.shape}\"\
+          )\n    except Exception as e:\n        print(f\" ERROR getting baseline\
+          \ embedding: {e}\")\n        import traceback\n        traceback.print_exc()\n\
+          \        raise\n\n    # Analyze all images\n    print(f\"\\nAnalyzing {len(image_keys)}\
+          \ images:\")\n    results = []\n\n    for idx, img_key in enumerate(image_keys,\
+          \ 1):\n        date_str = img_key.replace(f\"{location_name}-\", \"\").replace(\"\
+          .png\", \"\")\n\n        try:\n            # Load image\n            img_obj\
+          \ = s3.get_object(Bucket=bucket_name, Key=img_key)\n            img = Image.open(BytesIO(img_obj['Body'].read()))\n\
+          \            img_preprocessed = preprocess_for_satlas(img)\n\n         \
+          \   # Get embedding\n            embedding = get_embedding(img_preprocessed)\n\
+          \            embedding_flat = embedding.reshape(embedding.shape[0], -1)\n\
+          \        except Exception as e:\n            print(f\"   [{idx:2d}/{len(image_keys)}]\
+          \ {date_str}: ERROR - {e}\")\n            continue\n\n        # Calculate\
+          \ metrics vs baseline\n        cosine_sim = cosine_similarity(baseline_flat,\
+          \ embedding_flat)[0][0]\n        l2_distance = np.linalg.norm(baseline_flat\
+          \ - embedding_flat)\n        max_possible_distance = np.sqrt(embedding_flat.shape[1])\n\
+          \        change_pct = min(100, (l2_distance / max_possible_distance) * 100)\n\
+          \n        # Classify change level\n        if change_pct < 2:\n        \
+          \    change_level = \"STABLE\"\n        elif change_pct < 5:\n         \
+          \   change_level = \"MINIMAL\"\n        elif change_pct < 10:\n        \
+          \    change_level = \"MODERATE\"\n        else:\n            change_level\
+          \ = \"SEVERE\"\n\n        results.append({\n            'date': date_str,\n\
+          \            'change_pct': float(change_pct),\n            'cosine_sim':\
+          \ float(cosine_sim),\n            'l2_distance': float(l2_distance),\n \
+          \           'classification': change_level\n        })\n\n        print(f\"\
+          \  [{idx:2d}/{len(image_keys)}] {date_str}: {change_pct:5.2f}% - {change_level}\"\
+          )\n\n    # Calculate statistics (exclude baseline from averages)\n    changes\
+          \ = [r['change_pct'] for r in results[1:]]\n    avg_change = float(np.mean(changes))\
+          \ if changes else 0.0\n    max_change = float(np.max(changes)) if changes\
+          \ else 0.0\n    min_change = float(np.min(changes)) if changes else 0.0\n\
+          \    std_change = float(np.std(changes)) if changes else 0.0\n\n    # Overall\
+          \ classification based on average\n    if avg_change < 2:\n        overall\
+          \ = \"STABLE\"\n    elif avg_change < 5:\n        overall = \"MINIMAL\"\n\
+          \    elif avg_change < 10:\n        overall = \"MODERATE\"\n    else:\n\
+          \        overall = \"SEVERE\"\n\n    stats = {\n        'location': location_name,\n\
+          \        'imageCount': len(results),\n        'dateRange': {\n         \
+          \   'start': results[-1]['date'],\n            'end': results[0]['date']\n\
+          \        },\n        'avgChange': avg_change,\n        'maxChange': max_change,\n\
+          \        'minChange': min_change,\n        'stdChange': std_change,\n  \
+          \      'classification': overall,\n        'timeSeries': results\n    }\n\
+          \n    # Write stats to S3\n    stats_key = f\"metadata/{location_name}-stats.json\"\
+          \n    print(f\"\\nWriting statistics to S3...\")\n    print(f\"  Key: {stats_key}\"\
+          )\n    print(f\"  Size: {len(json.dumps(stats, indent=2))} bytes\")\n\n\
+          \    try:\n        s3.put_object(\n            Bucket=bucket_name,\n   \
+          \         Key=stats_key,\n            Body=json.dumps(stats, indent=2),\n\
+          \            ContentType='application/json'\n        )\n        print(f\"\
+          \ Statistics written to s3://{bucket_name}/{stats_key}\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR writing stats to S3: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    print(f\"\
+          \\n{'='*80}\")\n    print(f\"SUMMARY FOR {location_name.upper()}\")\n  \
+          \  print(f\"{'='*80}\")\n    print(f\"  Overall Classification: {overall}\"\
+          )\n    print(f\"  Average Change: {avg_change:.2f}%\")\n    print(f\"  Max\
+          \ Change: {max_change:.2f}%\")\n    print(f\"  Min Change: {min_change:.2f}%\"\
+          )\n    print(f\"  Images Processed: {len(results)}\")\n    print(f\"{'='*80}\\\
+          n\")\n\n    return stats\n\n"
+        image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    exec-analyze-location-4:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - analyze_location
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3' 'pillow'\
+          \ 'numpy' 'scikit-learn' 'requests'  &&  python3 -m pip install --quiet\
+          \ --no-warn-script-location 'kfp==2.16.0' '--no-deps' 'typing-extensions>=3.7.4,<5;\
+          \ python_version<\"3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef analyze_location(\n    location_name: str,\n    s3_endpoint:\
+          \ str,\n    s3_access_key: str,\n    s3_secret_key: str,\n    model_endpoint:\
+          \ str,\n    bucket_name: str\n) -> dict:\n    \"\"\"Analyze all images for\
+          \ one location and return statistics.\"\"\"\n    import boto3\n    import\
+          \ numpy as np\n    import json\n    from io import BytesIO\n    from PIL\
+          \ import Image\n    from sklearn.metrics.pairwise import cosine_similarity\n\
+          \    import requests\n\n    # S3 client\n    print(f\"\\nConnecting to S3:\"\
+          )\n    print(f\"  Endpoint: {s3_endpoint}\")\n    print(f\"  Bucket: {bucket_name}\"\
+          )\n    print(f\"  Access Key: {s3_access_key[:8]}...\")\n\n    try:\n  \
+          \      s3 = boto3.client(\n            's3',\n            endpoint_url=s3_endpoint,\n\
+          \            aws_access_key_id=s3_access_key,\n            aws_secret_access_key=s3_secret_key\n\
+          \        )\n        print(\" S3 client created\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR creating S3 client: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    # Helper\
+          \ functions\n    def preprocess_for_satlas(image, size=256):\n        \"\
+          \"\"Preprocess PIL Image for SatlasPretrain model.\"\"\"\n        if image.size\
+          \ != (size, size):\n            image = image.resize((size, size), Image.LANCZOS)\n\
+          \        if image.mode != 'RGB':\n            image = image.convert('RGB')\n\
+          \        img_array = np.array(image).astype(np.float32) / 255.0\n      \
+          \  img_array = np.transpose(img_array, (2, 0, 1))\n        img_array = np.expand_dims(img_array,\
+          \ 0)\n        return img_array\n\n    def get_embedding(image_array, model_name=\"\
+          sentinel2-model\"):\n        \"\"\"Get semantic embedding from SatlasPretrain\
+          \ model.\"\"\"\n        payload = {\n            \"inputs\": [{\n      \
+          \          \"name\": \"input\",\n                \"shape\": list(image_array.shape),\n\
+          \                \"datatype\": \"FP32\",\n                \"data\": image_array.flatten().tolist()\n\
+          \            }]\n        }\n        url = f\"{model_endpoint}/v2/models/{model_name}/infer\"\
+          \n\n        try:\n            response = requests.post(url, json=payload,\
+          \ timeout=60)\n            if response.status_code == 200:\n           \
+          \     result = response.json()\n                embedding_data = result['outputs'][0]['data']\n\
+          \                embedding_shape = result['outputs'][0]['shape']\n     \
+          \           return np.array(embedding_data).reshape(embedding_shape)\n \
+          \           else:\n                print(f\"    Model returned HTTP {response.status_code}\"\
+          )\n                print(f\"    Response: {response.text[:200]}\")\n   \
+          \             raise Exception(f\"Model inference failed: {response.status_code}\"\
+          )\n        except requests.exceptions.Timeout:\n            print(f\"  \
+          \  Model request timed out after 60s\")\n            raise\n        except\
+          \ requests.exceptions.ConnectionError as e:\n            print(f\"    Cannot\
+          \ connect to model: {e}\")\n            raise\n        except Exception\
+          \ as e:\n            print(f\"    Model inference error: {e}\")\n      \
+          \      raise\n\n    print(f\"=\" * 80)\n    print(f\"ANALYZING LOCATION:\
+          \ {location_name.upper()}\")\n    print(f\"=\" * 80)\n\n    # List all images\
+          \ for this location (flat structure: location-date.png)\n    prefix = f\"\
+          {location_name}-\"\n    print(f\"\\nListing objects with prefix: {prefix}\"\
+          )\n\n    try:\n        response = s3.list_objects_v2(Bucket=bucket_name,\
+          \ Prefix=prefix)\n        print(f\" S3 list_objects_v2 response received\"\
+          )\n    except Exception as e:\n        print(f\" ERROR listing S3 objects:\
+          \ {e}\")\n        import traceback\n        traceback.print_exc()\n    \
+          \    raise\n\n    if 'Contents' not in response:\n        print(f\" ERROR:\
+          \ No images found for {location_name}\")\n        print(f\" Response keys:\
+          \ {list(response.keys())}\")\n        return {\"error\": \"No images found\"\
+          , \"location\": location_name}\n\n    # Sort by filename (date order)\n\
+          \    image_keys = sorted([obj['Key'] for obj in response['Contents'] if\
+          \ obj['Key'].endswith('.png')])\n    print(f\"\\nFound {len(image_keys)}\
+          \ images\")\n\n    if len(image_keys) == 0:\n        return {\"error\":\
+          \ \"No PNG images found\", \"location\": location_name}\n\n    # Get baseline\
+          \ (first image)\n    baseline_key = image_keys[0]\n    print(f\"\\nBaseline:\
+          \ {baseline_key}\")\n\n    try:\n        print(\"  Downloading baseline\
+          \ image from S3...\")\n        baseline_obj = s3.get_object(Bucket=bucket_name,\
+          \ Key=baseline_key)\n        baseline_bytes = baseline_obj['Body'].read()\n\
+          \        print(f\"   Downloaded {len(baseline_bytes)} bytes\")\n\n     \
+          \   print(\"  Loading image with PIL...\")\n        baseline_img = Image.open(BytesIO(baseline_bytes))\n\
+          \        print(f\"   Image loaded: {baseline_img.size} {baseline_img.mode}\"\
+          )\n\n        print(\"  Preprocessing for SatlasPretrain...\")\n        baseline_preprocessed\
+          \ = preprocess_for_satlas(baseline_img)\n        print(f\"   Preprocessed\
+          \ shape: {baseline_preprocessed.shape}\")\n    except Exception as e:\n\
+          \        print(f\" ERROR processing baseline image: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    try:\n\
+          \        print(\"\\nGetting baseline embedding from SatlasPretrain...\"\
+          )\n        print(f\"  Model endpoint: {model_endpoint}\")\n        baseline_embedding\
+          \ = get_embedding(baseline_preprocessed)\n        baseline_flat = baseline_embedding.reshape(baseline_embedding.shape[0],\
+          \ -1)\n        print(f\" Baseline embedding shape: {baseline_embedding.shape}\"\
+          )\n    except Exception as e:\n        print(f\" ERROR getting baseline\
+          \ embedding: {e}\")\n        import traceback\n        traceback.print_exc()\n\
+          \        raise\n\n    # Analyze all images\n    print(f\"\\nAnalyzing {len(image_keys)}\
+          \ images:\")\n    results = []\n\n    for idx, img_key in enumerate(image_keys,\
+          \ 1):\n        date_str = img_key.replace(f\"{location_name}-\", \"\").replace(\"\
+          .png\", \"\")\n\n        try:\n            # Load image\n            img_obj\
+          \ = s3.get_object(Bucket=bucket_name, Key=img_key)\n            img = Image.open(BytesIO(img_obj['Body'].read()))\n\
+          \            img_preprocessed = preprocess_for_satlas(img)\n\n         \
+          \   # Get embedding\n            embedding = get_embedding(img_preprocessed)\n\
+          \            embedding_flat = embedding.reshape(embedding.shape[0], -1)\n\
+          \        except Exception as e:\n            print(f\"   [{idx:2d}/{len(image_keys)}]\
+          \ {date_str}: ERROR - {e}\")\n            continue\n\n        # Calculate\
+          \ metrics vs baseline\n        cosine_sim = cosine_similarity(baseline_flat,\
+          \ embedding_flat)[0][0]\n        l2_distance = np.linalg.norm(baseline_flat\
+          \ - embedding_flat)\n        max_possible_distance = np.sqrt(embedding_flat.shape[1])\n\
+          \        change_pct = min(100, (l2_distance / max_possible_distance) * 100)\n\
+          \n        # Classify change level\n        if change_pct < 2:\n        \
+          \    change_level = \"STABLE\"\n        elif change_pct < 5:\n         \
+          \   change_level = \"MINIMAL\"\n        elif change_pct < 10:\n        \
+          \    change_level = \"MODERATE\"\n        else:\n            change_level\
+          \ = \"SEVERE\"\n\n        results.append({\n            'date': date_str,\n\
+          \            'change_pct': float(change_pct),\n            'cosine_sim':\
+          \ float(cosine_sim),\n            'l2_distance': float(l2_distance),\n \
+          \           'classification': change_level\n        })\n\n        print(f\"\
+          \  [{idx:2d}/{len(image_keys)}] {date_str}: {change_pct:5.2f}% - {change_level}\"\
+          )\n\n    # Calculate statistics (exclude baseline from averages)\n    changes\
+          \ = [r['change_pct'] for r in results[1:]]\n    avg_change = float(np.mean(changes))\
+          \ if changes else 0.0\n    max_change = float(np.max(changes)) if changes\
+          \ else 0.0\n    min_change = float(np.min(changes)) if changes else 0.0\n\
+          \    std_change = float(np.std(changes)) if changes else 0.0\n\n    # Overall\
+          \ classification based on average\n    if avg_change < 2:\n        overall\
+          \ = \"STABLE\"\n    elif avg_change < 5:\n        overall = \"MINIMAL\"\n\
+          \    elif avg_change < 10:\n        overall = \"MODERATE\"\n    else:\n\
+          \        overall = \"SEVERE\"\n\n    stats = {\n        'location': location_name,\n\
+          \        'imageCount': len(results),\n        'dateRange': {\n         \
+          \   'start': results[-1]['date'],\n            'end': results[0]['date']\n\
+          \        },\n        'avgChange': avg_change,\n        'maxChange': max_change,\n\
+          \        'minChange': min_change,\n        'stdChange': std_change,\n  \
+          \      'classification': overall,\n        'timeSeries': results\n    }\n\
+          \n    # Write stats to S3\n    stats_key = f\"metadata/{location_name}-stats.json\"\
+          \n    print(f\"\\nWriting statistics to S3...\")\n    print(f\"  Key: {stats_key}\"\
+          )\n    print(f\"  Size: {len(json.dumps(stats, indent=2))} bytes\")\n\n\
+          \    try:\n        s3.put_object(\n            Bucket=bucket_name,\n   \
+          \         Key=stats_key,\n            Body=json.dumps(stats, indent=2),\n\
+          \            ContentType='application/json'\n        )\n        print(f\"\
+          \ Statistics written to s3://{bucket_name}/{stats_key}\")\n    except Exception\
+          \ as e:\n        print(f\" ERROR writing stats to S3: {e}\")\n        import\
+          \ traceback\n        traceback.print_exc()\n        raise\n\n    print(f\"\
+          \\n{'='*80}\")\n    print(f\"SUMMARY FOR {location_name.upper()}\")\n  \
+          \  print(f\"{'='*80}\")\n    print(f\"  Overall Classification: {overall}\"\
+          )\n    print(f\"  Average Change: {avg_change:.2f}%\")\n    print(f\"  Max\
+          \ Change: {max_change:.2f}%\")\n    print(f\"  Min Change: {min_change:.2f}%\"\
+          )\n    print(f\"  Images Processed: {len(results)}\")\n    print(f\"{'='*80}\\\
+          n\")\n\n    return stats\n\n"
+        image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    exec-update-areas-summary:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - update_areas_summary
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'boto3'  && \
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.16.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef update_areas_summary(\n    s3_endpoint: str,\n    s3_access_key:\
+          \ str,\n    s3_secret_key: str,\n    bucket_name: str,\n    las_vegas_stats:\
+          \ dict,\n    dubai_stats: dict,\n    death_valley_stats: dict,\n    phoenix_stats:\
+          \ dict\n):\n    \"\"\"Aggregate all location stats into areas.json.\"\"\"\
+          \n    import boto3\n    import json\n    from datetime import datetime\n\
+          \n    s3 = boto3.client(\n        's3',\n        endpoint_url=s3_endpoint,\n\
+          \        aws_access_key_id=s3_access_key,\n        aws_secret_access_key=s3_secret_key\n\
+          \    )\n\n    print(\"=\" * 80)\n    print(\"UPDATING AREAS SUMMARY\")\n\
+          \    print(\"=\" * 80)\n\n    # Location metadata\n    COORDS = {\n    \
+          \    'las_vegas': {'lat': 36.1699, 'lon': -115.1398},\n        'dubai':\
+          \ {'lat': 25.2048, 'lon': 55.2708},\n        'death_valley': {'lat': 36.5323,\
+          \ 'lon': -116.9325},\n        'phoenix': {'lat': 33.4484, 'lon': -112.0740}\n\
+          \    }\n\n    NAMES = {\n        'las_vegas': 'Las Vegas, Nevada',\n   \
+          \     'dubai': 'Dubai, UAE',\n        'death_valley': 'Death Valley, CA',\n\
+          \        'phoenix': 'Phoenix, Arizona'\n    }\n\n    all_stats = [las_vegas_stats,\
+          \ dubai_stats, death_valley_stats, phoenix_stats]\n\n    areas = []\n  \
+          \  total_images = 0\n\n    for stats in all_stats:\n        if 'error' not\
+          \ in stats:\n            location = stats['location']\n            areas.append({\n\
+          \                'id': location,\n                'name': NAMES[location],\n\
+          \                'coordinates': COORDS[location],\n                'status':\
+          \ stats['classification'],\n                'lastUpdate': stats['dateRange']['end'],\n\
+          \                'imageCount': stats['imageCount'],\n                'avgChange':\
+          \ stats['avgChange'],\n                'maxChange': stats['maxChange']\n\
+          \            })\n            total_images += stats['imageCount']\n     \
+          \       print(f\"   {NAMES[location]}: {stats['classification']} ({stats['avgChange']:.2f}%\
+          \ avg)\")\n        else:\n            print(f\"   {stats.get('location',\
+          \ 'unknown')}: {stats.get('error', 'unknown error')}\")\n\n    areas_metadata\
+          \ = {\n        'areas': areas,\n        'lastSync': datetime.utcnow().isoformat(),\n\
+          \        'totalImages': total_images,\n        'analyzed': True,\n     \
+          \   'analysisDate': datetime.utcnow().isoformat()\n    }\n\n    # Write\
+          \ to S3\n    areas_key = 'metadata/areas.json'\n    s3.put_object(\n   \
+          \     Bucket=bucket_name,\n        Key=areas_key,\n        Body=json.dumps(areas_metadata,\
+          \ indent=2),\n        ContentType='application/json'\n    )\n\n    print(f\"\
+          \\n Updated s3://{bucket_name}/{areas_key}\")\n    print(f\"  Total areas:\
+          \ {len(areas)}\")\n    print(f\"  Total images: {total_images}\")\n    print(\"\
+          =\" * 80)\n\n"
+        image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+pipelineInfo:
+  description: Analyze all seed satellite images using SatlasPretrain and generate
+    statistics for CAIsat frontend
+  name: analyze-seed-images
+root:
+  dag:
+    tasks:
+      analyze-location:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-analyze-location
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            location_name:
+              runtimeValue:
+                constant: las_vegas
+            model_endpoint:
+              componentInputParameter: model_endpoint
+            s3_access_key:
+              componentInputParameter: s3_access_key
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_secret_key:
+              componentInputParameter: s3_secret_key
+        taskInfo:
+          name: Analyze Las Vegas
+      analyze-location-2:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-analyze-location-2
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            location_name:
+              runtimeValue:
+                constant: dubai
+            model_endpoint:
+              componentInputParameter: model_endpoint
+            s3_access_key:
+              componentInputParameter: s3_access_key
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_secret_key:
+              componentInputParameter: s3_secret_key
+        taskInfo:
+          name: Analyze Dubai
+      analyze-location-3:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-analyze-location-3
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            location_name:
+              runtimeValue:
+                constant: death_valley
+            model_endpoint:
+              componentInputParameter: model_endpoint
+            s3_access_key:
+              componentInputParameter: s3_access_key
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_secret_key:
+              componentInputParameter: s3_secret_key
+        taskInfo:
+          name: Analyze Death Valley
+      analyze-location-4:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-analyze-location-4
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            location_name:
+              runtimeValue:
+                constant: phoenix
+            model_endpoint:
+              componentInputParameter: model_endpoint
+            s3_access_key:
+              componentInputParameter: s3_access_key
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_secret_key:
+              componentInputParameter: s3_secret_key
+        taskInfo:
+          name: Analyze Phoenix
+      update-areas-summary:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-update-areas-summary
+        dependentTasks:
+        - analyze-location
+        - analyze-location-2
+        - analyze-location-3
+        - analyze-location-4
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            death_valley_stats:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: analyze-location-3
+            dubai_stats:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: analyze-location-2
+            las_vegas_stats:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: analyze-location
+            phoenix_stats:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: analyze-location-4
+            s3_access_key:
+              componentInputParameter: s3_access_key
+            s3_endpoint:
+              componentInputParameter: s3_endpoint
+            s3_secret_key:
+              componentInputParameter: s3_secret_key
+        taskInfo:
+          name: Update Areas Summary
+  inputDefinitions:
+    parameters:
+      bucket_name:
+        defaultValue: satellite-images
+        isOptional: true
+        parameterType: STRING
+      model_endpoint:
+        defaultValue: http://sentinel2-model-predictor.caisat.svc.cluster.local:8080
+        isOptional: true
+        parameterType: STRING
+      s3_access_key:
+        defaultValue: caisat-access-key
+        isOptional: true
+        parameterType: STRING
+      s3_endpoint:
+        defaultValue: http://s4.caisat.svc.cluster.local:7480
+        isOptional: true
+        parameterType: STRING
+      s3_secret_key:
+        defaultValue: caisat-secret-key-change-in-production
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.16.0

@@ -37,6 +37,44 @@ model:
       cpu: "4"
       memory: "8Gi"
 
+# Sentinel2 SatlasPretrain Model configuration
+sentinel2Model:
+  # Deploy the Sentinel2 model as part of this chart
+  deploy: true
+
+  # OCI image with the ONNX model
+  image:
+    repository: quay.io/sara_banderby/caisat
+    tag: "sentinel2"
+
+  # InferenceService name
+  name: sentinel2-model
+
+  # Connection name (for the secret)
+  connectionName: sentinel2
+
+  # Service name of the model inference endpoint (auto-generated: <name>-predictor)
+  serviceName: sentinel2-model-predictor
+
+  # Namespace where the model is deployed
+  # Leave empty ("") to use the same namespace as the Helm release
+  namespace: ""
+
+  # Port (MLServer default is 8080)
+  port: 8080
+
+  # Model runtime
+  runtime: mlserver
+
+  # Resources for the model server
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "3"
+      memory: "4Gi"
+
 # YOLO Object Detection Model configuration
 detection:
   # Deploy the detection model as part of this chart
@@ -188,3 +226,101 @@ tolerations: []
 
 # Affinity
 affinity: {}
+
+# S4 Storage configuration
+s4:
+  enabled: true
+
+  image:
+    repository: quay.io/rh-aiservices-bu/s4
+    tag: latest
+    pullPolicy: Always
+
+  storage:
+    size: 10Gi
+    storageClassName: gp3-csi
+
+  config:
+    awsRegion: us-east-1
+    s3Endpoint: http://localhost:7480
+    ip: 0.0.0.0
+    jwtExpirationHours: "8"
+    localStoragePaths: ""
+    maxConcurrentTransfers: "2"
+    maxFileSizeGb: "20"
+    port: "5000"
+
+  credentials:
+    accessKey: caisat-access-key
+    secretKey: caisat-secret-key-change-in-production
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  seed:
+    enabled: true
+    bucketName: satellite-images
+    image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    waitImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+
+# Backend Change Detection configuration
+backendChangedetection:
+  enabled: true
+  replicaCount: 1
+
+  image:
+    repository: quay.io/sara_banderby/caisat
+    pullPolicy: Always
+    tag: "backend-changedetection"
+
+  s3Bucket: satellite-images
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Data Science Pipelines configuration
+pipelines:
+  enabled: true
+  name: dspa
+
+  apiServer:
+    enableOauth: true
+    cacheEnabled: true
+    artifactSignedURLExpirySeconds: 60
+
+  database:
+    pipelineDBName: mlpipeline
+    pvcSize: 10Gi
+    username: mlpipeline
+
+  persistenceAgent:
+    numWorkers: 2
+
+  podToPodTLS: true
+
+  scheduledWorkflow:
+    cronScheduleTimezone: UTC
+
+  # Run analysis pipeline automatically after install
+  runAnalysis: true
+
+  analysis:
+    image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    waitImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
