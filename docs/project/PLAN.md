@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `feat/phase-4-openssf-scorecard` (2026-06-29). Use feature branches for Phases 4+; never push `main`.
+**Branch:** `chore/phase-4-close` (2026-06-29). Use feature branches for Phases 4+; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -18,25 +18,25 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 
 ## Verification artifact
 
-| Claim                   | Path                                                                                         | Evidence                         | Status                                |
-| ----------------------- | -------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------- |
-| MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`   | ok                                    |
-| CI + Helm template      | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | pre-commit + helm template       | ok                                    |
-| Helm metadata fix       | [`chart/templates/backend-deployment.yaml`](../../chart/templates/backend-deployment.yaml)   | single metadata block            | ok                                    |
-| `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health profile only              | ok                                    |
-| Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/9/10/12                 | ok                                    |
-| Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **fail** (unauthorized)          | ok                                    |
-| Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `rh-ai-quickstart/caisat`        | ok (mirror or auth)                   |
-| OpenSSF workflows       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | Scorecard workflow added (Ph. 4) | in progress (fork validation pending) |
-| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started                      | ok                                    |
+| Claim                   | Path                                                                                         | Evidence                                    | Status              |
+| ----------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------- |
+| MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`              | ok                  |
+| CI + Helm template      | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | pre-commit + helm template                  | ok                  |
+| Helm metadata fix       | [`chart/templates/backend-deployment.yaml`](../../chart/templates/backend-deployment.yaml)   | single metadata block                       | ok                  |
+| `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health profile only                         | ok                  |
+| Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/9/10/12                            | ok                  |
+| Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **fail** (unauthorized)                     | ok                  |
+| Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `rh-ai-quickstart/caisat`                   | ok (mirror or auth) |
+| OpenSSF workflows       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | `main` `61fddc7`; run `28396704509` success | ok                  |
+| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started                                 | ok                  |
 
-**Last verified:** uncommitted on `feat/phase-4-openssf-scorecard` (2026-06-29)
+**Last verified:** `chore/phase-4-close` (2026-06-29); fork `main` merge `61fddc7027fe9a7406cc15822f4cd7af8e74a402`
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `chart/values.yaml`
 
-**Claims not checked:** fork Scorecard run; cluster baseline sign-off; ONNX/binary/GPU runtime (Phase 8 spikes)
+**Claims not checked:** cluster baseline sign-off; ONNX/binary/GPU runtime (Phase 8 spikes)
 
-**Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 3 committed @ `5b0446d`; Phase 4 workflow added locally; fork Scorecard run is next gate.
+**Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 4 fork gate closed: PR #20 merged @ `61fddc7`; Scorecard + Code scanning verified on fork `main`.
 
 ---
 
@@ -44,19 +44,19 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 
 Sync with bootstrap plan frontmatter; update on phase close.
 
-| ID       | Phase / track       | Status                  | Next action                                               |
-| -------- | ------------------- | ----------------------- | --------------------------------------------------------- |
-| 0        | Quay gate           | **cancelled** (blocked) | Personal mirror only; re-gate before chart defaults       |
-| 1        | Sanitization        | **completed**           | —                                                         |
-| 2        | CI + Makefile       | **completed**           | —                                                         |
-| 3        | PLAN bootstrap      | **completed**           | —                                                         |
-| 3-review | Skeptical re-review | **completed**           | Cycle 5 light delta → Proceed                             |
-| 4        | OpenSSF Scorecard   | **in progress**         | Push to fork `main`; verify green Actions + Code scanning |
-| 5–6      | OpenSSF             | pending                 | Quick wins → CodeQL (after Phase 4 Done)                  |
-| 7        | Baseline smoke      | pending                 | `make smoke` health + optional cluster sign-off           |
-| 8        | Spikes              | pending                 | Parallel `8-onnx` + `8-binary`                            |
-| 9–13     | Core ML             | pending                 | Per merge gates (health + manual checklists)              |
-| 14–19    | Deferred            | pending                 | After Phase 13                                            |
+| ID       | Phase / track       | Status                  | Next action                                         |
+| -------- | ------------------- | ----------------------- | --------------------------------------------------- |
+| 0        | Quay gate           | **cancelled** (blocked) | Personal mirror only; re-gate before chart defaults |
+| 1        | Sanitization        | **completed**           | —                                                   |
+| 2        | CI + Makefile       | **completed**           | —                                                   |
+| 3        | PLAN bootstrap      | **completed**           | —                                                   |
+| 3-review | Skeptical re-review | **completed**           | Cycle 5 light delta → Proceed                       |
+| 4        | OpenSSF Scorecard   | **completed**           | —                                                   |
+| 5–6      | OpenSSF             | pending                 | Phase 5 quick wins → CodeQL (Phase 6)               |
+| 7        | Baseline smoke      | pending                 | `make smoke` health + optional cluster sign-off     |
+| 8        | Spikes              | pending                 | Parallel `8-onnx` + `8-binary`                      |
+| 9–13     | Core ML             | pending                 | Per merge gates (health + manual checklists)        |
+| 14–19    | Deferred            | pending                 | After Phase 13                                      |
 
 ---
 
@@ -68,7 +68,7 @@ Sync with bootstrap plan frontmatter; update on phase close.
 | 1     | Sanitization + helm fix   | **Done**           | `make check`; Quay chart defaults **deferred** (Phase 0 fail)                                            |
 | 2     | CI + Makefile push        | **Done**           | `make check` + `make helm-template` + green Actions                                                      |
 | 3     | PLAN bootstrap            | **Done**           | `make check` + Phase 3 close checklist (see below)                                                       |
-| 4     | OpenSSF Scorecard install | **In progress**    | `make check` + green Scorecard run on fork `main` (workflow added; fork validation pending)              |
+| 4     | OpenSSF Scorecard install | **Done**           | `make check` + green Scorecard on fork `main`; ruleset `protect-main` requires Scorecard                 |
 | 5     | OpenSSF quick wins        | Planned            | `make check` + Phase 5 checklist (see OpenSSF section)                                                   |
 | 6     | OpenSSF broader           | Planned            | `make check` + CodeQL green (CI-Tests defers to Phase 7)                                                 |
 | 7     | Baseline smoke            | Planned            | `make check` + `make smoke` (**health** only; see smoke note)                                            |
@@ -124,6 +124,20 @@ Phase 5 — `SECURITY.md` committed, `permissions: contents: read` on pre-commit
 Phase 6 — CodeQL workflow green; optional `tests/` + CI job may land in Phase 7 (document waiver if deferred).
 
 **PR sequence:** (1) Phase 4 workflow only → upstream; (2) Phase 5 quick wins; (3) Phase 6 CodeQL + branch-protection follow-ups.
+
+---
+
+## Phase 4 close checklist
+
+**Status:** Done (2026-06-29). Gate branch: `chore/phase-4-close`.
+
+Before marking Phase 4 **Done**:
+
+1. [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) on fork `main` (merged via PR #20)
+2. Green **Scorecard analysis** on fork `main` (Actions run `28396704509`; merge `61fddc7`)
+3. Security → **Code scanning alerts** present (Scorecard SARIF)
+4. Ruleset `protect-main` (ID `18274842`): `pre-commit` + **Scorecard analysis**; `strict_required_status_checks_policy: true`
+5. Commit PLAN close; record tip SHA in handover
 
 ---
 
