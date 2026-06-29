@@ -32,11 +32,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Model endpoint from environment variable
-MODEL_ENDPOINT = os.getenv(
-    "MODEL_ENDPOINT",
-    "http://yolov8m-satelite-predictor.caisat.svc.cluster.local:8080/v2/models/yolov8m-satelite/infer",
-)
+# Model endpoint from environment variable (no default - must be configured)
+MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
+
+if not MODEL_ENDPOINT:
+    raise ValueError(
+        "MODEL_ENDPOINT environment variable must be set. "
+        "Example: http://<predictor>.<namespace>.svc.cluster.local:8080/v2/models/<model-name>/infer"
+    )
 
 # DOTA class names (15 classes for YOLOv8-OBB)
 CLASS_NAMES = [
@@ -280,7 +283,6 @@ async def root():
     return {
         "service": "Satellite Object Detection API",
         "status": "operational",
-        "model_endpoint": MODEL_ENDPOINT,
         "classes": CLASS_NAMES,
         "confidence_threshold": CONFIDENCE_THRESHOLD,
     }

@@ -120,7 +120,6 @@ async def root():
     return {
         "service": "Zoom & Enhance API",
         "status": "operational",
-        "model_endpoint": MODEL_ENDPOINT,
     }
 
 

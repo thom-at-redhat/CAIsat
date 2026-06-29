@@ -21,10 +21,6 @@ spec:
       labels:
         {{- include "zoom-enhance.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
-    metadata:
-      labels:
-        {{- include "zoom-enhance.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: backend
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

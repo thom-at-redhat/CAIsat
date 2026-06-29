@@ -165,6 +165,15 @@ repos:
         files: ^\.github/workflows/.*\.ya?ml$
         types: [file]
 
+  - repo: local
+    hooks:
+      - id: check-no-cluster-info
+        name: Check for private cluster info and personal identifiers
+        entry: bash scripts/check-no-cluster-info.sh
+        language: system
+        pass_filenames: true
+        types: [text]
+
   # Containerfile / Dockerfile — hadolint
   - repo: https://github.com/hadolint/hadolint
     rev: v2.14.0
