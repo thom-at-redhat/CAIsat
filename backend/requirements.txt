@@ -3,5 +3,5 @@ fastapi>=0.109.1
 numpy>=1.24.3
 Pillow>=10.3.0
 python-dotenv>=1.0.0
-python-multipart>=0.0.27
+python-multipart>=0.0.32
 uvicorn[standard]>=0.24.0
