@@ -2,9 +2,11 @@
 
 <!-- Assisted by: cursor, claude -->
 
-Repeatable checks before and after functional changes. Automated gate: `make smoke` (default **health** profile).
+Repeatable checks before and after functional changes. Automated gate: `make smoke` (default **health** profile only).
 
 **Baseline SHA:** record the commit under test when running manual cluster validation.
+
+Phase numbers match [`docs/project/PLAN.md`](../project/PLAN.md) (0–19).
 
 ---
 
@@ -12,13 +14,13 @@ Repeatable checks before and after functional changes. Automated gate: `make smo
 
 | Profile      | Phases                 | Assertions                                                                                      |
 | ------------ | ---------------------- | ----------------------------------------------------------------------------------------------- |
-| **health**   | 3 (minimum merge gate) | `GET /health` → 200 on enhancement and detection backends                                       |
-| **baseline** | 4+ prep, 5+ required   | health + `POST /api/enhance` 200 + non-empty PNG + `POST /api/detect` 200 + `detections` array  |
-| **post-p0**  | 5+                     | baseline + manual capture/zoom sign-off at 1×, 2×, 4× (see [Capture/zoom](#capturezoom-manual)) |
-| **binary**   | 6+                     | baseline + binary `content-type` + decode on enhance and detect                                 |
-| **crop**     | 8+                     | baseline/binary + enhance at profile default crop size when >256                                |
+| **health**   | 7 (minimum merge gate) | `GET /health` → 200 on enhancement and detection backends                                       |
+| **baseline** | 8+ prep, 9+ required   | health + `POST /api/enhance` 200 + non-empty PNG + `POST /api/detect` 200 + `detections` array  |
+| **post-p0**  | 9+                     | baseline + manual capture/zoom sign-off at 1×, 2×, 4× (see [Capture/zoom](#capturezoom-manual)) |
+| **binary**   | 10+                    | baseline + binary `content-type` + decode on enhance and detect                                 |
+| **crop**     | 12+                    | baseline/binary + enhance at profile default crop size when >256                                |
 
-Set profile: `SMOKE_PROFILE=health make smoke` (default `health`).
+Set profile: `SMOKE_PROFILE=health make smoke` (default `health`). Only **health** is implemented in `scripts/smoke-local.sh`; other profiles use manual checklists below until extended.
 
 ---
 
@@ -51,7 +53,7 @@ make smoke
 
 ## Baseline profile (cluster checklist)
 
-Run on a deployed stack before Phase 5 merge. Record branch SHA and namespace.
+Run on a deployed stack before Phase 9 merge. Record branch SHA and namespace.
 
 1. `oc get pods -n <namespace>` — five pods Running (frontend, both backends, both predictors)
 2. `oc get inferenceservice -n <namespace>` — both Ready
@@ -74,10 +76,10 @@ Document SHA, cluster, and date in this file when baseline is signed off.
 
 Upstream [#5](https://github.com/rh-ai-quickstart/CAIsat/issues/5): captured PNG region must match visible selection box at zoom 1×, 2×, 4×.
 
-Not automated in `make smoke`; record pass/fail here after Phase 5.
+Not automated in `make smoke`; record pass/fail here after Phase 9.
 
 ---
 
 ## Per-phase re-run rule
 
-Re-run `make smoke` at the **profile required for that phase** after any change to backends, frontend crop/capture, or chart deploy paths.
+Re-run **health** via `make smoke` after backend/chart changes. For baseline/binary/crop profiles, follow the manual checklist at the phase’s merge gate until `smoke-local.sh` implements them.
