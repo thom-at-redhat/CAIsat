@@ -30,3 +30,7 @@ frontend:
   image:
     repository: quay.io/<your-quay-user>/caisat
     tag: "frontend"
+
+# Pull private images from Quay (secret created in namespace, not in git):
+# imagePullSecrets:
+#   - name: quay-pull-secret
