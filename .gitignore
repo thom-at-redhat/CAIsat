@@ -55,3 +55,6 @@ chart/values-quay-local.yaml
 
 # Scorecard local output
 scorecard-local.json
+
+# Git worktrees (local checkout paths)
+worktrees/
