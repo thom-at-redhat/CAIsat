@@ -6,7 +6,7 @@
 | --------------- | ------------------------------------------------------------------ |
 | Date            | 2026-06-30                                                         |
 | Verdict         | **pass** (dynamic H/W; native 4× super-resolution)                 |
-| Cluster/profile | local podman + `caisat` namespace MLServer (CPU predictor)         |
+| Cluster/profile | local podman + `<namespace>` MLServer (CPU predictor)              |
 | Blocks          | Phase 16 (tiled SR sizing); does **not** block — dynamic shapes OK |
 
 ## Command
@@ -38,9 +38,9 @@ y512 = sess.run(None, {'input': x512})[0]
 print('512 infer output shape:', y512.shape)
 "
 
-# MLServer metadata + live infer (cluster — caisat namespace)
-POD=$(oc -n caisat get pod -l serving.kserve.io/inferenceservice=swinir -o jsonpath='{.items[0].metadata.name}')
-oc -n caisat port-forward "pod/${POD}" 18080:8080 &
+# MLServer metadata + live infer (cluster — <namespace>)
+POD=$(oc -n <namespace> get pod -l serving.kserve.io/inferenceservice=swinir -o jsonpath='{.items[0].metadata.name}')
+oc -n <namespace> port-forward "pod/${POD}" 18080:8080 &
 curl -s http://127.0.0.1:18080/v2/models/swinir
 # JSON KServe v2 infer — same payload shape as backend/app.py preprocess_image()
 python3 -c "
