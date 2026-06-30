@@ -94,12 +94,12 @@ Run on a deployed stack for post-merge cluster sign-off. Record branch SHA and n
 
 Document SHA, cluster, and date in this file when baseline is signed off.
 
-| Field         | Value                          |
-| ------------- | ------------------------------ |
-| Branch SHA    | _(pending — cluster not run)_  |
-| Deploy target | _(cluster / local full stack)_ |
-| Date          | _(pending)_                    |
-| Signed off    | _(pending)_                    |
+| Field         | Value                                                                  |
+| ------------- | ---------------------------------------------------------------------- |
+| Branch SHA    | `64a472b` (MT-0 merge)                                                 |
+| Deploy target | _(cluster — waiver: no CAIsat stack on accessible cluster 2026-06-30)_ |
+| Date          | _(pending — cluster waiver)_                                           |
+| Signed off    | **waiver** — redeploy + re-test when cluster slot available            |
 
 ### Local pre-check (no cluster)
 
@@ -136,11 +136,20 @@ Not automated in `make smoke`; record pass/fail here after manual verification.
 | 2×   | _(pending)_    | _(pending)_  | Use 2× button or scroll wheel       |
 | 4×   | _(pending)_    | _(pending)_  | Use 4× button or scroll wheel       |
 
-| Field      | Value       |
-| ---------- | ----------- |
-| Branch SHA | _(pending)_ |
-| Date       | _(pending)_ |
-| Signed off | _(pending)_ |
+| Field      | Value                                                                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch SHA | `64a472b`                                                                                                                                          |
+| Date       | 2026-06-30                                                                                                                                         |
+| Signed off | **partial** — `make check` + health/binary smoke pass; capture/zoom manual UI pending (`npm start` + visual alignment per [Procedure](#procedure)) |
+
+### Local pre-check results (MT-1a @ `64a472b`, 2026-06-30)
+
+| Check                             | Result  | Notes                                                    |
+| --------------------------------- | ------- | -------------------------------------------------------- |
+| `make check`                      | pass    | pre-commit + helm template                               |
+| `make smoke` (health)             | pass    | both backends `/health` 200                              |
+| `SMOKE_PROFILE=binary make smoke` | pass    | encode/decode unit test; no cluster round-trip           |
+| Capture/zoom 1×/2×/4×             | pending | manual visual verification — see [Procedure](#procedure) |
 
 ---
 
@@ -153,11 +162,11 @@ Manual checklist when `max_crop` > 256 or tiling is enabled:
 3. Enhance returns native 4× output (256→1024 on CPU profile; no forced 512 resize)
 4. Tiled path: all tiles succeed or request aborts with 502 (no partial stitch)
 
-| Field      | Value       |
-| ---------- | ----------- |
-| Branch SHA | _(pending)_ |
-| Date       | _(pending)_ |
-| Signed off | _(pending)_ |
+| Field      | Value                                                                   |
+| ---------- | ----------------------------------------------------------------------- |
+| Branch SHA | `64a472b`                                                               |
+| Date       | _(pending — blocked on MT-1b cluster pass)_                             |
+| Signed off | **blocked** — CPU partial after baseline; GPU full after MT-3 tier pass |
 
 ---
 

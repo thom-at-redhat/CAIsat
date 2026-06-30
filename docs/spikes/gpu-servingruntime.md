@@ -48,3 +48,5 @@ oc exec -n <namespace> deploy/swinir-predictor -c kserve-container -- \
 
 Chart ships `computeProfile.name` and `computeProfile.gpuAvailable` values. Backends expose `GET /api/capabilities` with deferral caps per plan.
 Re-test GPU tiers on T4/L40S/Hopper clusters when scheduled; set `GPU_AVAILABLE=true` only after Ready + infer 200.
+
+**Waiver (2026-06-30):** `oc` authenticated but no CAIsat namespace/deploy on accessible cluster; tiers remain deferred. Re-test target: **2026-07-31** or when 512+ crop demo is required.
