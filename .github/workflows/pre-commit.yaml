@@ -36,3 +36,6 @@ jobs:
 
       - name: Helm template test
         run: helm template test ./chart
+
+      - name: Smoke (health profile)
+        run: make smoke

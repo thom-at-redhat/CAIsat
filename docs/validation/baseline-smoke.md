@@ -51,6 +51,14 @@ make smoke
 
 ---
 
+## Cluster sign-off (optional for Phase 7)
+
+Phase 7 merge gate is **health** via `make smoke` only.
+
+Full **baseline** cluster validation is required from Phase 9. Run the checklist below when a stack is deployed and record sign-off before that merge.
+
+---
+
 ## Baseline profile (cluster checklist)
 
 Run on a deployed stack before Phase 9 merge. Record branch SHA and namespace.

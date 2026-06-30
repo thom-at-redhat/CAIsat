@@ -6,7 +6,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-29):** Serial suffixes removed (`1A`/`1B` → Phases 1–2). OpenSSF = Phases 4–6. Former phases 3–18 → 7–19.
 
-**Branch tip (2026-06-29):** `chore/phase-3-plan-close` @ `e933394`. Phase 0 Quay gate **fail** for `rh-ai-quickstart`; personal mirror documented in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-29):** `main` @ `12c0494` (Phase 7 close pending). Phase 0 Quay gate **fail** for `rh-ai-quickstart`; personal mirror documented in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -79,5 +79,24 @@ Deliverables:
 - README **Where to Start** → `docs/project/PLAN.md` (pre-existing)
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 7 — Baseline smoke (health)
+
+| Field  | Value                                                           |
+| ------ | --------------------------------------------------------------- |
+| Goal   | Baseline smoke doc + `make smoke` health profile; CI smoke step |
+| Branch | `feat/phase-7-baseline-smoke`                                   |
+| Gate   | `make check` + `make smoke` (health only)                       |
+
+Deliverables:
+
+- [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) — health profile; cluster baseline optional until Phase 9
+- [`Makefile`](../../Makefile) — `smoke` target → [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)
+- [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml) — `make smoke` after Helm template
+- [`PLAN.md`](PLAN.md) — Phase 7 close checklist; status table updated
+
+Waived: `tests/` + CI pytest job (no test suite yet; deferred to Phase 8+).
 
 ---
