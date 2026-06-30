@@ -4,7 +4,7 @@
 
 Actionable Scorecard checks, current scores, targets, and which PLAN phases address each gap.
 
-**Baseline:** Scorecard **6.0** @ fork `main` `acb9a79` (2026-06-30). SAST **10/10** after Phase 6 CodeQL. Prior PLAN cited **5.2** — stale.
+**Baseline:** Scorecard **6.0** @ fork `main` `6b0a209` (2026-06-30, Phase 8 close). SAST **10/10** after Phase 6 CodeQL. Prior PLAN cited **5.2** — stale.
 
 See [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) and [`docs/project/PLAN.md`](../project/PLAN.md) Phases 8–11.
 
@@ -54,6 +54,46 @@ These checks are **not** targeted for improvement on the contributor fork; ratio
 | **9**  | Dependency hygiene          | `make check` + `make smoke`; green CI       |
 | **10** | Branch protection hardening | `make check`; document ruleset changes      |
 | **11** | Pin remaining dependencies  | `make check`; Pinned-Dependencies → 10/10   |
+
+---
+
+## Phase 9 triage (in progress)
+
+**Branch:** `feat/phase-9-dependency-hygiene` (open PR).
+
+**Pre-merge vuln snapshot:** GitHub Dependabot reported **98** open alerts on `main` @ `acb9a79` (15 high, 46 moderate, 37 low); post-merge count TBD after CI.
+
+### Merged into Phase 9 branch
+
+| PR  | Package / area                      | Notes                                          |
+| --- | ----------------------------------- | ---------------------------------------------- |
+| #1  | `actions/checkout` 7.0.0            | All three workflows                            |
+| #2  | `azure/setup-helm` 5.0.1            | pre-commit workflow                            |
+| #3  | `actions/setup-python` 6.3.0        | pre-commit workflow                            |
+| #23 | `codeql-action/upload-sarif` 4.36.2 | scorecard workflow                             |
+| #6  | `python-dotenv` 1.2.2               | backend-detection                              |
+| #8  | `python-dotenv` ≥1.2.2              | backend                                        |
+| #10 | `python-multipart` ≥0.0.32          | backend                                        |
+| #11 | `python-multipart` 0.0.32           | backend-detection                              |
+| #15 | `axios` 1.18.1                      | frontend patch                                 |
+| #22 | `aiohttp` 3.14.1 (partial)          | backend-detection security; pillow 12 deferred |
+
+### Deferred (risky major / needs dedicated testing)
+
+| PR  | Package / area            | Reason                                               |
+| --- | ------------------------- | ---------------------------------------------------- |
+| #4  | `Pillow` ≥12.2.0          | Major bump; backend image rebuild                    |
+| #5  | `fastapi` 0.138.2         | Major API surface; test with backends                |
+| #7  | `fastapi` ≥0.138.2        | Same as #5                                           |
+| #9  | `numpy` 2.5.0             | numpy 1→2 breaking                                   |
+| #12 | `uvicorn` ≥0.49.0         | Major serving stack                                  |
+| #13 | `opencv-python-headless`  | Major 4.8→4.13; ONNX pipeline risk                   |
+| #14 | `react` 19.2.7            | React 18→19                                          |
+| #16 | `react-dom` 19.2.7        | Paired with #14                                      |
+| #17 | `react-leaflet` 5.0.0     | Major; map UX                                        |
+| #18 | `three` 0.185.0           | Major; globe rendering                               |
+| #19 | npm group (frontend)      | Transitive; review after React/Three deferrals       |
+| #22 | `pillow` 12.2.0 (partial) | Remainder of grouped PR; kept at 10.3.0 in detection |
 
 ---
 

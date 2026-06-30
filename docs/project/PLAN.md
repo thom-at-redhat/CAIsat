@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `acb9a79` (2026-06-30). Phase 9 next — use feature branches; never push `main`.
+**Branch:** `main` @ `6b0a209` (2026-06-30). Phase 9 in progress — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -57,7 +57,7 @@ Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`
 | ----- | ------------------ | ------------- | ------------------------------------------------------- |
 | 0     | Quay gate          | **completed** | Fork mirror in chart defaults; upstream still fail      |
 | 8     | Score baseline     | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 9     | Dependency hygiene | pending       | Triage/merge Dependabot PRs (#1–#23)                    |
+| 9     | Dependency hygiene | in progress   | PR open — safe Dependabot batch merged                  |
 | 10    | Branch protection  | pending       | Ruleset: CodeQL required, maximal fork settings         |
 | 11    | Pin dependencies   | pending       | Workflow/pre-commit SHA pins → 10/10                    |
 | 12    | Spikes             | pending       | Parallel `12-onnx` + `12-binary`                        |
