@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from PIL import Image
 
+from capabilities import get_capabilities
 from kserve_v2 import kserve_infer, sanitize_model_error
 
 load_dotenv()
@@ -84,6 +85,11 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+
+@app.get("/api/capabilities")
+async def api_capabilities():
+    return get_capabilities()
 
 
 @app.get("/api/stats")

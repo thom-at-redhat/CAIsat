@@ -31,9 +31,15 @@ spec:
         limits:
           cpu: '4'
           memory: 8Gi
+          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+          nvidia.com/gpu: "1"
+          {{- end }}
         requests:
           cpu: '4'
           memory: 6Gi
+          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+          nvidia.com/gpu: "1"
+          {{- end }}
       runtime: swinir-model
       storageUri: 'oci://{{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}'
     timeout: 300
