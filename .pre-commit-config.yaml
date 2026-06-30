@@ -176,6 +176,17 @@ repos:
         pass_filenames: true
         types: [text]
 
+  # OpenSSF Scorecard — full-repo local scan (read-only; no publish)
+  - repo: local
+    hooks:
+      - id: scorecard
+        name: OpenSSF Scorecard (full repo)
+        entry: bash scripts/scorecard-pre-commit.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        require_serial: true
+
   # Containerfile / Dockerfile — hadolint
   - repo: https://github.com/hadolint/hadolint
     rev: 57e1618d78fd469a92c1e584e8c9313024656623 # v2.14.0

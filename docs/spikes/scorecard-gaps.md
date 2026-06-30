@@ -8,6 +8,27 @@ Actionable Scorecard checks, current scores, targets, and which PLAN phases addr
 
 See [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) and [`docs/project/PLAN.md`](../project/PLAN.md) Phases 8–11.
 
+## Local and pre-commit
+
+Full-repo OpenSSF Scorecard runs locally via pre-commit on **every commit** (read-only; does not publish to bestpractices.dev or api.scorecard.dev).
+
+| Command                     | Purpose                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `git commit`                | [`scorecard-pre-commit.sh`](../../scripts/scorecard-pre-commit.sh): `--local` scan of git index via Podman `v5.5.0` |
+| `make scorecard-local`      | Manual `--repo` scan → `scorecard-local.json` (needs `GITHUB_AUTH_TOKEN`)                                           |
+| `SKIP=scorecard git commit` | Break-glass skip (use sparingly)                                                                                    |
+
+**Setup (optional):** `export GITHUB_AUTH_TOKEN="<fine-grained PAT, contents:read>"` — enables richer local checks; hook runs without it.
+
+**Fail gate:** commit blocked when an actionable check scores **0** (Binary-Artifacts, Dangerous-Workflow, License, Pinned-Dependencies, SAST, Security-Policy, Token-Permissions, Vulnerabilities).
+Waived checks (Maintained, Contributors, CII-Best-Practices, Fuzzing, Packaging, Signed-Releases) do not block.
+
+**Latency:** expect ~1–3 min per commit after first container pull. CI workflow remains authoritative for published badge and SARIF.
+
+**Vulnerabilities (2026-06-30):** cleared via `npm overrides` in [`frontend/package.json`](../../frontend/package.json) for transitive `react-scripts` toolchain deps; `npm audit` reports 0 findings.
+
+**Note:** pre-commit fails when actionable checks score 0; `SKIP=scorecard` is break-glass only.
+
 ---
 
 ## Check inventory

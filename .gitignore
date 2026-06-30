@@ -52,3 +52,6 @@ models/
 .cursor/hooks/pending-handoff.md
 .cursor/hooks/last-compaction.txt
 chart/values-quay-local.yaml
+
+# Scorecard local output
+scorecard-local.json
