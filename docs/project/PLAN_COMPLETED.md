@@ -8,7 +8,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases 0 + 8–23.
 
-**Branch tip (2026-06-30):** fork `main` @ `7d2106b`; Phase 9 merged PR #35 + PR #36. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `1b997f1`; Phase 10 merged. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -293,5 +293,44 @@ Deliverables:
 4. [`PLAN.md`](PLAN.md) — branch header @ `7d2106b`, todos, status table, last verified
 5. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 9 summary archived (this section)
 6. `make check` green; green **pre-commit** workflow on PLAN close PR
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 10 — Branch protection hardening
+
+| Field  | Value                                                                                  |
+| ------ | -------------------------------------------------------------------------------------- |
+| Goal   | Harden ruleset `protect-main`: CodeQL required, maximal settings feasible on solo fork |
+| Branch | `feat/phase-10-branch-protection` → merged PR pending                                  |
+| Gate   | `make check`; document ruleset before/after in `scorecard-gaps.md`                     |
+
+Deliverables:
+
+- GitHub ruleset `protect-main` (ID `18274842`) — added **CodeQL** to required status checks
+- [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 10 section: before/after JSON, Code-Review waiver
+- [`PLAN.md`](PLAN.md) — Phase 10 archived; Phase 11 next
+
+### Ruleset summary
+
+| Setting                         | Before (Phase 4)                   | After (Phase 10)                          |
+| ------------------------------- | ---------------------------------- | ----------------------------------------- |
+| Required checks                 | `pre-commit`, `Scorecard analysis` | + `CodeQL`                                |
+| `strict_required_status_checks` | `true`                             | `true` (unchanged)                        |
+| Block deletion                  | yes                                | yes (unchanged)                           |
+| Block force push                | yes (`non_fast_forward`)           | yes (unchanged)                           |
+| Require PR                      | yes                                | yes (unchanged)                           |
+| Approving reviews               | 0                                  | 0 (solo fork waiver — see scorecard-gaps) |
+
+### Phase 10 close checklist
+
+**Status:** Done (2026-06-30). Branch: `feat/phase-10-branch-protection`.
+
+1. `gh api` PUT ruleset `18274842` — CodeQL added; verified via GET
+2. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 10 before/after, Code-Review waiver, expected Branch-Protection impact
+3. [`PLAN.md`](PLAN.md) — branch header, todos, status table, verification artifact updated
+4. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 10 summary archived (this section)
+5. `make check` green; green CI on PR (pre-commit + CodeQL + Scorecard)
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
