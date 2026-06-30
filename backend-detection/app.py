@@ -23,6 +23,8 @@ from PIL import Image
 
 from capabilities import get_capabilities
 from kserve_v2 import kserve_infer, sanitize_model_error
+from obb import decode_yolov8_obb
+from sahi import generate_slices, merge_detections, offset_detection
 
 load_dotenv()
 
@@ -30,9 +32,11 @@ MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
 KSERVE_INPUT_NAME = os.getenv("KSERVE_INPUT_NAME", "images")
 KSERVE_OUTPUT_NAME = os.getenv("KSERVE_OUTPUT_NAME", "output0")
+SAHI_WINDOW = int(os.getenv("SAHI_WINDOW", "640"))
+SAHI_OVERLAP = float(os.getenv("SAHI_OVERLAP", "0.2"))
 
 if not MODEL_ENDPOINT:
-    raise ValueError("MODEL_ENDPOINT environment variable must be set. Example: http://<predictor>.<namespace>.svc.cluster.local:8080/v2/models/<model-name>/infer")
+    raise ValueError("MODEL_ENDPOINT environment variable must be set.")
 
 http_session: aiohttp.ClientSession | None = None
 detection_counter = 0
@@ -99,84 +103,26 @@ def preprocess_image(image: Image.Image, input_size: int = 640) -> tuple[np.ndar
     return preprocessed, scale, (pad_w, pad_h), (orig_w, orig_h)
 
 
-def non_max_suppression(
-    boxes: np.ndarray,
-    scores: np.ndarray,
-    classes: np.ndarray,
-    iou_threshold: float = 0.45,
-) -> tuple:
-    if len(boxes) == 0:
-        return np.array([]), np.array([]), np.array([])
-    indices = cv2.dnn.NMSBoxes(
-        boxes.tolist(),
-        scores.tolist(),
-        score_threshold=CONFIDENCE_THRESHOLD,
-        nms_threshold=iou_threshold,
+async def infer_slice(slice_img: Image.Image) -> list[dict]:
+    tensor, scale, padding, original_shape = preprocess_image(slice_img, SAHI_WINDOW)
+    output_tensor, protocol = await kserve_infer(
+        http_session,
+        MODEL_ENDPOINT,
+        tensor,
+        input_name=KSERVE_INPUT_NAME,
+        output_name=KSERVE_OUTPUT_NAME,
+        timeout_seconds=120,
     )
-    if len(indices) > 0:
-        indices = indices.flatten()
-        return boxes[indices], scores[indices], classes[indices]
-    return np.array([]), np.array([]), np.array([])
-
-
-def postprocess_yolov8_obb(
-    output_array: np.ndarray,
-    scale: float,
-    padding: tuple,
-    original_shape: tuple,
-    conf_threshold: float = 0.5,
-    iou_threshold: float = 0.45,
-) -> list[dict]:
-    output = output_array.squeeze(0).T
-    boxes_cxcywh = output[:, :4]
-    class_scores = output[:, 4:19]
-    max_scores = np.max(class_scores, axis=1)
-    class_ids = np.argmax(class_scores, axis=1)
-    mask = max_scores > conf_threshold
-    boxes_cxcywh = boxes_cxcywh[mask]
-    scores = max_scores[mask]
-    class_ids = class_ids[mask]
-    if len(boxes_cxcywh) == 0:
-        return []
-    x1 = boxes_cxcywh[:, 0] - boxes_cxcywh[:, 2] / 2
-    y1 = boxes_cxcywh[:, 1] - boxes_cxcywh[:, 3] / 2
-    x2 = boxes_cxcywh[:, 0] + boxes_cxcywh[:, 2] / 2
-    y2 = boxes_cxcywh[:, 1] + boxes_cxcywh[:, 3] / 2
-    boxes_xyxy = np.stack([x1, y1, x2, y2], axis=1)
-    boxes, scores, class_ids = non_max_suppression(boxes_xyxy, scores, class_ids, iou_threshold)
-    if len(boxes) == 0:
-        return []
-    boxes = np.array(boxes)
-    pad_w, pad_h = padding
-    boxes[:, [0, 2]] = (boxes[:, [0, 2]] - pad_w) / scale
-    boxes[:, [1, 3]] = (boxes[:, [1, 3]] - pad_h) / scale
-    centers_x = (boxes[:, 0] + boxes[:, 2]) / 2
-    centers_y = (boxes[:, 1] + boxes[:, 3]) / 2
-    widths = boxes[:, 2] - boxes[:, 0]
-    heights = boxes[:, 3] - boxes[:, 1]
-    new_widths = heights
-    new_heights = widths
-    boxes[:, 0] = centers_x - new_widths / 2
-    boxes[:, 1] = centers_y - new_heights / 2
-    boxes[:, 2] = centers_x + new_widths / 2
-    boxes[:, 3] = centers_y + new_heights / 2
-    orig_w, orig_h = original_shape
-    boxes[:, [0, 2]] = np.clip(boxes[:, [0, 2]], 0, orig_w)
-    boxes[:, [1, 3]] = np.clip(boxes[:, [1, 3]], 0, orig_h)
-    detections = []
-    for i in range(len(boxes)):
-        box = boxes[i]
-        class_id = int(class_ids[i])
-        class_name = CLASS_NAMES[class_id] if class_id < len(CLASS_NAMES) else f"Class {class_id}"
-        detections.append(
-            {
-                "class": class_name,
-                "confidence": float(scores[i]),
-                "box": [float(box[0]), float(box[1]), float(box[2]), float(box[3])],
-            }
-        )
-    detections.sort(key=lambda x: x["confidence"], reverse=True)
-    return detections
+    print(f"Slice inference via {protocol}")
+    return decode_yolov8_obb(
+        output_tensor,
+        scale,
+        padding,
+        original_shape,
+        CLASS_NAMES,
+        CONFIDENCE_THRESHOLD,
+        IOU_THRESHOLD,
+    )
 
 
 @app.get("/")
@@ -222,17 +168,12 @@ async def detect_objects(image: UploadFile = File(...)):
             raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
 
         img = Image.open(io.BytesIO(contents))
-        tensor, scale, padding, original_shape = preprocess_image(img)
+        all_detections: list[dict] = []
 
         try:
-            output_tensor, protocol = await kserve_infer(
-                http_session,
-                MODEL_ENDPOINT,
-                tensor,
-                input_name=KSERVE_INPUT_NAME,
-                output_name=KSERVE_OUTPUT_NAME,
-                timeout_seconds=60,
-            )
+            for ox, oy, slice_img in generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP):
+                slice_dets = await infer_slice(slice_img)
+                all_detections.extend(offset_detection(d, ox, oy) for d in slice_dets)
         except aiohttp.ClientResponseError as exc:
             print(f"Model endpoint error ({exc.status}): {exc.message}")
             raise HTTPException(
@@ -240,21 +181,14 @@ async def detect_objects(image: UploadFile = File(...)):
                 detail=sanitize_model_error(exc.status, exc.message or ""),
             ) from exc
 
-        print(f"Inference completed via {protocol} protocol")
-        detections = postprocess_yolov8_obb(
-            output_tensor,
-            scale,
-            padding,
-            original_shape,
-            conf_threshold=CONFIDENCE_THRESHOLD,
-            iou_threshold=IOU_THRESHOLD,
-        )
+        detections = merge_detections(all_detections, iou_threshold=IOU_THRESHOLD)
         detection_counter += 1
         return JSONResponse(
             content={
                 "detections": detections,
                 "count": len(detections),
-                "image_size": {"width": original_shape[0], "height": original_shape[1]},
+                "image_size": {"width": img.size[0], "height": img.size[1]},
+                "sahi_slices": len(generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)),
             }
         )
 

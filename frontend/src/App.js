@@ -383,30 +383,38 @@ function App() {
       // Draw original image
       ctx.drawImage(img, 0, 0);
 
-      // Draw bounding boxes
+      // Draw bounding boxes (rotated when OBB angle present)
       detectionData.detections.forEach((detection, index) => {
-        const [x1, y1, x2, y2] = detection.box;
-
-        // Generate color based on class
         const hue = (index * 137.5) % 360;
         const color = `hsl(${hue}, 70%, 50%)`;
-
-        // Draw box
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;
-        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-        // Draw label background
+        let labelX;
+        let labelY;
+        if (detection.obb && detection.obb.length >= 5) {
+          const [cx, cy, w, h, angle] = detection.obb;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          ctx.strokeRect(-w / 2, -h / 2, w, h);
+          ctx.restore();
+          labelX = cx - w / 2;
+          labelY = cy - h / 2;
+        } else {
+          const [x1, y1, x2, y2] = detection.box;
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+          labelX = x1;
+          labelY = y1;
+        }
+
         const label = `${detection.class}: ${(detection.confidence * 100).toFixed(1)}%`;
         ctx.font = '14px Roboto';
         const textWidth = ctx.measureText(label).width;
-
         ctx.fillStyle = color;
-        ctx.fillRect(x1, y1 - 22, textWidth + 10, 22);
-
-        // Draw label text
+        ctx.fillRect(labelX, labelY - 22, textWidth + 10, 22);
         ctx.fillStyle = '#fff';
-        ctx.fillText(label, x1 + 5, y1 - 6);
+        ctx.fillText(label, labelX + 5, labelY - 6);
       });
 
       // Convert canvas to blob URL
