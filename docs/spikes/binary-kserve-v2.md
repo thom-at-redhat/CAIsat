@@ -10,12 +10,12 @@ on deployed MLServer predictors.
 
 ## SwinIR (`input`, shape `(1, 3, 256, 256)`)
 
-| Field           | Value                                                            |
-| --------------- | ---------------------------------------------------------------- |
-| Date            | 2026-06-30                                                       |
-| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
-| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
-| Blocks          | Phase 14 (binary tensor migration)                               |
+| Field           | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| Date            | 2026-06-30                                                                  |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500                   |
+| Cluster/profile | pre-production RHOAI 3.5.ea.1; MLServer `1.7.1+rhaiv.8`; namespace redacted |
+| Blocks          | Phase 14 (binary tensor migration)                                          |
 
 ### Command
 
@@ -83,6 +83,8 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 196: invali
 
 ### Notes
 
+**Platform:** RHOAI 3.5.ea.1 (pre-production).
+
 | Path   | Request `Content-Type`      | Request size | Latency | Response output shape | Result |
 | ------ | --------------------------- | ------------ | ------- | --------------------- | ------ |
 | JSON   | `application/json`          | ~3.98 MB     | ~88 s   | `(1, 3, 1024, 1024)`  | pass   |
@@ -98,12 +100,12 @@ JSON infer matches current [`backend/app.py`](../../backend/app.py) path. Binary
 
 ## YOLOv8-OBB (`images`, shape `(1, 3, 640, 640)`)
 
-| Field           | Value                                                            |
-| --------------- | ---------------------------------------------------------------- |
-| Date            | 2026-06-30                                                       |
-| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
-| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
-| Blocks          | Phase 14 (binary tensor migration)                               |
+| Field           | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| Date            | 2026-06-30                                                                  |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500                   |
+| Cluster/profile | pre-production RHOAI 3.5.ea.1; MLServer `1.7.1+rhaiv.8`; namespace redacted |
+| Blocks          | Phase 14 (binary tensor migration)                                          |
 
 ### Command
 
@@ -208,7 +210,7 @@ Default pipeline model endpoint: `http://sentinel2-model-predictor.release-names
 in the validation error handler when binary bytes appear in the request body. Re-test after MLServer/runtime upgrade or RHOAI binary-extension
 configuration fix.
 
-**Cluster access used:** `oc` authenticated cluster admin on ODS QE PSI-21 (`api-ods-qe-psi-21-osp-rh-ods-com:6443`). Local `oc port-forward`
+**Cluster access used:** `oc` authenticated cluster admin on `<cluster-profile>` (`<api-server>:6443`). Local `oc port-forward`
 to svc port `8080` failed (service exposes port `80`); in-cluster calls via backend pod succeeded for JSON.
 
 **Follow-up for Phase 14:**
