@@ -4,9 +4,9 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `0e4281e` (2026-06-30). Phase 12 next — use feature branches; never push `main`.
+**Branch:** `main` @ `ee3f1b3` (2026-06-30). Phases **0–23** merged — open items remain (see [Open items](#open-items-post-pr-45)); use feature branches for follow-up; never push `main`.
 
-**Archive:** Completed work (phases **0–11**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
+**Archive:** Completed work (phases **0–11**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases **12–23** merged via PR #45. Spike results → [`../spikes/`](../spikes/).
 
 **Deep-dive (secondary, archived):** Cursor artifact `~/.cursor/plans/caisat_plan_bootstrap_3c3a4d19.plan.md` — archived 2026-06-29; historical OpenSSF detail, parallel execution, smoke profiles;
 `~/.cursor/plans/caisat_comprehensive_review_bde83bb3.plan.md` — technical detail only.
@@ -29,7 +29,7 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                              | ok                       |
 | Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**      | ok                       |
 | Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)               | ok                       |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `0e4281e`; Scorecard **6.0**       | ok                       |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `ee3f1b3`; Scorecard **6.0**       | ok                       |
 | Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | checks, targets; Phases 8–11 archived          | ok                       |
 | SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**                 | ok                       |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions         | ok                       |
@@ -39,14 +39,15 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
 | Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins    | ok                       |
 | Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix    | ok                       |
-| Upstream sync           | fork `main` @ `0e4281e`                                                                      | PR #43; change detection + S4/DSPA pipelines   | ok (inbound only)        |
-| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started (ML spikes)                        | ok                       |
+| Upstream sync           | fork `main` @ `ee3f1b3`                                                                      | PR #43; change detection + S4/DSPA pipelines   | ok (inbound only)        |
+| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | ML spikes documented (PR #45)                  | ok                       |
+| Phases 12–23 merge      | PR #45 @ `ee3f1b3`                                                                           | integration/phases-12-23                       | ok                       |
 
-**Last verified:** fork `main` @ `0e4281e` (2026-06-30); Phases 0–11 merged (#33–#43); Scorecard **6.0**; SAST **10/10**; Dependabot **21** (8H/12M/1L)
+**Last verified:** fork `main` @ `ee3f1b3` (2026-06-30); Phases 0–23 merged (#33–#45); Scorecard **6.0**; SAST **10/10**; Dependabot **21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
-**Claims not checked:** cluster baseline sign-off (React 19 / three / react-leaflet UX → Phase 13); Phase 12 ONNX/binary/GPU spikes; post-Phase-11 Scorecard overall re-run
+**Claims not checked:** Phase 13 cluster baseline (React 19 / three / map UX); 12-binary **fail**; GPU tiers **deferred**; post-Phase-11 Scorecard re-run
 
 **Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 5 fork gate closed: PR #24 merged @ `f0e582a`; SECURITY.md + pre-commit permissions verified on fork `main`.
 
@@ -54,29 +55,32 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 
 ## Active todos
 
-Sync with bootstrap plan frontmatter; update on phase close. Phases **0–11** → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md).
+Sync with bootstrap plan frontmatter; update on phase close. Phases **0–11** → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases **12–23** merged PR #45 @ `ee3f1b3`.
 
-| ID    | Phase / track | Status  | Next action                                  |
-| ----- | ------------- | ------- | -------------------------------------------- |
-| 12    | Spikes        | pending | Parallel `12-onnx` + `12-binary`             |
-| 13–17 | Core ML       | pending | Per merge gates (health + manual checklists) |
-| 18–23 | Deferred      | pending | After Phase 17                               |
+| ID    | Phase / track | Status        | Next action                                         |
+| ----- | ------------- | ------------- | --------------------------------------------------- |
+| 12–23 | All tracks    | **completed** | Follow-up: open items below (binary, baseline, GPU) |
 
 ---
 
 ## Status
 
-Phases **0–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md).
+Phases **0–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases **12–23** merged PR #45 @ `ee3f1b3`.
 
-| Phase | Track                 | Status             | Merge gate                                                                                               |
-| ----- | --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------- |
-| 12    | ONNX + binary spikes  | Planned            | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                       |
-| 13    | Capture/zoom (#5)     | Planned            | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md` |
-| 14    | Binary KServe tensors | Planned            | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                          |
-| 15    | GPU profiles          | Planned            | `make check` + `make smoke` (health) + GPU spike deferral table                                          |
-| 16    | Crop + tiled SR       | Planned            | `make check` + `make smoke` (health) + manual **crop** checklist (script TBD)                            |
-| 17    | OBB + SAHI            | Planned            | `make check` + `make smoke` (health) + manual sign-off per profiles exercised                            |
-| 18–23 | Deferred              | Planned (after 17) | Per phase one-liners below                                                                               |
+| Phase | Track                 | Status            | Merge gate                                                                            |
+| ----- | --------------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| 12    | ONNX + binary spikes  | **Done (merged)** | PR #45; `12-onnx` **pass**, `12-binary` **fail** (see open items)                     |
+| 13    | Capture/zoom (#5)     | **Done (merged)** | PR #45; cluster **baseline** + **post-p0** sign-off still open in `baseline-smoke.md` |
+| 14    | Binary KServe tensors | **Done (merged)** | PR #45; JSON fallback shipped (binary spike fail)                                     |
+| 15    | GPU profiles          | **Done (merged)** | PR #45; T4/L40S/Hopper **deferred** (see `gpu-servingruntime.md`)                     |
+| 16    | Crop + tiled SR       | **Done (merged)** | PR #45                                                                                |
+| 17    | OBB + SAHI            | **Done (merged)** | PR #45                                                                                |
+| 18    | Logging/metrics       | **Done (merged)** | PR #45                                                                                |
+| 19    | CORS/security         | **Done (merged)** | PR #45                                                                                |
+| 20    | YOLO11-OBB eval       | **Done (merged)** | PR #45; **skipped** (Phase 17 QA sufficient)                                          |
+| 21    | kube-linter           | **Done (merged)** | PR #45                                                                                |
+| 22    | Repo hygiene          | **Done (merged)** | PR #45                                                                                |
+| 23    | UX polish             | **Done (merged)** | PR #45                                                                                |
 
 ---
 
@@ -134,9 +138,9 @@ Do not treat Phases 13–17 as fully automated until `smoke-local.sh` implements
 
 ## Parallel execution (multitask mode)
 
-### Serial prerequisite (Phases 0–11)
+### Serial prerequisite (Phases 0–23)
 
-Phases 0 → 1 → … → 11 must complete in order. All **done** — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phase 12 next.
+Phases 0 → 1 → … → 23 complete. Phases **0–11** → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md); **12–23** merged PR #45 @ `ee3f1b3`.
 
 ### Phase 12 (parallel tracks)
 
@@ -191,12 +195,22 @@ Phase 12 → 14 → 15 → 16 → 17. Phase 13 → 14. Never Phase 14 before `12
 
 ---
 
+## Open items (post PR #45)
+
+Follow-up work after PR #45 @ `ee3f1b3`. Code merged; cluster validation and spike gaps remain.
+
+| Item              | Detail                                                                                                                                    |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Binary spike fail | `12-binary` **fail** @ RHOAI 3.5.ea.1 (binary HTTP 500); ea.2 re-test **blocked/inconclusive** @ `2aa6343`; Phase 14 ships JSON fallback  |
+| Phase 13 baseline | Cluster **baseline** + **post-p0** sign-off pending in [`baseline-smoke.md`](../validation/baseline-smoke.md) (React 19 / three / map UX) |
+| GPU deferral      | T4/L40S/Hopper **deferred** — CPU pass only; see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) and GPU tier deferral table   |
+
 ## Open blockers
 
 | Blocker              | Detail                                                                                                                                        |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | MLServer binary      | ea.2 re-test **blocked/inconclusive** @ `2aa6343`: RHOAI 3.5.0-ea.2; MLServer 1.7.1+rhaiv.8; binary infer not re-run (Quay pull unauthorized) |
-| Phase 14 binary-only | Gated on spike pass; ship JSON fallback + binary-ready helpers until round-trip passes on cluster                                             |
+| Phase 14 binary-only | JSON fallback active until binary round-trip passes on cluster                                                                                |
 
 ---
 
@@ -216,9 +230,8 @@ See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 
 ## Push-as-you-go
 
-| Phase | Push after         |
-| ----- | ------------------ |
-| 0–11  | done (see archive) |
-| 12+   | each phase         |
+| Phase | Push after                |
+| ----- | ------------------------- |
+| 0–23  | done (PR #45 @ `ee3f1b3`) |
 
 **Git rules:** feature branches only; never push `main`; no `--no-verify`.
