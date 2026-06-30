@@ -48,6 +48,8 @@ function App() {
   const earthRef = useRef(null);
   const mapRef = useRef(null);
   const cropWrapperRef = useRef(null);
+  const resultsContainerRef = useRef(null);
+  const [showResultsScrollHint, setShowResultsScrollHint] = useState(false);
 
   const clampCropArea = (x, y, imgWidth, imgHeight, size) => ({
     x: Math.max(0, Math.min(x, imgWidth - size)),
@@ -142,6 +144,16 @@ function App() {
     };
     fetchCapabilities();
   }, [BACKEND_BASE]);
+
+  useEffect(() => {
+    if (!detectedImage) {
+      setShowResultsScrollHint(false);
+      return undefined;
+    }
+
+    setShowResultsScrollHint(true);
+    return undefined;
+  }, [detectedImage]);
 
   // Initialize Three.js globe
   useEffect(() => {
@@ -734,8 +746,14 @@ function App() {
                   <div className="results-section">
                     <h3>Enhancement Complete</h3>
 
+                    {showResultsScrollHint && (
+                      <p className="results-scroll-hint" role="note">
+                        Scroll horizontally (wide viewports) or view stacked panels below (150% browser zoom / narrow screens) to see bounding boxes on Detected Objects →
+                      </p>
+                    )}
+
                     {/* Collapsible Results Container */}
-                    <div className="results-container">
+                    <div className="results-container" ref={resultsContainerRef}>
                       {showOriginal && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowOriginal(!showOriginal)} style={{cursor: 'pointer'}}>

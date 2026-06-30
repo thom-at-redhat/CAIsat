@@ -194,6 +194,7 @@ body {
 /* Globe */
 .globe {
     flex: 1;
+    min-width: 0;
     position: relative;
     z-index: 10;
 }
@@ -273,8 +274,10 @@ body {
 .processing-view {
     width: 100%;
     height: 100%;
+    min-width: 0;
     padding: 30px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .processing-header {
@@ -538,6 +541,8 @@ body {
     align-items: center;
     justify-content: center;
     min-width: 150px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
 }
 
 .result-panel-collapsed:hover {
@@ -624,6 +629,8 @@ body {
 /* Results Section */
 .results-section {
     text-align: center;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .results-section h3 {
@@ -632,12 +639,46 @@ body {
     margin-bottom: 30px;
 }
 
+.results-scroll-hint {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    margin-bottom: 12px;
+    padding: 8px 16px;
+    background: rgba(68, 68, 255, 0.15);
+    border: 1px solid rgba(68, 68, 255, 0.35);
+    border-radius: 8px;
+    display: inline-block;
+}
+
 .results-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 40px;
     margin-bottom: 30px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x proximity;
+    padding-bottom: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 68, 68, 0.75) rgba(255, 255, 255, 0.12);
+}
+
+.results-container::-webkit-scrollbar {
+    height: 12px;
+}
+
+.results-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 68, 68, 0.75);
+    border-radius: 6px;
 }
 
 .result-panel {
@@ -645,6 +686,10 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 20px;
+    flex-shrink: 0;
+    max-width: 100%;
+    min-width: 0;
+    scroll-snap-align: start;
 }
 
 .result-panel h4 {
@@ -654,16 +699,39 @@ body {
 }
 
 .result-panel img {
-    width: 512px;
+    width: min(512px, 100%);
+    max-width: min(512px, calc(100vw - 320px));
     height: auto;
     border-radius: 4px;
     image-rendering: pixelated;
+    display: block;
 }
 
 .result-arrow {
     color: #ff4444;
     font-size: 40px;
     font-weight: 700;
+    flex-shrink: 0;
+}
+
+@media (max-width: 1400px) {
+    .results-container {
+        flex-direction: column;
+        flex-wrap: wrap;
+        align-items: center;
+        overflow-x: visible;
+        scroll-snap-type: none;
+    }
+
+    .result-panel,
+    .result-panel-collapsed {
+        width: 100%;
+        max-width: min(512px, calc(100vw - 80px));
+    }
+
+    .result-arrow {
+        transform: rotate(90deg);
+    }
 }
 
 .result-actions {
