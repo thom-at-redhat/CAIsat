@@ -6,14 +6,18 @@ set -o errexit -o nounset -o pipefail
 
 usage() {
     echo "Usage: $0 PR_NUMBER [REPO] [MAX_POLLS] [SLEEP_SEC]" >&2
-    echo "  REPO defaults to gh repo view nameWithOwner (current checkout)" >&2
+    echo "  REPO defaults to origin remote nameWithOwner (contributor fork)" >&2
     exit 1
 }
 
 [[ "${#}" -ge 1 ]] || usage
 
 PR="${1}"
-REPO="${2:-$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)}"
+if [[ -n "${2:-}" ]]; then
+    REPO="${2}"
+else
+    REPO="$(gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)"
+fi
 [[ -n "${REPO}" ]] || {
     echo "REPO required (pass as second argument or run inside a git checkout with gh auth)" >&2
     usage

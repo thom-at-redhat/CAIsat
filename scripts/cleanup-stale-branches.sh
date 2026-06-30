@@ -6,6 +6,12 @@ set -o errexit -o nounset -o pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
+ORIGIN_REPO="$(gh repo view "$(git remote get-url origin)" --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)"
+if [[ -z "${ORIGIN_REPO}" ]]; then
+  echo "FAIL: could not resolve origin repo from git remote get-url origin" >&2
+  exit 1
+fi
+
 EXECUTE=0
 if [[ "${1:-}" == "--execute" ]]; then
   EXECUTE=1
@@ -17,13 +23,13 @@ fi
 # Local branches we never delete.
 KEEP_LOCAL=(
   main
-  chore/devops-scripts
+  fix/detection-box-overlay
 )
 
 # origin/* remotes we never delete (open PR + in-flight worktree branch).
 KEEP_REMOTE=(
   main
-  chore/devops-scripts
+  fix/detection-box-overlay
 )
 
 is_kept_local() {
@@ -48,7 +54,7 @@ git fetch origin
 
 ORIGIN_MAIN="$(git rev-parse origin/main)"
 MERGED_PR_HEADS="$(
-  gh pr list  --state merged --limit 200 --json headRefName \
+  gh pr list --repo "${ORIGIN_REPO}" --state merged --limit 200 --json headRefName \
     | jq -r '.[].headRefName' | sort -u
 )"
 
@@ -91,7 +97,7 @@ while IFS= read -r REF; do
   is_kept_remote "${B}" && continue
   if branch_merged "origin/${B}"; then
     OPEN_HEAD="$(
-      gh pr list  --state open --json headRefName \
+      gh pr list --repo "${ORIGIN_REPO}" --state open --json headRefName \
         | jq -r --arg b "${B}" '.[] | select(.headRefName == $b) | .headRefName'
     )"
     if [[ -n "${OPEN_HEAD}" ]]; then
