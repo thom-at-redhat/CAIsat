@@ -12,19 +12,19 @@ See [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scoreca
 
 ## Check inventory
 
-| Check               | Score | Actionable? | Target / waiver                                             | Addressed by            |
-| ------------------- | ----- | ----------- | ----------------------------------------------------------- | ----------------------- |
-| SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)          |
-| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**             |
-| Branch-Protection   | 4     | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10**            |
-| Pinned-Dependencies | 7     | Yes         | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11**            |
-| Packaging           | -1    | Maybe       | Release/publish workflow (lower priority)                   | Deferred                |
-| Signed-Releases     | -1    | Maybe       | GitHub releases with provenance (lower priority)            | Deferred                |
-| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (document) |
-| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                   | **Phase 8** (doc)       |
-| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                          | **Phase 8** (doc)       |
-| Fuzzing             | 0     | Defer       | OSS-Fuzz out of scope for now                               | —                       |
-| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                         | —                       |
+| Check               | Score | Actionable? | Target / waiver                                             | Addressed by          |
+| ------------------- | ----- | ----------- | ----------------------------------------------------------- | --------------------- |
+| SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)        |
+| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**           |
+| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10** (done)   |
+| Pinned-Dependencies | 7     | Yes         | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11**          |
+| Packaging           | -1    | Maybe       | Release/publish workflow (lower priority)                   | Deferred              |
+| Signed-Releases     | -1    | Maybe       | GitHub releases with provenance (lower priority)            | Deferred              |
+| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (waiver) |
+| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                   | **Phase 8** (doc)     |
+| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                          | **Phase 8** (doc)     |
+| Fuzzing             | 0     | Defer       | OSS-Fuzz out of scope for now                               | —                     |
+| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                         | —                     |
 
 ---
 
@@ -106,6 +106,49 @@ None from the Phase 9 batch 2 scope. Re-run Dependabot alert count on `main` aft
 - **react-leaflet 5:** peer deps satisfied with React 19; production build passes.
 
 **Cluster validation gap:** React 19 / Three 0.185 / react-leaflet 5 map and globe UX remain unvalidated on cluster until Phase 13 baseline sign-off.
+
+---
+
+## Phase 10 — Branch protection hardening
+
+**Ruleset:** `protect-main` (ID `18274842`) on contributor fork.
+
+### Before (2026-06-29, Phase 4 close)
+
+```json
+{
+  "rules": ["deletion", "non_fast_forward", "pull_request", "required_status_checks"],
+  "required_status_checks": ["pre-commit", "Scorecard analysis"],
+  "strict_required_status_checks_policy": true,
+  "required_approving_review_count": 0
+}
+```
+
+### After (2026-06-30, Phase 10)
+
+```json
+{
+  "rules": ["deletion", "non_fast_forward", "pull_request", "required_status_checks"],
+  "required_status_checks": ["pre-commit", "Scorecard analysis", "CodeQL"],
+  "strict_required_status_checks_policy": true,
+  "required_approving_review_count": 0
+}
+```
+
+**Unchanged (already maximal for solo fork):** block branch deletion (`deletion`), block force push (`non_fast_forward`), require pull request before merge, strict status-check policy.
+
+**CodeQL check name:** `CodeQL` — workflow rollup on PR heads (see PR #37 CI). Matrix jobs `Analyze (python)` and `Analyze (javascript-typescript)` roll up into this context.
+
+### Code-Review waiver (solo fork)
+
+- **Attempted:** `required_approving_review_count: 1` is feasible on ruleset API but blocks solo self-merge without bypass.
+- **Decision:** Keep **0** approving reviews. Solo contributor fork; merges via PR + required checks; admin merge when checks green.
+- **Scorecard impact:** Code-Review check likely remains **0**; documented waiver (same pattern as Maintained/Contributors in Phase 8).
+
+### Expected Branch-Protection impact
+
+- Adds CodeQL to required contexts alongside pre-commit and Scorecard analysis.
+- Scorecard Branch-Protection was **4/10** @ `6b0a209`; re-run on `main` after Phase 10 merge (may lag via `api.scorecard.dev`).
 
 ---
 
