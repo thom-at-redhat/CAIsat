@@ -29,6 +29,10 @@ function App() {
   const [popup, setPopup] = useState(null); // 'purpose', 'guide', 'disclaimer', or null
   const [userMessage, setUserMessage] = useState(null); // { type: 'error'|'info', text: string }
   const [detectionOnline, setDetectionOnline] = useState(false);
+  const [capabilities, setCapabilities] = useState(null);
+
+  const cropSize = cropArea.size;
+  const enhancedSize = cropSize * (capabilities?.scale_factor ?? 4);
 
   // Detection classes
   const DETECTION_CLASSES = [
