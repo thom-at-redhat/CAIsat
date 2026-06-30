@@ -34,18 +34,6 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-          fetch-depth: 0
-
-      - name: Detect chart changes
-        id: chart-filter
-        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
-        with:
-          filters: |
-            chart:
-              - 'chart/**'
-
-      - name: Chart path filter result
-        run: echo "chart=${{ steps.chart-filter.outputs.chart }}"
 
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -68,13 +56,11 @@ jobs:
         run: SKIP=no-commit-to-branch pre-commit run --all-files
 
       - name: Install Helm
-        if: github.event_name == 'workflow_dispatch' || steps.chart-filter.outputs.chart == 'true'
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
         with:
           version: v3.16.4
 
       - name: Helm template test
-        if: github.event_name == 'workflow_dispatch' || steps.chart-filter.outputs.chart == 'true'
         run: helm template test ./chart
 
       - name: Smoke (health profile)
@@ -94,30 +80,12 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-          fetch-depth: 0
-
-      - name: Detect smoke-relevant changes
-        id: smoke-filter
-        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
-        with:
-          filters: |
-            smoke:
-              - 'backend/**'
-              - 'backend-detection/**'
-              - 'scripts/smoke-local.sh'
-              - 'Makefile'
-              - '.github/workflows/**'
-
-      - name: Smoke path filter result
-        run: echo "smoke=${{ steps.smoke-filter.outputs.smoke }}"
 
       - name: Set up Python
-        if: github.event_name == 'workflow_dispatch' || steps.smoke-filter.outputs.smoke == 'true'
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Smoke (binary profile)
-        if: github.event_name == 'workflow_dispatch' || steps.smoke-filter.outputs.smoke == 'true'
         run: SMOKE_PROFILE=binary make smoke
