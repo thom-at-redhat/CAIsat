@@ -132,6 +132,45 @@ Activate satellite view to browse satellite imagery, capture a screenshot, selec
 3. **oc CLI** authenticated to your cluster
 4. **Helm 3.10+** installed locally
 
+### Cluster pre-flight
+
+<!-- Assisted by: cursor, claude -->
+
+Before `helm install`, confirm the cluster can serve CAIsat workloads:
+
+1. **OpenShift AI (RHOAI) ready** — `InferenceService` CRD must exist (command must not error):
+
+   ```bash
+   oc get inferenceservice -A
+   ```
+
+2. **Namespace** — create and switch (or use an existing project):
+
+   ```bash
+   oc new-project caisat
+   # or: oc project caisat
+   ```
+
+3. **Storage class** — chart default is `gp3-csi` for S4 PVCs. List classes and override when your cluster uses another default:
+
+   ```bash
+   oc get sc
+   helm install caisat ./chart --namespace caisat \
+     --set s4.storage.storageClassName=<your-storage-class>
+   ```
+
+4. **Image pull** — fork images are public on Quay; verify egress using the `frontend` tag from [chart/values.yaml](chart/values.yaml):
+
+   ```bash
+   podman pull quay.io/<your-quay-user>/caisat:frontend
+   ```
+
+   Replace `<your-quay-user>` with the repository owner in `chart/values.yaml` (fork default: public `caisat` mirror).
+
+5. **Compute profile** — CPU-only clusters need no GPU flags; chart default is `computeProfile.name=cpu` (see [chart/README.md](chart/README.md) for GPU tiers and all Helm values — do not duplicate that table here).
+
+6. **Post-install validation** — after pods and routes are up, run the cluster checklist in [docs/validation/baseline-smoke.md](docs/validation/baseline-smoke.md#baseline-profile-cluster-checklist).
+
 ### Installation
 
 1. **Clone this repository**:
