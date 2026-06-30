@@ -1,0 +1,219 @@
+# Spike: Binary KServe v2 tensor round-trip
+
+<!-- Assisted by: cursor, claude -->
+
+Per-predictor spike for Phase 14: compare KServe v2 JSON tensor payloads (`flatten().tolist()`) against the
+[binary tensor data extension](https://kserve.github.io/website/docs/concepts/architecture/data-plane/v2-protocol/binary-tensor-data-extension)
+on deployed MLServer predictors.
+
+---
+
+## SwinIR (`input`, shape `(1, 3, 256, 256)`)
+
+| Field           | Value                                                            |
+| --------------- | ---------------------------------------------------------------- |
+| Date            | 2026-06-30                                                       |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
+| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
+| Blocks          | Phase 14 (binary tensor migration)                               |
+
+### Command
+
+```bash
+# Cluster access
+oc whoami
+oc get inferenceservice -n <namespace>
+oc get pods -n <namespace>
+
+# Model metadata (inside predictor pod)
+oc exec -n <namespace> deploy/swinir-predictor -c kserve-container -- \
+  curl -sf http://localhost:8080/v2/models/swinir
+
+# JSON baseline + binary round-trip (from backend pod, in-cluster DNS)
+POD=$(oc get pod -n <namespace> -l app.kubernetes.io/component=backend -o jsonpath='{.items[0].metadata.name}')
+oc exec -n <namespace> "${POD}" -- python3 -c "
+import json, time, urllib.request, numpy as np
+url = 'http://<swinir-predictor>.<namespace>.svc.cluster.local:8080/v2/models/swinir/infer'
+data = np.random.default_rng(42).random((1,3,256,256), dtype=np.float32)
+# JSON infer
+payload = {'inputs':[{'name':'input','shape':[1,3,256,256],'datatype':'FP32','data':data.flatten().tolist()}]}
+t0 = time.perf_counter()
+with urllib.request.urlopen(urllib.request.Request(url, json.dumps(payload).encode(), headers={'Content-Type':'application/json'}, method='POST'), timeout=300) as r:
+    j = json.loads(r.read())
+print('JSON OK', round(time.perf_counter()-t0,2), 's', 'req_bytes', len(json.dumps(payload)), 'out', j['outputs'][0]['shape'])
+# Binary infer (KServe binary extension)
+bb = data.tobytes(order='C')
+meta = {'inputs':[{'name':'input','shape':[1,3,256,256],'datatype':'FP32','parameters':{'binary_data_size':len(bb)}}], 'outputs':[{'name':'output','parameters':{'binary_data':True}}]}
+mb = json.dumps(meta).encode()
+body = mb + bb
+req = urllib.request.Request(url, body, headers={'Content-Type':'application/octet-stream','Inference-Header-Content-Length':str(len(mb)),'Content-Length':str(len(body))}, method='POST')
+try:
+    with urllib.request.urlopen(req, timeout=300) as r:
+        print('BINARY OK', r.headers.get('Content-Type'), len(r.read()))
+except urllib.error.HTTPError as e:
+    print('BINARY FAIL', e.code, e.read()[:200])
+"
+
+# Predictor log after binary attempt
+oc logs -n <namespace> deploy/swinir-predictor -c kserve-container --tail=15
+```
+
+### Output (snippet)
+
+```text
+# oc get inferenceservice -n <namespace>
+NAME               URL                                                      READY
+swinir             http://<swinir-predictor>.<namespace>.svc.cluster.local         True
+yolov8m-satelite   http://<yolov8-predictor>.<namespace>.svc.cluster.local   True
+
+# Model metadata
+{"name":"swinir","inputs":[{"name":"input","datatype":"FP32","shape":[-1,3,-1,-1]}],
+ "outputs":[{"name":"output","datatype":"FP32","shape":[-1,3,-1,-1]}]}
+
+# JSON infer (pass)
+JSON OK 88.17 s req_bytes 3984396 out [1, 3, 1024, 1024]
+
+# Binary infer (fail)
+BINARY FAIL 500 b'Internal Server Error'
+
+# Predictor log
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 196: invalid start byte
+  (FastAPI validation handler while parsing application/octet-stream body)
+```
+
+### Notes
+
+| Path   | Request `Content-Type`      | Request size | Latency | Response output shape | Result |
+| ------ | --------------------------- | ------------ | ------- | --------------------- | ------ |
+| JSON   | `application/json`          | ~3.98 MB     | ~88 s   | `(1, 3, 1024, 1024)`  | pass   |
+| Binary | `application/octet-stream`¹ | ~0.79 MB²    | —       | —                     | fail   |
+
+¹ Headers: `Inference-Header-Content-Length` (JSON prefix length), `Content-Length` (JSON + FP32 tensor bytes). Output requested with `"parameters": {"binary_data": true}` on tensor `"output"`.
+
+² Theoretical: `1×3×256×256×4` bytes FP32 + ~120-byte JSON header vs ~3.98 MB JSON float list (~80% smaller).
+
+JSON infer matches current [`backend/app.py`](../../backend/app.py) path. Binary round-trip did not complete; MLServer returned HTTP 500 before a decodable tensor was returned.
+
+---
+
+## YOLOv8-OBB (`images`, shape `(1, 3, 640, 640)`)
+
+| Field           | Value                                                            |
+| --------------- | ---------------------------------------------------------------- |
+| Date            | 2026-06-30                                                       |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
+| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
+| Blocks          | Phase 14 (binary tensor migration)                               |
+
+### Command
+
+```bash
+# Model metadata
+oc exec -n <namespace> deploy/yolov8m-satelite-predictor -c kserve-container -- \
+  curl -sf http://localhost:8080/v2/models/yolov8m-satelite
+
+# JSON baseline + binary round-trip (from backend pod)
+POD=$(oc get pod -n <namespace> -l app.kubernetes.io/component=backend -o jsonpath='{.items[0].metadata.name}')
+oc exec -n <namespace> "${POD}" -- python3 -c "
+import json, time, urllib.request, numpy as np
+url = 'http://<yolov8-predictor>.<namespace>.svc.cluster.local:8080/v2/models/yolov8m-satelite/infer'
+data = np.random.default_rng(42).random((1,3,640,640), dtype=np.float32)
+payload = {'inputs':[{'name':'images','shape':[1,3,640,640],'datatype':'FP32','data':data.flatten().tolist()}]}
+t0 = time.perf_counter()
+with urllib.request.urlopen(urllib.request.Request(url, json.dumps(payload).encode(), headers={'Content-Type':'application/json'}, method='POST'), timeout=300) as r:
+    j = json.loads(r.read())
+print('JSON OK', round(time.perf_counter()-t0,2), 's', 'req_bytes', len(json.dumps(payload)), 'out', j['outputs'][0]['shape'])
+bb = data.tobytes(order='C')
+meta = {'inputs':[{'name':'images','shape':[1,3,640,640],'datatype':'FP32','parameters':{'binary_data_size':len(bb)}}], 'outputs':[{'name':'output0','parameters':{'binary_data':True}}]}
+mb = json.dumps(meta).encode()
+body = mb + bb
+req = urllib.request.Request(url, body, headers={'Content-Type':'application/octet-stream','Inference-Header-Content-Length':str(len(mb)),'Content-Length':str(len(body))}, method='POST')
+try:
+    with urllib.request.urlopen(req, timeout=300) as r:
+        print('BINARY OK', r.headers.get('Content-Type'), len(r.read()))
+except urllib.error.HTTPError as e:
+    print('BINARY FAIL', e.code, e.read()[:200])
+"
+
+oc logs -n <namespace> deploy/yolov8m-satelite-predictor -c kserve-container --tail=15
+```
+
+### Output (snippet)
+
+```text
+# Model metadata
+{"name":"yolov8m-satelite","inputs":[{"name":"images","datatype":"FP32","shape":[-1,3,-1,-1]}],
+ "outputs":[{"name":"output0","datatype":"FP32","shape":[-1,-1,-1]}]}
+
+# JSON infer (pass)
+JSON OK 1.94 s req_bytes 24905346 out [1, 20, 8400]
+
+# Binary infer (fail) — also fails with binary input only (no binary output requested)
+BINARY FAIL 500 b'Internal Server Error'
+
+# Predictor log
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 128: invalid start byte
+```
+
+### Notes
+
+| Path   | Request `Content-Type`     | Request size | Latency | Response output shape | Result |
+| ------ | -------------------------- | ------------ | ------- | --------------------- | ------ |
+| JSON   | `application/json`         | ~24.9 MB     | ~1.9 s  | `(1, 20, 8400)`       | pass   |
+| Binary | `application/octet-stream` | ~4.9 MB²     | —       | —                     | fail   |
+
+² Theoretical: `1×3×640×640×4` bytes FP32 + JSON header vs ~24.9 MB JSON (~80% smaller). YOLO would benefit most from binary payloads in
+Phase 14.
+
+Matches current [`backend-detection/app.py`](../../backend-detection/app.py) JSON path. Binary input-only requests (JSON response) also returned
+HTTP 500 — the failure is on request parsing, not output encoding alone.
+
+---
+
+## Phase 14 scope: pipeline JSON path
+
+A **third** KServe caller still uses JSON tensors. [`chart/files/analyze_seed_images_pipeline.yaml`](../../chart/files/analyze_seed_images_pipeline.yaml) embeds Python that posts:
+
+```python
+payload = {
+    "inputs": [{
+        "name": "input",
+        "shape": list(image_array.shape),
+        "datatype": "FP32",
+        "data": image_array.flatten().tolist(),
+    }]
+}
+url = f"{model_endpoint}/v2/models/{model_name}/infer"
+response = requests.post(url, json=payload, timeout=60)
+```
+
+This pattern is duplicated across four pipeline component executors (`comp-analyze-location` through `comp-analyze-location-4`). Phase 14 must
+migrate this Sentinel2 pipeline path to binary **or** document a tested JSON exception in this spike once MLServer binary support is verified.
+
+Default pipeline model endpoint: `http://sentinel2-model-predictor.release-namespace.svc.cluster.local:8080` (Sentinel2 not deployed in fork namespace during this spike).
+
+---
+
+## Summary
+
+| Predictor           | Tensor   | Input shape        | JSON infer | Binary round-trip | Phase 14 blocker                                 |
+| ------------------- | -------- | ------------------ | ---------- | ----------------- | ------------------------------------------------ |
+| SwinIR              | `input`  | `(1, 3, 256, 256)` | **pass**   | **fail**          | MLServer binary extension returns HTTP 500       |
+| YOLOv8-OBB          | `images` | `(1, 3, 640, 640)` | **pass**   | **fail**          | Same; largest JSON payload (~25 MB)              |
+| Pipeline (Phase 14) | `input`  | varies (Sentinel2) | not tested | not tested        | Third JSON caller; migrate or exempt in Phase 14 |
+
+**Pass criteria (plan):** decoded binary output matches JSON infer within `1e-4` max abs diff **per predictor**. Not met.
+
+**Root cause (observed):** RHOAI MLServer `1.7.1+rhaiv.8` rejects `application/octet-stream` infer bodies; FastAPI raises `UnicodeDecodeError`
+in the validation error handler when binary bytes appear in the request body. Re-test after MLServer/runtime upgrade or RHOAI binary-extension
+configuration fix.
+
+**Cluster access used:** `oc` authenticated cluster admin on ODS QE PSI-21 (`api-ods-qe-psi-21-osp-rh-ods-com:6443`). Local `oc port-forward`
+to svc port `8080` failed (service exposes port `80`); in-cluster calls via backend pod succeeded for JSON.
+
+**Follow-up for Phase 14:**
+
+1. Resolve MLServer binary support on cluster (upgrade, runtime flags, or RHOAI support ticket).
+2. Re-run this spike matrix; both SwinIR and YOLO must **pass** before Phase 14 merge.
+3. Implement `encode_kserve_binary()` / `decode_kserve_binary()` in both backends once round-trip passes.
+4. Decide pipeline YAML migration vs documented JSON exception for Sentinel2.
