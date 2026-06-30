@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `64a472b` (2026-06-30). **All planned phases (0–23) complete.** Open operational items below; use feature branches for follow-up; never push `main`.
+**Branch:** `main` @ `dd40d02` (2026-06-30). **All planned phases (0–23) complete.** Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -45,7 +45,7 @@
 | Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test)  | ok                       |
 | Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L97–102               | waiver — no deployed stack 2026-06-30          | unchecked                |
 
-**Last verified:** fork `main` @ `64a472b` (2026-06-30); MT-0 PR #48; local health+binary smoke pass; Phases 0–23 merged; Scorecard **6.0**; SAST **10/10**
+**Last verified:** fork `main` @ `dd40d02` (2026-06-30); PR #50 merged (cropSize + MT-1a columns); MT-0 PR #48; local health+binary smoke pass; Phases 0–23 merged; Scorecard **6.0**; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
