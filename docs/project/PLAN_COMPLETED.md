@@ -2,25 +2,37 @@
 
 <!-- Assisted by: cursor, claude -->
 
-Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.md).
+Archive of merged phased work (phases **0–23**). Operational follow-up lives in [`PLAN.md`](PLAN.md).
 
 **Renumbering (2026-06-29):** Serial suffixes removed (`1A`/`1B` → Phases 1–2). OpenSSF = Phases 4–6. Former phases 3–18 → 7–19.
 
-**Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases **12–23** (Phase 12 next).
+**Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23.
 
-**Branch tip (2026-06-30):** fork `main` @ `0e4281e`; phases **0–11** complete. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `b29fa4d`; phases **0–23** complete (PR #45 integration + PR #46 PLAN sync). Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 Fork synced from upstream via PR #43; outbound PR to rh-ai-quickstart still deferred.
 
-## Phase one-liners (0, 8–11)
+## Phase one-liners (0, 8–11, 12–23)
 
-| Phase  | Goal                                                                                      |
-| ------ | ----------------------------------------------------------------------------------------- |
-| **0**  | Quay gate — anonymous pull of all five chart tags; fork public mirror (see quay-tags)     |
-| **8**  | OpenSSF score baseline — sync PLAN/badge, `scorecard-gaps.md`, record Scorecard 6.0       |
-| **9**  | Dependency hygiene — enable/merge Dependabot updates; reduce OSV vulnerability count      |
-| **10** | Branch protection hardening — ruleset: CodeQL required, maximal settings feasible on fork |
-| **11** | Pin remaining dependencies — pre-commit/workflow SHA pins to 10/10 Pinned-Dependencies    |
+| Phase  | Goal                                                                                                 |
+| ------ | ---------------------------------------------------------------------------------------------------- |
+| **0**  | Quay gate — anonymous pull of all five chart tags; fork public mirror (see quay-tags)                |
+| **8**  | OpenSSF score baseline — sync PLAN/badge, `scorecard-gaps.md`, record Scorecard 6.0                  |
+| **9**  | Dependency hygiene — enable/merge Dependabot updates; reduce OSV vulnerability count                 |
+| **10** | Branch protection hardening — ruleset: CodeQL required, maximal settings feasible on fork            |
+| **11** | Pin remaining dependencies — pre-commit/workflow SHA pins to 10/10 Pinned-Dependencies               |
+| **12** | SwinIR ONNX shape spike + binary KServe v2 round-trip spike (parallel tracks `12-onnx`, `12-binary`) |
+| **13** | Capture/zoom alignment (upstream #5) — helm metadata fixed in Phase 1                                |
+| **14** | Binary tensor encode/decode + shared `aiohttp` session in both backends                              |
+| **15** | GPU ServingRuntime spike per tier + compute profiles + `/api/capabilities`                           |
+| **16** | Profile-aware crop chain + tiled SwinIR + cross-path parity                                          |
+| **17** | OBB decode + rotated draw, SAHI slicing, route/resource tuning                                       |
+| **18** | Structured logging, metrics, model-endpoint health probes                                            |
+| **19** | CORS, upload limits, error sanitization, NetworkPolicy, Route OAuth                                  |
+| **20** | YOLO11-OBB eval — **skip** if Phase 17 QA acceptable                                                 |
+| **21** | kube-linter + re-enable pre-commit exclusions                                                        |
+| **22** | Repo hygiene (backup file, chart README sync, pin deps)                                              |
+| **23** | UX: coordinate search (#4), progress, error UI, detection health polling                             |
 
 ---
 
@@ -425,3 +437,140 @@ Deliverables:
 1. Upstream changes merged without conflict on core paths
 2. `make check` green; green CI on PR
 3. PLAN decision updated: inbound sync done; outbound upstream PR deferred
+
+---
+
+## Phases 12–23 integration (PR #45)
+
+| Field  | Value                                                                                                            |
+| ------ | ---------------------------------------------------------------------------------------------------------------- |
+| Goal   | ML core: spikes, capture/zoom, binary KServe, GPU profiles, crop/tiled SR, OBB/SAHI, observability, security, UX |
+| Branch | `integration/phases-12-23` → merged PR #45 @ `ee3f1b3`                                                           |
+| Gate   | `make check` + `make smoke` (health); spike docs with pass/fail verdicts                                         |
+
+### Status at merge
+
+| Phase | Track                 | Outcome                                                                               |
+| ----- | --------------------- | ------------------------------------------------------------------------------------- |
+| 12    | ONNX + binary spikes  | `12-onnx` **pass**; `12-binary` **fail** (see spike archive below)                    |
+| 13    | Capture/zoom (#5)     | Merged; cluster **baseline** + **post-p0** sign-off still open in `baseline-smoke.md` |
+| 14    | Binary KServe tensors | Merged; JSON fallback shipped (binary spike fail waiver)                              |
+| 15    | GPU profiles          | Merged; T4/L40S/Hopper **deferred** (CPU pass only)                                   |
+| 16    | Crop + tiled SR       | Merged                                                                                |
+| 17    | OBB + SAHI            | Merged                                                                                |
+| 18    | Logging/metrics       | Merged                                                                                |
+| 19    | CORS/security         | Merged                                                                                |
+| 20    | YOLO11-OBB eval       | Merged; **skipped** (Phase 17 QA sufficient)                                          |
+| 21    | kube-linter           | Merged                                                                                |
+| 22    | Repo hygiene          | Merged                                                                                |
+| 23    | UX polish             | Merged                                                                                |
+
+Deliverables (high level):
+
+- Spike docs: [`swinir-onnx.md`](../spikes/swinir-onnx.md), [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md)
+- Spike docs (cont.): [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md), [`yolo11-obb-eval.md`](../spikes/yolo11-obb-eval.md)
+- Frontend capture/zoom alignment (Phase 13); binary KServe with JSON fallback in both backends (Phase 14)
+- Chart compute profiles + `/api/capabilities` (Phase 15); profile-aware crop + tiled SwinIR (Phase 16)
+- OBB decode, SAHI slicing, rotated draw (Phase 17); structured JSON logging (Phase 18)
+- CORS env config, optional NetworkPolicy (Phase 19); kube-linter pre-commit hook (Phase 21)
+- UX: coordinate search, inline errors, detection health polling (Phase 23)
+
+### PR #45 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #45 @ `ee3f1b3`.
+
+1. All phase branches merged via `integration/phases-12-23`
+2. Spike docs record pass/fail with cluster identifiers redacted (`<namespace>` placeholders)
+3. `make check` + health smoke green on integration branch
+4. Open items documented: binary fail, baseline sign-off, GPU deferral
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 12 — ML spikes (parallel tracks)
+
+| Field  | Value                                                                                  |
+| ------ | -------------------------------------------------------------------------------------- |
+| Goal   | SwinIR ONNX shape spike + binary KServe v2 round-trip before Phase 14 binary migration |
+| Branch | `12-onnx` @ `529ffd7`; `12-binary` @ `2aa6343`; merged via PR #45                      |
+| Gate   | Both tracks documented before Phase 14 merge                                           |
+
+### Spike outcomes
+
+| Track         | Verdict     | Artifact                                               | Notes                                                                      |
+| ------------- | ----------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| **12-onnx**   | **pass**    | [`swinir-onnx.md`](../spikes/swinir-onnx.md)           | Dynamic H/W; 256→1024 native 4×; does not block Phase 16                   |
+| **12-binary** | **fail**    | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) | JSON infer OK; binary HTTP 500 @ RHOAI 3.5.ea.1; Phase 14 JSON waiver      |
+| **12-binary** | **blocked** | same doc                                               | ea.2 re-test **blocked/inconclusive** @ `2aa6343` — Quay pull unauthorized |
+
+### Phase 12 close checklist
+
+**Status:** Done (2026-06-30). Merged via PR #45 @ `ee3f1b3`.
+
+1. [`docs/spikes/swinir-onnx.md`](../spikes/swinir-onnx.md) — **pass** with input/output shapes documented
+2. [`docs/spikes/binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — **fail** with HTTP 500 evidence; ea.2 re-test blocked
+3. [`docs/spikes/README.md`](../spikes/README.md) — spike index updated
+4. Cluster names redacted from spike docs
+
+---
+
+## Phase 15 — GPU profiles (deferral)
+
+| Field  | Value                                                                   |
+| ------ | ----------------------------------------------------------------------- |
+| Goal   | GPU ServingRuntime spike per tier + compute profiles + capabilities API |
+| Branch | `phase-15-gpu` → merged via PR #45                                      |
+| Gate   | CPU profile validated; GPU tiers documented or explicitly deferred      |
+
+Deliverables:
+
+- Chart `computeProfile` values (cpu, t4, l40s, hopper) + `/api/capabilities` endpoint
+- [`docs/spikes/gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) — **blocked**; T4/L40S/Hopper **deferred** (no GPU nodes scheduled)
+
+### GPU tier deferral (at merge)
+
+| Tier   | Status   | Reason                |
+| ------ | -------- | --------------------- |
+| T4     | deferred | No GPU node scheduled |
+| L40S   | deferred | No GPU node scheduled |
+| Hopper | deferred | No GPU node scheduled |
+
+---
+
+## PLAN sync post PR #45 (PR #46)
+
+| Field  | Value                                                             |
+| ------ | ----------------------------------------------------------------- |
+| Goal   | Close Phases 12–23 in PLAN; document open items after integration |
+| Branch | `chore/plan-post-pr45` → merged PR #46 @ `b29fa4d`                |
+| Gate   | `make check` (doc-only)                                           |
+
+Deliverables:
+
+- [`PLAN.md`](PLAN.md) — status table, open items, verification artifact synced to post-PR-45 state
+- Open blockers: MLServer binary ea.2 re-test blocked; JSON fallback active
+
+### PR #46 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #46 @ `b29fa4d`.
+
+1. PLAN reflects Phases 0–23 merged; open operational items documented
+2. `make check` green; green CI on PR
+
+---
+
+## PLAN archive post-23 (stop_work)
+
+| Field  | Value                                                                       |
+| ------ | --------------------------------------------------------------------------- |
+| Goal   | Archive phases 12–23 in PLAN_COMPLETED; thin PLAN to operational items only |
+| Branch | `chore/plan-stop-work-post-23` (this PR)                                    |
+| Gate   | `make check` (doc-only)                                                     |
+
+Deliverables:
+
+- [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — phases 12–23 summary archived (this section)
+- [`PLAN.md`](PLAN.md) — thinned to post-23 operational state; spike outcomes table; active todos for open items only
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
