@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `feat/phase-6-codeql` (2026-06-29). Phase 6 in progress — use feature branches; never push `main`.
+**Branch:** `main` @ `31f058d` (2026-06-29). Phase 7 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -33,9 +33,10 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)           | ok (fork until upstream) |
 | Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | `pre-commit` + Scorecard required on `main`     | ok (fork)                |
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned     | ok                       |
+| CodeQL SAST             | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; default setup disabled     | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started                                     | ok                       |
 
-**Last verified:** `main` (2026-06-29); fork `main` merge `5312171ce6b9c7361e7ddaab71847cb2f344ef51` (PR #25 PLAN close @ `0d487bb`; PR #26 markdown-link-check pin @ `5fb25e7`)
+**Last verified:** `main` (2026-06-29); fork `main` merge `31f058d9ee7817faf7b19a545edd2b23e073109d` (PR #29 CodeQL @ `be45ec3`; PR #28 PLAN archive @ `0a81b29`)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
@@ -58,7 +59,7 @@ Sync with bootstrap plan frontmatter; update on phase close.
 | 3-review | Skeptical re-review | **completed**           | Cycle 5 light delta → Proceed                       |
 | 4        | OpenSSF Scorecard   | **completed**           | —                                                   |
 | 5        | OpenSSF quick wins  | **completed**           | —                                                   |
-| 6        | OpenSSF CodeQL      | **in progress**         | CodeQL workflow PR; CI-Tests deferred to Phase 7    |
+| 6        | OpenSSF CodeQL      | **completed**           | —                                                   |
 | 7        | Baseline smoke      | pending                 | `make smoke` health + optional cluster sign-off     |
 | 8        | Spikes              | pending                 | Parallel `8-onnx` + `8-binary`                      |
 | 9–13     | Core ML             | pending                 | Per merge gates (health + manual checklists)        |
@@ -76,7 +77,7 @@ Sync with bootstrap plan frontmatter; update on phase close.
 | 3     | PLAN bootstrap            | **Done**           | `make check` + Phase 3 close checklist (see below)                                                       |
 | 4     | OpenSSF Scorecard install | **Done**           | `make check` + green Scorecard on fork `main`; ruleset `protect-main` requires Scorecard                 |
 | 5     | OpenSSF quick wins        | **Done**           | `make check` + Phase 5 checklist (see OpenSSF section)                                                   |
-| 6     | OpenSSF broader           | **In progress**    | `make check` + CodeQL green (CI-Tests defers to Phase 7)                                                 |
+| 6     | OpenSSF broader           | **Done**           | `make check` + CodeQL green (CI-Tests defers to Phase 7)                                                 |
 | 7     | Baseline smoke            | Planned            | `make check` + `make smoke` (**health** only; see smoke note)                                            |
 | 8     | ONNX + binary spikes      | Planned            | Spike docs with pass/fail                                                                                |
 | 9     | Capture/zoom (#5)         | Planned            | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md` |
@@ -133,7 +134,7 @@ README Scorecard badge uses the contributor fork slug (see README badge URL) unt
 Phase 5 — `SECURITY.md` committed, `permissions: contents: read` on pre-commit workflow, README badge live (fork slug until upstream merge).
 Phase 6 — CodeQL workflow green; optional `tests/` + CI job may land in Phase 7 (document waiver if deferred).
 
-**PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; #28 PLAN archive cross-ref; Phase 6 CodeQL (in progress).
+**PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; #28 PLAN archive cross-ref; #29 Phase 6 CodeQL; Phase 7 baseline smoke next.
 
 ---
 
@@ -162,6 +163,22 @@ Before marking Phase 5 **Done**:
 3. [`README.md`](../../README.md) — OpenSSF Scorecard badge (contributor fork slug; no change unless wrong/missing)
 4. Branch protection on fork `main` — ruleset `protect-main` already requires `pre-commit` + Scorecard (documented in verification artifact)
 5. `make check` green; PR to fork `main`; commit PLAN close; record tip SHA
+
+---
+
+## Phase 6 close checklist
+
+**Status:** Done (2026-06-29). Gate branch: `feat/phase-6-codeql` → merged PR #29 @ `31f058d`.
+
+Before marking Phase 6 **Done**:
+
+1. [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml) — Python + JavaScript/TypeScript matrix; pinned SHAs; `permissions: read-all`
+2. Triggers: `push` + `pull_request` to `main`; weekly schedule aligned with Scorecard
+3. GitHub default CodeQL setup **disabled** (API `state: not-configured`) — advanced workflow only; no duplicate dynamic CodeQL
+4. Green **CodeQL** on PR #29 (Analyze python + javascript-typescript); `make check` green
+5. Ruleset `protect-main`: CodeQL **not** added to required checks yet (PR validation first; add after push-to-main run confirms)
+6. CI test job **deferred to Phase 7** (no `tests/` directory yet)
+7. Commit PLAN close; record tip SHA
 
 ---
 
