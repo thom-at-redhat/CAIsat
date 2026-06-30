@@ -1,5 +1,5 @@
 aiohttp>=3.13.3
-fastapi>=0.109.1
+fastapi>=0.138.2
 numpy>=1.24.3
 Pillow>=10.3.0
 python-dotenv>=1.2.2
