@@ -146,26 +146,14 @@ function App() {
   }, [BACKEND_BASE]);
 
   useEffect(() => {
-    const container = resultsContainerRef.current;
-    if (!container || !detectedImage) {
+    if (!detectedImage) {
       setShowResultsScrollHint(false);
       return undefined;
     }
 
-    const checkResultsOverflow = () => {
-      setShowResultsScrollHint(container.scrollWidth > container.clientWidth + 1);
-    };
-
-    checkResultsOverflow();
-    const resizeObserver = new ResizeObserver(checkResultsOverflow);
-    resizeObserver.observe(container);
-    window.addEventListener('resize', checkResultsOverflow);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', checkResultsOverflow);
-    };
-  }, [detectedImage, showOriginal, showEnhanced, showDetected]);
+    setShowResultsScrollHint(true);
+    return undefined;
+  }, [detectedImage]);
 
   // Initialize Three.js globe
   useEffect(() => {
@@ -760,7 +748,7 @@ function App() {
 
                     {showResultsScrollHint && (
                       <p className="results-scroll-hint" role="note">
-                        Scroll horizontally to see detected objects with bounding boxes →
+                        Scroll horizontally (wide viewports) or view stacked panels below (150% browser zoom / narrow screens) to see bounding boxes on Detected Objects →
                       </p>
                     )}
 

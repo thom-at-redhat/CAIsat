@@ -91,7 +91,9 @@ Run on a deployed stack for post-merge cluster sign-off. Record branch SHA and n
 4. Port-forward or Route: `curl -sf https://<detection-backend-route>/health`
 5. Full UI workflow: capture 256×256, enhance, detect — non-empty result and `detections` in API response
 6. After **Detect Objects**, bounding boxes appear on the **Detected Objects** panel (third in the Original → Enhanced → Detected Objects row).
-   On typical viewports the row overflows horizontally — scroll the results row to the right; do not expect boxes on the Enhanced panel alone.
+   On wide viewports the row may overflow horizontally — scroll the results row to the right.
+   At **150% browser zoom** or viewports under ~1400px, panels stack vertically so all three are reachable without hunting for a scrollbar.
+   Do not expect boxes on the Enhanced panel alone.
 7. React 19 / three.js 0.185 / react-leaflet 5: globe loads, map tiles render, no console errors on navigation
 
 Document SHA, cluster, and date in this file when baseline is signed off.
@@ -143,8 +145,16 @@ Not automated in `make smoke`; record pass/fail here after manual verification.
 ### Detection results row (MT-1b operator note)
 
 After enhance, click **Detect Objects**. The results row shows **Original** → **Enhanced** → **Detected Objects** (left to right).
-Bounding boxes are drawn on the **Detected Objects** image in the third panel only. On viewports narrower than the full row (~1900px), scroll the results row horizontally
-(hint text appears when overflow is detected). Verify boxes align with objects in the enhanced crop; record pass/fail with cluster baseline sign-off.
+Bounding boxes are drawn on the **Detected Objects** image in the third panel only.
+
+**Responsive layout (accessibility):** On viewports wider than ~1400px, the three 512px panels sit in a horizontal row; scroll horizontally when a hint appears after detection completes.
+At **150% browser zoom** (effective viewport shrink) or widths under ~1400px, panels **stack vertically** with down arrows so all three images are visible without horizontal scroll.
+Verify boxes align with objects in the enhanced crop; record pass/fail with cluster baseline sign-off.
+
+| Browser zoom | Expected layout                  | Pass criteria                                              |
+| ------------ | -------------------------------- | ---------------------------------------------------------- |
+| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only |
+| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   |
 
 | Zoom | Cluster result | Local result | Notes                               |
 | ---- | -------------- | ------------ | ----------------------------------- |
