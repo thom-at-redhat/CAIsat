@@ -57,13 +57,13 @@ These checks are **not** targeted for improvement on the contributor fork; ratio
 
 ---
 
-## Phase 9 triage (in progress)
+## Phase 9 triage (batch 2 complete)
 
-**Branch:** `feat/phase-9-dependency-hygiene` (open PR).
+**Branch:** `feat/phase-9-dependency-hygiene-batch2` (open PR).
 
-**Pre-merge vuln snapshot:** GitHub Dependabot reported **98** open alerts on `main` @ `acb9a79` (15 high, 46 moderate, 37 low); post-merge count TBD after CI.
+**Baseline:** Batch 1 merged @ `30c55ef` (PR #35, 2026-06-30).
 
-### Merged into Phase 9 branch
+### Batch 1 — merged @ `30c55ef` (PR #35)
 
 | PR  | Package / area                      | Notes                                          |
 | --- | ----------------------------------- | ---------------------------------------------- |
@@ -78,7 +78,42 @@ These checks are **not** targeted for improvement on the contributor fork; ratio
 | #15 | `axios` 1.18.1                      | frontend patch                                 |
 | #22 | `aiohttp` 3.14.1 (partial)          | backend-detection security; pillow 12 deferred |
 
-### Deferred (risky major / needs dedicated testing)
+### Batch 2 — merged (all previously deferred PRs)
+
+| PR  | Package / area            | Result / notes                                           |
+| --- | ------------------------- | -------------------------------------------------------- |
+| #4  | `Pillow` ≥12.2.0          | **Merged** — backend                                     |
+| #5  | `fastapi` 0.138.2         | **Merged** — backend-detection                           |
+| #7  | `fastapi` ≥0.138.2        | **Merged** — backend                                     |
+| #9  | `numpy` 2.5.0             | **Merged** — backend-detection; smoke health pass        |
+| #12 | `uvicorn` ≥0.49.0         | **Merged** — backend                                     |
+| #13 | `opencv-python-headless`  | **Merged** — backend-detection 4.13.0.92                 |
+| #14 | `react` 19.2.7            | **Merged** — frontend build pass (CRA + eslint fix)      |
+| #16 | `react-dom` 19.2.7        | **Merged** — paired with #14                             |
+| #17 | `react-leaflet` 5.0.0     | **Merged** — build pass; map UX not cluster-validated    |
+| #18 | `three` 0.185.0           | **Merged** — globe build pass; cluster UX not validated  |
+| #19 | `form-data` 4.0.6         | **Merged** — transitive patch via `npm update form-data` |
+| #22 | `pillow` 12.2.0 (partial) | **Merged** — backend-detection remainder                 |
+
+### Still deferred
+
+None from the Phase 9 batch 2 scope. Re-run Dependabot alert count on `main` after batch 2 merge.
+
+### Blockers resolved in batch 2
+
+- **numpy 2:** requirements bump only; health smoke passes (no ONNX inference in smoke profile).
+- **React 19:** CRA 5 build succeeds after removing unused imports in `App.js`.
+- **react-leaflet 5:** peer deps satisfied with React 19; production build passes.
+
+**Cluster validation gap:** React 19 / Three 0.185 / react-leaflet 5 map and globe UX remain unvalidated on cluster until Phase 13 baseline sign-off.
+
+---
+
+## Phase 9 triage (batch 1 archive)
+
+_Pre-batch-2 deferral table — superseded by batch 2 results above._
+
+### Deferred (risky major / needs dedicated testing) — historical
 
 | PR  | Package / area            | Reason                                               |
 | --- | ------------------------- | ---------------------------------------------------- |

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import * as THREE from 'three';
-import { MapContainer, TileLayer, useMapEvents, Rectangle } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import leafletImage from 'leaflet-image';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
@@ -169,7 +169,6 @@ function App() {
   };
 
   const handleMouseDown = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
     const img = e.currentTarget.querySelector('.crop-base-image');
     if (!img) return;
 
