@@ -68,15 +68,25 @@ Run on a deployed stack before Phase 13 merge. Record branch SHA and namespace.
 3. Port-forward or Route: `curl -sf https://<backend-route>/health`
 4. Port-forward or Route: `curl -sf https://<detection-backend-route>/health`
 5. Full UI workflow: capture 256×256, enhance, detect — non-empty result and `detections` in API response
+6. React 19 / three.js 0.185 / react-leaflet 5: globe loads, map tiles render, no console errors on navigation
 
 Document SHA, cluster, and date in this file when baseline is signed off.
 
 | Field         | Value                          |
 | ------------- | ------------------------------ |
-| Branch SHA    | _(pending)_                    |
+| Branch SHA    | _(pending — cluster not run)_  |
 | Deploy target | _(cluster / local full stack)_ |
 | Date          | _(pending)_                    |
 | Signed off    | _(pending)_                    |
+
+### Local pre-check (no cluster)
+
+When a cluster is unavailable, run before opening the Phase 13 PR:
+
+1. `make check` and `make smoke` (health) — must pass
+2. `cd frontend && npm start` — open app, activate satellite view, capture map
+3. Confirm crop UI loads with centered 256×256 box; scroll-wheel and 2×/4× buttons change zoom without shifting box relative to image
+4. Optional: compare cropped preview to red box at 1×/2×/4× (see [Capture/zoom](#capturezoom-manual))
 
 ---
 
@@ -84,7 +94,31 @@ Document SHA, cluster, and date in this file when baseline is signed off.
 
 Upstream [#5](https://github.com/rh-ai-quickstart/CAIsat/issues/5): captured PNG region must match visible selection box at zoom 1×, 2×, 4×.
 
-Not automated in `make smoke`; record pass/fail here after Phase 13.
+**Fix (Phase 13):** crop coordinates use natural image pixels; image displays 1:1 inside a CSS `transform: scale(zoom)` layer with a scroll spacer sized to `width×zoom` / `height×zoom`.
+Wheel and button zoom adjust scroll to keep the focal point stable.
+
+Not automated in `make smoke`; record pass/fail here after manual verification.
+
+### Procedure
+
+1. Deploy stack (or `npm start` + local backends for crop-only check).
+2. **Map → Capture & Enhance** on a distinctive area (coastline, road intersection, building).
+3. At each zoom level (**1×** Reset, **2×**, **4×**), drag the red box over a recognizable feature.
+4. Click **Enhance Selected Area** (or inspect the cropped preview before enhance).
+5. **Pass:** cropped/enhanced image shows the same geography as inside the red box (no horizontal/vertical offset).
+6. **Fail:** visible offset, wrong region, or box drifts relative to image when zooming.
+
+| Zoom | Cluster result | Local result | Notes                               |
+| ---- | -------------- | ------------ | ----------------------------------- |
+| 1×   | _(pending)_    | _(pending)_  | Reset zoom; box centered on capture |
+| 2×   | _(pending)_    | _(pending)_  | Use 2× button or scroll wheel       |
+| 4×   | _(pending)_    | _(pending)_  | Use 4× button or scroll wheel       |
+
+| Field      | Value       |
+| ---------- | ----------- |
+| Branch SHA | _(pending)_ |
+| Date       | _(pending)_ |
+| Signed off | _(pending)_ |
 
 ---
 
