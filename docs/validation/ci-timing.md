@@ -60,6 +60,25 @@ Update this section and [`scorecard-gaps.md`](../spikes/scorecard-gaps.md) when 
 
 ---
 
+## MT-CP-4 — smoke venv cache (before merge)
+
+**Change:** `actions/cache` on `backend/.venv-smoke` and `backend-detection/.venv-smoke` in both jobs. Key: Python 3.12 + `requirements.txt` hashes. Skips venv recreate and pip install when deps unchanged.
+
+**Baseline (pre–MT-CP-4, green `main` @ `41d00e8`):**
+
+| Job            | p50 (min) | Notes                                |
+| -------------- | --------- | ------------------------------------ |
+| `pre-commit`   | 1.02      | Run `28481387018` post–MT-CP-2 merge |
+| `smoke-binary` | 0.72      | Run `28481387018` post–MT-CP-2 merge |
+
+Prior aggregate p50 from baseline table: `pre-commit` 1.17 min, `smoke-binary` 0.68 min.
+
+**Target:** ≥10% p50 reduction on cache-warm runs (second consecutive green `main` run after merge).
+
+**Post-merge timings:** Record here after MT-CP-4 PR merges (cold run may match baseline; warm run shows delta).
+
+---
+
 ## Path-filter impact (MT-CP-1, removed MT-CP-2)
 
 MT-CP-1 (merged @ `b07bc93`) added `dorny/paths-filter` skips for helm and `smoke-binary`. MT-CP-2 removes all path filters because `smoke-binary` is a required check — skipped jobs would block merges.

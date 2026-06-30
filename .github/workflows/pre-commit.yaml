@@ -63,6 +63,16 @@ jobs:
       - name: Helm template test
         run: helm template test ./chart
 
+      - name: Cache smoke venvs
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            backend/.venv-smoke
+            backend-detection/.venv-smoke
+          key: smoke-venv-${{ runner.os }}-py3.12-${{ hashFiles('backend/requirements.txt', 'backend-detection/requirements.txt') }}
+          restore-keys: |
+            smoke-venv-${{ runner.os }}-py3.12-
+
       - name: Smoke (health profile)
         run: make smoke
 
@@ -86,6 +96,16 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
+      - name: Cache smoke venvs
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            backend/.venv-smoke
+            backend-detection/.venv-smoke
+          key: smoke-venv-${{ runner.os }}-py3.12-${{ hashFiles('backend/requirements.txt', 'backend-detection/requirements.txt') }}
+          restore-keys: |
+            smoke-venv-${{ runner.os }}-py3.12-
 
       - name: Smoke (binary profile)
         run: SMOKE_PROFILE=binary make smoke
