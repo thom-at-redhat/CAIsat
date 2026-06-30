@@ -46,7 +46,7 @@ Decision and follow-up.
 | Spike                    | Doc                                    | Status                                    |
 | ------------------------ | -------------------------------------- | ----------------------------------------- |
 | Quay image tags          | [quay-tags.md](quay-tags.md)           | **pass** (fork mirror); upstream **fail** |
-| OpenSSF Scorecard gaps   | [scorecard-gaps.md](scorecard-gaps.md) | baseline 6.0 @ `12c04945`                 |
+| OpenSSF Scorecard gaps   | [scorecard-gaps.md](scorecard-gaps.md) | baseline 6.0 @ `0e4281e`                  |
 | SwinIR ONNX shapes       | swinir-onnx.md                         | not started                               |
 | Binary KServe v2         | binary-kserve-v2.md                    | not started                               |
 | RHOAI GPU ServingRuntime | gpu-servingruntime.md                  | not started                               |

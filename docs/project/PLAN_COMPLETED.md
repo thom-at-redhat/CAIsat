@@ -6,9 +6,21 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-29):** Serial suffixes removed (`1A`/`1B` → Phases 1–2). OpenSSF = Phases 4–6. Former phases 3–18 → 7–19.
 
-**Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases 0 + 8–23.
+**Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases **12–23** (Phase 12 next).
 
-**Branch tip (2026-06-30):** fork `main` @ `5d02e74`; Phase 10 merged PR #38. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `0e4281e`; phases **0–11** complete. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+
+Fork synced from upstream via PR #43; outbound PR to rh-ai-quickstart still deferred.
+
+## Phase one-liners (0, 8–11)
+
+| Phase  | Goal                                                                                      |
+| ------ | ----------------------------------------------------------------------------------------- |
+| **0**  | Quay gate — anonymous pull of all five chart tags; fork public mirror (see quay-tags)     |
+| **8**  | OpenSSF score baseline — sync PLAN/badge, `scorecard-gaps.md`, record Scorecard 6.0       |
+| **9**  | Dependency hygiene — enable/merge Dependabot updates; reduce OSV vulnerability count      |
+| **10** | Branch protection hardening — ruleset: CodeQL required, maximal settings feasible on fork |
+| **11** | Pin remaining dependencies — pre-commit/workflow SHA pins to 10/10 Pinned-Dependencies    |
 
 ---
 
@@ -238,7 +250,7 @@ Deliverables:
 | Field  | Value                                                                   |
 | ------ | ----------------------------------------------------------------------- |
 | Goal   | Sync PLAN/badge, finalize `scorecard-gaps.md`, record Scorecard **6.0** |
-| Branch | `chore/phase-8-score-baseline` → PR pending merge                       |
+| Branch | `chore/phase-8-score-baseline` → merged PR #34 @ `6b0a209`              |
 | Gate   | `make check` (doc-only)                                                 |
 
 Deliverables:
@@ -249,7 +261,7 @@ Deliverables:
 
 ### Phase 8 close checklist
 
-**Status:** Done (2026-06-30). Gate branch: `chore/phase-8-score-baseline`.
+**Status:** Done (2026-06-30). Merged PR #34 @ `6b0a209`.
 
 1. Scorecard API: **6.0** on contributor fork (verified via `api.scorecard.dev`; see README badge)
 2. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — baseline SHA `acb9a79`; explicit Maintained + Contributors waiver section
@@ -342,7 +354,7 @@ Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) af
 | Field  | Value                                                               |
 | ------ | ------------------------------------------------------------------- |
 | Goal   | Pin remaining workflow/pre-commit refs; Pinned-Dependencies → 10/10 |
-| Branch | `feat/phase-11-pin-dependencies` → merged PR TBD                    |
+| Branch | `feat/phase-11-pin-dependencies` → merged PR #41 @ `18ad5dd`        |
 | Gate   | `make check` + `make smoke` (health); green CI                      |
 
 Deliverables:
@@ -355,7 +367,7 @@ Deliverables:
 
 ### Phase 11 close checklist
 
-**Status:** Done (2026-06-30). PR TBD.
+**Status:** Done (2026-06-30). Merged PR #41 @ `18ad5dd`.
 
 1. Pin 13 pre-commit hook repos to commit SHAs (same tag versions as before)
 2. Pin floating npm/pip deps: `jshint@2.13.6`, `prettier@3.1.0`, `pytest==8.3.5`, `pre-commit==4.6.0`
@@ -366,3 +378,50 @@ Deliverables:
 7. `make check` + `make smoke` green; green CI on PR
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Post–Phase 11 CI — Scorecard pre-commit hook (PR #42)
+
+| Field  | Value                                                           |
+| ------ | --------------------------------------------------------------- |
+| Goal   | Add Scorecard pre-commit hook; clear npm vulnerability findings |
+| Branch | `feat/scorecard-pre-commit-hook` → merged PR #42 @ `792a1a1`    |
+| Gate   | `make check` + green CI                                         |
+
+Deliverables:
+
+- [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml) — local OpenSSF Scorecard hook
+- npm vulnerability cleanup from hook findings
+
+### PR #42 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #42 @ `792a1a1`.
+
+1. Scorecard pre-commit hook added and documented
+2. npm audit findings addressed
+3. `make check` green; green CI on PR
+
+---
+
+## Upstream sync (PR #43)
+
+| Field  | Value                                                                   |
+| ------ | ----------------------------------------------------------------------- |
+| Goal   | Merge upstream `rh-ai-quickstart/CAIsat` features into contributor fork |
+| Branch | `merge/upstream-main` → merged PR #43 @ `0e4281e`                       |
+| Gate   | `make check` + green CI                                                 |
+
+Deliverables:
+
+- Change detection pipeline from upstream
+- S4 and DSPA pipeline integrations
+- Fork now tracks upstream ML/infra features; outbound PR to `rh-ai-quickstart/CAIsat` **still deferred** per PLAN decision
+
+### PR #43 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #43 @ `0e4281e`.
+
+1. Upstream changes merged without conflict on core paths
+2. `make check` green; green CI on PR
+3. PLAN decision updated: inbound sync done; outbound upstream PR deferred

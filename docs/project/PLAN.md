@@ -4,9 +4,9 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `195369a` (2026-06-30). Phase 12 next — use feature branches; never push `main`.
+**Branch:** `main` @ `0e4281e` (2026-06-30). Phase 12 next — use feature branches; never push `main`.
 
-**Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
+**Archive:** Completed work (phases **0–11**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
 **Deep-dive (secondary, archived):** Cursor artifact `~/.cursor/plans/caisat_plan_bootstrap_3c3a4d19.plan.md` — archived 2026-06-29; historical OpenSSF detail, parallel execution, smoke profiles;
 `~/.cursor/plans/caisat_comprehensive_review_bde83bb3.plan.md` — technical detail only.
@@ -29,18 +29,20 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                              | ok                       |
 | Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**      | ok                       |
 | Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)               | ok                       |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `acb9a79`; Scorecard **6.0**       | ok                       |
-| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | checks, targets, Phases 8–11                   | ok                       |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `0e4281e`; Scorecard **6.0**       | ok                       |
+| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | checks, targets; Phases 8–11 archived          | ok                       |
 | SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**                 | ok                       |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions         | ok                       |
 | Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`          | ok                       |
 | README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)          | ok (fork until upstream) |
 | Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | `pre-commit` + Scorecard + CodeQL on `main`    | ok (fork)                |
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
-| Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11; 13 hook repos + npm/pip exact pins   | ok                       |
+| Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins    | ok                       |
+| Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix    | ok                       |
+| Upstream sync           | fork `main` @ `0e4281e`                                                                      | PR #43; change detection + S4/DSPA pipelines   | ok (inbound only)        |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started (ML spikes)                        | ok                       |
 
-**Last verified:** fork `main` @ `195369a` (2026-06-30); Scorecard **6.0** (Pinned-Dependencies 10/10 post-Phase 11 — re-run may lag); SAST **10/10**; Phase 10 ruleset hardening; Dependabot **21** (8H/12M/1L)
+**Last verified:** fork `main` @ `0e4281e` (2026-06-30); Phases 0–11 merged (#33–#43); Scorecard **6.0**; SAST **10/10**; Dependabot **21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
@@ -52,39 +54,29 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 
 ## Active todos
 
-Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md).
+Sync with bootstrap plan frontmatter; update on phase close. Phases **0–11** → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md).
 
-| ID    | Phase / track      | Status        | Next action                                             |
-| ----- | ------------------ | ------------- | ------------------------------------------------------- |
-| 0     | Quay gate          | **completed** | Fork mirror in chart defaults; upstream still fail      |
-| 8     | Score baseline     | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 9     | Dependency hygiene | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 10    | Branch protection  | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 11    | Pin dependencies   | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 12    | Spikes             | pending       | Parallel `12-onnx` + `12-binary`                        |
-| 13–17 | Core ML            | pending       | Per merge gates (health + manual checklists)            |
-| 18–23 | Deferred           | pending       | After Phase 17                                          |
+| ID    | Phase / track | Status  | Next action                                  |
+| ----- | ------------- | ------- | -------------------------------------------- |
+| 12    | Spikes        | pending | Parallel `12-onnx` + `12-binary`             |
+| 13–17 | Core ML       | pending | Per merge gates (health + manual checklists) |
+| 18–23 | Deferred      | pending | After Phase 17                               |
 
 ---
 
 ## Status
 
-Phases **0, 1–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases 4–6, 8–11 archived there (OpenSSF install, score baseline, dependency hygiene, branch protection, pin dependencies).
+Phases **0–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md).
 
-| Phase | Track                  | Status                 | Merge gate                                                                                                    |
-| ----- | ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 0     | Quay gate              | **Done (fork mirror)** | All five `thom_at_redhat/caisat` tags pull anonymously; upstream `rh-ai-quickstart` still fail                |
-| 8     | OpenSSF score baseline | **Done**               | `make check` + doc only; Scorecard **6.0** @ `acb9a79`                                                        |
-| 9     | Dependency hygiene     | **Done**               | PR #35 batch 1 @ `30c55ef` + PR #36 batch 2 @ `7d2106b`; Dependabot **98→21**; cluster UX validation Phase 13 |
-| 10    | Branch protection      | **Done**               | Ruleset `protect-main`: CodeQL required; deletion + force-push blocked; Code-Review waiver documented         |
-| 11    | Pin dependencies       | **Done**               | Pre-commit/workflow SHA pins; Pinned-Dependencies → 10/10                                                     |
-| 12    | ONNX + binary spikes   | Planned                | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                            |
-| 13    | Capture/zoom (#5)      | Planned                | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md`      |
-| 14    | Binary KServe tensors  | Planned                | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                               |
-| 15    | GPU profiles           | Planned                | `make check` + `make smoke` (health) + GPU spike deferral table                                               |
-| 16    | Crop + tiled SR        | Planned                | `make check` + `make smoke` (health) + manual **crop** checklist (script TBD)                                 |
-| 17    | OBB + SAHI             | Planned                | `make check` + `make smoke` (health) + manual sign-off per profiles exercised                                 |
-| 18–23 | Deferred               | Planned (after 17)     | Per phase one-liners below                                                                                    |
+| Phase | Track                 | Status             | Merge gate                                                                                               |
+| ----- | --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------- |
+| 12    | ONNX + binary spikes  | Planned            | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                       |
+| 13    | Capture/zoom (#5)     | Planned            | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md` |
+| 14    | Binary KServe tensors | Planned            | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                          |
+| 15    | GPU profiles          | Planned            | `make check` + `make smoke` (health) + GPU spike deferral table                                          |
+| 16    | Crop + tiled SR       | Planned            | `make check` + `make smoke` (health) + manual **crop** checklist (script TBD)                            |
+| 17    | OBB + SAHI            | Planned            | `make check` + `make smoke` (health) + manual sign-off per profiles exercised                            |
+| 18–23 | Deferred              | Planned (after 17) | Per phase one-liners below                                                                               |
 
 ---
 
@@ -92,11 +84,6 @@ Phases **0, 1–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phas
 
 | Phase  | Goal                                                                                                 |
 | ------ | ---------------------------------------------------------------------------------------------------- |
-| **0**  | Quay gate — anonymous pull of all five chart tags; fork uses `thom_at_redhat/caisat` mirror          |
-| **8**  | OpenSSF score baseline — sync PLAN/badge, `scorecard-gaps.md`, record Scorecard 6.0                  |
-| **9**  | Dependency hygiene — enable/merge Dependabot updates; reduce OSV vulnerability count                 |
-| **10** | Branch protection hardening — ruleset: CodeQL required, maximal settings feasible on fork            |
-| **11** | Pin remaining dependencies — pre-commit/workflow SHA pins to 10/10 Pinned-Dependencies               |
 | **12** | SwinIR ONNX shape spike + binary KServe v2 round-trip spike (parallel tracks `12-onnx`, `12-binary`) |
 | **13** | Capture/zoom alignment (upstream #5) — helm metadata fixed in Phase 1                                |
 | **14** | Binary tensor encode/decode + shared `aiohttp` session in both backends                              |
@@ -114,9 +101,9 @@ Phases **0, 1–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phas
 
 ## OpenSSF supply-chain (Phases 4–6)
 
-**Done** — install, quick wins, and CodeQL on contributor fork. Detail, checklists, and PR sequence → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#openssf-supply-chain-phases-46).
+**Done** — install, quick wins, and CodeQL on contributor fork. Phases **8–11** (score baseline, dependency hygiene, branch protection, pin dependencies) also archived. Detail → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#openssf-supply-chain-phases-46).
 
-**Upstream PR deferred** (2026-06-29): fork-only validation; no PR to `rh-ai-quickstart/CAIsat` until user re-opens upstream track.
+**Upstream:** fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred (2026-06-29 decision).
 
 ---
 
@@ -147,17 +134,22 @@ Do not treat Phases 13–17 as fully automated until `smoke-local.sh` implements
 
 ## Parallel execution (multitask mode)
 
-### Serial (Phases 1–12)
+### Serial prerequisite (Phases 0–11)
 
-Phases 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 must complete in order. Phases 1–7 **done** (see archive). OpenSSF score improvement (8–11) precedes ML spikes. Phase 11 **done** — Phase 12 next.
+Phases 0 → 1 → … → 11 must complete in order. All **done** — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phase 12 next.
 
-### After Phase 11
+### Phase 12 (parallel tracks)
 
 | Track         | Work                    | Merge rule                                          |
 | ------------- | ----------------------- | --------------------------------------------------- |
 | **12-onnx**   | SwinIR ONNX spike doc   | Both `12-onnx` and `12-binary` done before Phase 14 |
 | **12-binary** | Binary KServe spike doc | Same                                                |
-| **13**        | Capture/zoom #5         | Before Phase 16; do not parallel with Phase 16 crop |
+
+### After Phase 12
+
+| Track  | Work            | Merge rule                                          |
+| ------ | --------------- | --------------------------------------------------- |
+| **13** | Capture/zoom #5 | Before Phase 16; do not parallel with Phase 16 crop |
 
 ### Critical path (serial)
 
@@ -169,7 +161,6 @@ Phase 12 → 14 → 15 → 16 → 17. Phase 13 → 14. Never Phase 14 before `12
 - Phase 15 + Phase 16 (profiles required for crop UX)
 - Phase 13 capture + Phase 16
 - Phase 12 spikes + Phase 15 GPU (do not start GPU spike work during Phase 12)
-- Phase 8 + Phase 9 (9 needs dependency baseline from 8 doc sync)
 - Two agents, same phase, same files
 
 ### Per-merge checklist (Phases 13–17)
@@ -192,8 +183,9 @@ Phase 12 → 14 → 15 → 16 → 17. Phase 13 → 14. Never Phase 14 before `12
 | Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                       |
 | PLAN source | This file after Phase 3 merge                                                                          |
 | Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail** |
-| OpenSSF     | Phases 4–6 on fork first; **upstream PR deferred** (fork-only validation; badge uses fork slug)        |
-| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11; see `scorecard-gaps.md`                                     |
+| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                         |
+| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred    |
+| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                |
 | Numbering   | Integer phases only; `-onnx`/`-binary` suffixes for parallel tracks                                    |
 
 ---
@@ -214,11 +206,9 @@ See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 
 ## Push-as-you-go
 
-| Phase | Push after                    |
-| ----- | ----------------------------- |
-| 0     | commit (fork mirror defaults) |
-| 1–7   | done (see archive)            |
-| 8–11  | each phase                    |
-| 12+   | each phase                    |
+| Phase | Push after         |
+| ----- | ------------------ |
+| 0–11  | done (see archive) |
+| 12+   | each phase         |
 
 **Git rules:** feature branches only; never push `main`; no `--no-verify`.
