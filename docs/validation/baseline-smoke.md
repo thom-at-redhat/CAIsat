@@ -2,7 +2,7 @@
 
 <!-- Assisted by: cursor, claude -->
 
-Repeatable checks before and after functional changes. Automated gate: `make smoke` (default **health** profile only).
+Repeatable checks before and after functional changes. Automated CI gate: **`pre-commit`** workflow job (health smoke + lint + Helm); optional parallel **`smoke-binary`** job (encode/decode unit test).
 
 **Baseline SHA:** record the commit under test when running manual cluster validation.
 
@@ -22,9 +22,9 @@ Phase numbers match [`docs/project/PLAN.md`](../project/PLAN.md) (0–23).
 
 Set profile: `SMOKE_PROFILE=health make smoke` (default `health`).
 
-**Local automation:** **`health`** and **`binary`** (encode/decode unit test only; no cluster round-trip) run via [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh).
+**Local automation:** **`health`** and **`binary`** run via [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh).
 
-Other profiles use manual checklists below.
+**CI automation:** Required job **`pre-commit`** runs health smoke; parallel job **`smoke-binary`** runs `SMOKE_PROFILE=binary` (not required by ruleset initially). Cluster round-trips remain manual.
 
 ---
 

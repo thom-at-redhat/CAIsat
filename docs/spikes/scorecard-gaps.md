@@ -69,12 +69,12 @@ These checks are **not** targeted for improvement on the contributor fork; ratio
 
 ## Phase mapping
 
-| Phase  | Goal                        | Merge gate                                  |
-| ------ | --------------------------- | ------------------------------------------- |
-| **8**  | OpenSSF score baseline      | `make check` + doc only; record 6.0 in PLAN |
-| **9**  | Dependency hygiene          | `make check` + `make smoke`; green CI       |
-| **10** | Branch protection hardening | `make check`; document ruleset changes      |
-| **11** | Pin remaining dependencies  | `make check`; Pinned-Dependencies → 10/10   |
+| Phase  | Goal                        | Merge gate                                                         |
+| ------ | --------------------------- | ------------------------------------------------------------------ |
+| **8**  | OpenSSF score baseline      | `make check` + doc only; record 6.0 in PLAN                        |
+| **9**  | Dependency hygiene          | `make check` + `make smoke`; green CI; optional `smoke-binary` job |
+| **10** | Branch protection hardening | `make check`; document ruleset changes                             |
+| **11** | Pin remaining dependencies  | `make check`; Pinned-Dependencies → 10/10                          |
 
 ---
 
@@ -242,3 +242,19 @@ _Pre-batch-2 deferral table — superseded by batch 2 results above._
 ## Verification
 
 Re-run Scorecard on fork `main` after Phases 9–11 close. Record tip SHA and overall score in this file and [`PLAN.md`](../project/PLAN.md) verification artifact.
+
+---
+
+## Phase 24 — CI egress hardening (audit mode)
+
+**Branch:** `ci/gha-hardening` (PR TBD).
+
+**Scope:** `step-security/harden-runner` with `egress-policy: audit` on all workflow jobs (pre-commit, smoke-binary, CodeQL matrix, Scorecard).
+Audit mode sends egress telemetry to StepSecurity; no block policy yet.
+
+**Pinned:** `step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176` (# v2.17.0).
+
+**Follow-up (block mode):** After 2–3 green runs on `main`, collect allowed endpoints from StepSecurity job logs and open a separate PR with `egress-policy: block` + per-job `allowed-endpoints`.
+Do not enable block until audit baseline exists.
+
+**Scorecard re-run (MT-5b):** Re-trigger Scorecard workflow on fork `main` after merge; update overall score row in this file and PLAN verification artifact.
