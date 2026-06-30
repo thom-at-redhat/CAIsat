@@ -27,6 +27,7 @@ from logging_config import configure_logging, log_event
 load_dotenv()
 
 logger = configure_logging("caisat-enhance", os.getenv("LOG_LEVEL", "INFO"))
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
@@ -55,7 +56,7 @@ app = FastAPI(title="Zoom & Enhance API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

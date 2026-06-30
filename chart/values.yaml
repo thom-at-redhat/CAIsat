@@ -8,6 +8,9 @@ computeProfile:
   name: cpu
   gpuAvailable: false
 
+networkPolicy:
+  enabled: false
+
 # Model configuration
 model:
   # Deploy the model as part of this chart
