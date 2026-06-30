@@ -214,6 +214,8 @@ to svc port `8080` failed (service exposes port `80`); in-cluster calls via back
 **Follow-up for Phase 14:**
 
 1. Resolve MLServer binary support on cluster (upgrade, runtime flags, or RHOAI support ticket).
-2. Re-run this spike matrix; both SwinIR and YOLO must **pass** before Phase 14 merge.
-3. Implement `encode_kserve_binary()` / `decode_kserve_binary()` in both backends once round-trip passes.
-4. Decide pipeline YAML migration vs documented JSON exception for Sentinel2.
+2. Re-run this spike matrix; both SwinIR and YOLO must **pass** before binary-only mode.
+3. Backends ship `encode_kserve_binary()` / `decode_kserve_binary()` with **JSON fallback** until MLServer binary is fixed.
+4. **Pipeline JSON exception (Phase 14):** [`chart/files/analyze_seed_images_pipeline.yaml`](../../chart/files/analyze_seed_images_pipeline.yaml)
+   retains JSON `flatten().tolist()` for Sentinel2 batch analysis. Rationale: Kubeflow pipeline components run in notebook pods without shared
+   backend helpers; MLServer binary is blocked cluster-wide. Revisit when binary spike passes or pipeline gets a shared infer library sidecar.

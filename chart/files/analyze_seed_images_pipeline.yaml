@@ -1,6 +1,7 @@
 # PIPELINE DEFINITION
 # Name: analyze-seed-images
 # Description: Analyze all seed satellite images using SatlasPretrain and generate statistics for CAIsat frontend
+# Phase 14: Sentinel2 infer uses JSON tensors (documented exception — see docs/spikes/binary-kserve-v2.md).
 # Inputs:
 #    bucket_name: str
 #    model_endpoint: str

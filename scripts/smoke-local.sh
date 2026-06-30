@@ -102,9 +102,40 @@ health_profile() {
     check_health "${DETECTION_URL}" "detection backend"
 }
 
+binary_profile() {
+    health_profile
+    local PYTHON_BIN
+    PYTHON_BIN="$(backend_python "${REPO_ROOT}/backend")"
+    echo "Running KServe v2 encode/decode round-trip (local, no predictor)..."
+    (
+        cd "${REPO_ROOT}"
+        "${PYTHON_BIN}" - <<'PY'
+import sys
+sys.path.insert(0, "backend")
+import numpy as np
+from kserve_v2 import encode_kserve_binary, encode_kserve_json, decode_kserve_json
+
+rng = np.random.default_rng(42)
+tensor = rng.random((1, 3, 256, 256), dtype=np.float32)
+headers, body = encode_kserve_binary("input", tensor, "output")
+header_len = int(headers["Inference-Header-Content-Length"])
+assert header_len > 0
+assert len(body) == header_len + tensor.nbytes
+json_payload = encode_kserve_json("input", tensor)
+roundtrip = decode_kserve_json({"outputs": [{"name": "output", "shape": list(tensor.shape), "data": tensor.flatten().tolist()}]})
+assert np.allclose(roundtrip, tensor), "JSON round-trip mismatch"
+print("PASS: encode_kserve_binary produces valid octet-stream body")
+print("PASS: encode/decode_kserve_json round-trip within tolerance")
+PY
+    )
+}
+
 case "${SMOKE_PROFILE}" in
     health)
         health_profile
+        ;;
+    binary)
+        binary_profile
         ;;
     *)
         echo "Unknown SMOKE_PROFILE: ${SMOKE_PROFILE}" >&2
