@@ -31,9 +31,15 @@ spec:
         limits:
           cpu: '4'
           memory: 6Gi
+          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+          nvidia.com/gpu: "1"
+          {{- end }}
         requests:
           cpu: '2'
           memory: 4Gi
+          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+          nvidia.com/gpu: "1"
+          {{- end }}
       runtime: yolov8m-satelite
       storageUri: 'oci://{{ .Values.detection.image.repository }}:{{ .Values.detection.image.tag }}'
     timeout: 300

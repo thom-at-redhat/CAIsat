@@ -48,6 +48,13 @@ app.kubernetes.io/name: {{ include "caisat.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{- define "caisat.gpuResources" -}}
+{{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+limits:
+  nvidia.com/gpu: "1"
+{{- end }}
+{{- end }}
+
 {{/*
 Model endpoint URL
 */}}

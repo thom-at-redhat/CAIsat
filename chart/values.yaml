@@ -2,6 +2,15 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# Compute profile: cpu | t4 | l40s | hopper
+# Backends read COMPUTE_PROFILE; GPU tiers require GPU_AVAILABLE=true on cluster.
+computeProfile:
+  name: cpu
+  gpuAvailable: false
+
+networkPolicy:
+  enabled: false
+
 # Model configuration
 model:
   # Deploy the model as part of this chart

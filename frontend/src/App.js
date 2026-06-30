@@ -12,6 +12,7 @@ function App() {
   const [enhancementCount, setEnhancementCount] = useState(0);
   const [systemOnline, setSystemOnline] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [captureDimensions, setCaptureDimensions] = useState({ width: 0, height: 0 });
   const [cropArea, setCropArea] = useState({ x: 50, y: 50, size: 256 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -26,6 +27,8 @@ function App() {
   const [showEnhanced, setShowEnhanced] = useState(true);
   const [showDetected, setShowDetected] = useState(true);
   const [popup, setPopup] = useState(null); // 'purpose', 'guide', 'disclaimer', or null
+  const [userMessage, setUserMessage] = useState(null); // { type: 'error'|'info', text: string }
+  const [detectionOnline, setDetectionOnline] = useState(false);
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -40,6 +43,31 @@ function App() {
   const rendererRef = useRef(null);
   const earthRef = useRef(null);
   const mapRef = useRef(null);
+  const cropWrapperRef = useRef(null);
+
+  const clampCropArea = (x, y, imgWidth, imgHeight, size) => ({
+    x: Math.max(0, Math.min(x, imgWidth - size)),
+    y: Math.max(0, Math.min(y, imgHeight - size)),
+  });
+
+  const pointerToImageCoords = (clientX, clientY, img, currentZoom) => {
+    const imgRect = img.getBoundingClientRect();
+    return {
+      x: (clientX - imgRect.left) / currentZoom,
+      y: (clientY - imgRect.top) / currentZoom,
+    };
+  };
+
+  const applyZoomAtPoint = (container, anchorX, anchorY, oldZoom, newZoom) => {
+    const pointX = (container.scrollLeft + anchorX) / oldZoom;
+    const pointY = (container.scrollTop + anchorY) / oldZoom;
+    const clampedZoom = Math.max(1, Math.min(newZoom, 5));
+    setZoom(clampedZoom);
+    requestAnimationFrame(() => {
+      container.scrollLeft = Math.max(0, pointX * clampedZoom - anchorX);
+      container.scrollTop = Math.max(0, pointY * clampedZoom - anchorY);
+    });
+  };
 
   // API endpoints
   const BACKEND_BASE = window.location.hostname.includes('localhost')
@@ -82,6 +110,33 @@ function App() {
     fetchStats();
     const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
+  }, [BACKEND_BASE]);
+
+  useEffect(() => {
+    const pollDetection = async () => {
+      try {
+        await axios.get(`${DETECTION_BASE}/health`, { timeout: 5000 });
+        setDetectionOnline(true);
+      } catch {
+        setDetectionOnline(false);
+      }
+    };
+    pollDetection();
+    const interval = setInterval(pollDetection, 30000);
+    return () => clearInterval(interval);
+  }, [DETECTION_BASE]);
+
+  useEffect(() => {
+    const fetchCapabilities = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_BASE}/api/capabilities`, { timeout: 5000 });
+        setCapabilities(response.data);
+        setCropArea((prev) => ({ ...prev, size: response.data.max_crop || 256 }));
+      } catch (error) {
+        console.log('Capabilities not available, using defaults');
+      }
+    };
+    fetchCapabilities();
   }, [BACKEND_BASE]);
 
   // Initialize Three.js globe
@@ -159,17 +214,23 @@ function App() {
     leafletImage(mapRef.current, (err, canvas) => {
       if (err) {
         console.error('Error capturing map:', err);
-        alert('Error capturing map view');
+        setUserMessage({ type: 'error', text: 'Error capturing map view' });
         return;
       }
 
       // Convert canvas to data URL
       const imageUrl = canvas.toDataURL('image/png');
       setCapturedImage(imageUrl);
+      setCaptureDimensions({ width: canvas.width, height: canvas.height });
+      setZoom(1);
       setView('processing');
 
-      // Reset crop area to center
-      setCropArea({ x: canvas.width / 2 - 128, y: canvas.height / 2 - 128, size: 256 });
+      // Reset crop area to center (natural image pixels; image displays 1:1 inside zoom wrapper)
+      setCropArea({
+        x: canvas.width / 2 - cropSize / 2,
+        y: canvas.height / 2 - cropSize / 2,
+        size: cropSize,
+      });
     });
   };
 
@@ -177,10 +238,7 @@ function App() {
     const img = e.currentTarget.querySelector('.crop-base-image');
     if (!img) return;
 
-    // Calculate position relative to the scaled image
-    const imgRect = img.getBoundingClientRect();
-    const x = (e.clientX - imgRect.left) / zoom;
-    const y = (e.clientY - imgRect.top) / zoom;
+    const { x, y } = pointerToImageCoords(e.clientX, e.clientY, img, zoom);
 
     // Check if clicking inside crop box
     if (
@@ -197,21 +255,16 @@ function App() {
   const handleMouseMove = (e) => {
     if (!dragging) return;
 
-    const img = document.querySelector('.crop-base-image');
+    const img = e.currentTarget.querySelector('.crop-base-image');
     if (!img) return;
 
-    const imgRect = img.getBoundingClientRect();
-    const x = (e.clientX - imgRect.left) / zoom - dragStart.x;
-    const y = (e.clientY - imgRect.top) / zoom - dragStart.y;
-
-    // Get actual image dimensions
-    const maxX = img.naturalWidth - cropArea.size;
-    const maxY = img.naturalHeight - cropArea.size;
+    const { x, y } = pointerToImageCoords(e.clientX, e.clientY, img, zoom);
+    const imgWidth = captureDimensions.width || img.naturalWidth;
+    const imgHeight = captureDimensions.height || img.naturalHeight;
 
     setCropArea({
       ...cropArea,
-      x: Math.max(0, Math.min(x, maxX)),
-      y: Math.max(0, Math.min(y, maxY))
+      ...clampCropArea(x - dragStart.x, y - dragStart.y, imgWidth, imgHeight, cropArea.size),
     });
   };
 
@@ -224,32 +277,30 @@ function App() {
 
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
-
-    // Mouse position relative to container
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-
-    // Current scroll position
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
-
-    // Point in image that's under the mouse (before zoom)
-    const pointX = (scrollLeft + mouseX) / zoom;
-    const pointY = (scrollTop + mouseY) / zoom;
-
-    // Calculate new zoom
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newZoom = Math.max(1, Math.min(zoom * delta, 5));
+    const newZoom = zoom * delta;
 
-    // Set new zoom
-    setZoom(newZoom);
+    applyZoomAtPoint(container, mouseX, mouseY, zoom, newZoom);
+  };
 
-    // After zoom is set, adjust scroll to keep point under mouse
-    // We need to do this after the DOM updates, so use setTimeout
-    setTimeout(() => {
-      container.scrollLeft = pointX * newZoom - mouseX;
-      container.scrollTop = pointY * newZoom - mouseY;
-    }, 0);
+  const handleZoomButton = (newZoom) => {
+    const container = cropWrapperRef.current;
+    if (!container) {
+      setZoom(Math.max(1, Math.min(newZoom, 5)));
+      return;
+    }
+    const rect = container.getBoundingClientRect();
+    applyZoomAtPoint(container, rect.width / 2, rect.height / 2, zoom, newZoom);
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+    if (cropWrapperRef.current) {
+      cropWrapperRef.current.scrollLeft = 0;
+      cropWrapperRef.current.scrollTop = 0;
+    }
   };
 
   const handleEnhance = async () => {
@@ -269,15 +320,16 @@ function App() {
       });
 
       const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 256;
+      canvas.width = cropSize;
+      canvas.height = cropSize;
       const ctx = canvas.getContext('2d');
 
-      // Draw cropped portion
+      const sourceX = Math.round(cropArea.x);
+      const sourceY = Math.round(cropArea.y);
       ctx.drawImage(
         img,
-        cropArea.x, cropArea.y, cropArea.size, cropArea.size,
-        0, 0, 256, 256
+        sourceX, sourceY, cropArea.size, cropArea.size,
+        0, 0, cropSize, cropSize
       );
 
       // Convert to blob
@@ -303,7 +355,7 @@ function App() {
 
     } catch (error) {
       console.error('Enhancement failed:', error);
-      alert('Enhancement failed: ' + error.message);
+      setUserMessage({ type: 'error', text: `Enhancement failed: ${error.message}` });
       setProcessing(false);
     }
   };
@@ -347,30 +399,38 @@ function App() {
       // Draw original image
       ctx.drawImage(img, 0, 0);
 
-      // Draw bounding boxes
+      // Draw bounding boxes (rotated when OBB angle present)
       detectionData.detections.forEach((detection, index) => {
-        const [x1, y1, x2, y2] = detection.box;
-
-        // Generate color based on class
         const hue = (index * 137.5) % 360;
         const color = `hsl(${hue}, 70%, 50%)`;
-
-        // Draw box
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;
-        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-        // Draw label background
+        let labelX;
+        let labelY;
+        if (detection.obb && detection.obb.length >= 5) {
+          const [cx, cy, w, h, angle] = detection.obb;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          ctx.strokeRect(-w / 2, -h / 2, w, h);
+          ctx.restore();
+          labelX = cx - w / 2;
+          labelY = cy - h / 2;
+        } else {
+          const [x1, y1, x2, y2] = detection.box;
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+          labelX = x1;
+          labelY = y1;
+        }
+
         const label = `${detection.class}: ${(detection.confidence * 100).toFixed(1)}%`;
         ctx.font = '14px Roboto';
         const textWidth = ctx.measureText(label).width;
-
         ctx.fillStyle = color;
-        ctx.fillRect(x1, y1 - 22, textWidth + 10, 22);
-
-        // Draw label text
+        ctx.fillRect(labelX, labelY - 22, textWidth + 10, 22);
         ctx.fillStyle = '#fff';
-        ctx.fillText(label, x1 + 5, y1 - 6);
+        ctx.fillText(label, labelX + 5, labelY - 6);
       });
 
       // Convert canvas to blob URL
@@ -380,7 +440,7 @@ function App() {
 
     } catch (error) {
       console.error('Detection failed:', error);
-      alert('Detection failed: ' + error.message);
+      setUserMessage({ type: 'error', text: `Detection failed: ${error.message}` });
       setDetecting(false);
     }
   };
@@ -424,8 +484,32 @@ function App() {
         <div className="status">
           <div className={`status-dot ${systemOnline ? 'online' : ''}`}></div>
           {systemOnline ? 'LIVE' : 'OFFLINE'}
+          <span style={{ marginLeft: '12px', opacity: 0.85 }}>
+            Detection: {detectionOnline ? 'up' : 'down'}
+          </span>
         </div>
       </div>
+      {userMessage && (
+        <div
+          role="alert"
+          style={{
+            padding: '10px 16px',
+            margin: '8px 16px',
+            borderRadius: '4px',
+            background: userMessage.type === 'error' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(13, 110, 253, 0.2)',
+            border: `1px solid ${userMessage.type === 'error' ? '#dc3545' : '#0d6efd'}`,
+          }}
+        >
+          {userMessage.text}
+          <button
+            type="button"
+            onClick={() => setUserMessage(null)}
+            style={{ float: 'right', background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Main Container */}
       <div className="container">
@@ -551,18 +635,21 @@ function App() {
                 {/* Step 1: Select area to enhance */}
                 {!croppedImage && !enhancedImage && (
                   <div className="crop-section">
-                    <h3>Select 256x256 Area to Enhance</h3>
+                    <h3>Select {cropSize}×{cropSize} Area to Enhance</h3>
                     <p className="instruction">
                       Scroll to zoom • Drag red box to select area
                     </p>
                     <div className="zoom-controls">
-                      <button onClick={() => setZoom(z => Math.min(z + 0.5, 5))}>+ Zoom In</button>
+                      <button onClick={() => handleZoomButton(zoom + 0.5)}>+ Zoom In</button>
                       <span>{Math.round(zoom * 100)}%</span>
-                      <button onClick={() => setZoom(z => Math.max(z - 0.5, 1))}>- Zoom Out</button>
-                      <button onClick={() => setZoom(1)}>Reset Zoom</button>
+                      <button onClick={() => handleZoomButton(zoom - 0.5)}>- Zoom Out</button>
+                      <button onClick={() => handleZoomButton(2)}>2×</button>
+                      <button onClick={() => handleZoomButton(4)}>4×</button>
+                      <button onClick={handleResetZoom}>Reset Zoom</button>
                     </div>
                     <div className="crop-container">
                       <div
+                        ref={cropWrapperRef}
                         className="crop-image-wrapper"
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
@@ -581,29 +668,43 @@ function App() {
                           userSelect: 'none'
                         }}
                       >
-                        <div style={{
-                          transform: `scale(${zoom})`,
-                          transformOrigin: 'top left',
-                          position: 'relative',
-                          display: 'inline-block'
-                        }}>
-                          <img
-                            src={capturedImage}
-                            alt="Captured map"
-                            className="crop-base-image"
-                            draggable="false"
-                            style={{ display: 'block' }}
-                          />
+                        <div
+                          style={{
+                            width: captureDimensions.width * zoom,
+                            height: captureDimensions.height * zoom,
+                          }}
+                        >
                           <div
-                            className="crop-box"
+                            className="crop-scaled-layer"
                             style={{
-                              left: `${cropArea.x}px`,
-                              top: `${cropArea.y}px`,
-                              width: `${cropArea.size}px`,
-                              height: `${cropArea.size}px`
+                              transform: `scale(${zoom})`,
+                              transformOrigin: 'top left',
+                              width: captureDimensions.width,
+                              height: captureDimensions.height,
+                              position: 'relative',
+                              display: 'inline-block',
                             }}
                           >
-                            <div className="crop-label">256×256</div>
+                            <img
+                              src={capturedImage}
+                              alt="Captured map"
+                              className="crop-base-image"
+                              width={captureDimensions.width}
+                              height={captureDimensions.height}
+                              draggable="false"
+                              style={{ display: 'block', maxWidth: 'none' }}
+                            />
+                            <div
+                              className="crop-box"
+                              style={{
+                                left: `${cropArea.x}px`,
+                                top: `${cropArea.y}px`,
+                                width: `${cropArea.size}px`,
+                                height: `${cropArea.size}px`,
+                              }}
+                            >
+                              <div className="crop-label">{cropSize}×{cropSize}</div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -634,7 +735,7 @@ function App() {
                       {showOriginal && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowOriginal(!showOriginal)} style={{cursor: 'pointer'}}>
-                            Original (256×256) {showOriginal ? '▼' : '▶'}
+                            Original ({cropSize}×{cropSize}) {showOriginal ? '▼' : '▶'}
                           </h4>
                           <img src={croppedImage} alt="Original crop" />
                         </div>
@@ -650,7 +751,7 @@ function App() {
                       {showEnhanced && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowEnhanced(!showEnhanced)} style={{cursor: 'pointer'}}>
-                            Enhanced (512×512) {showEnhanced ? '▼' : '▶'}
+                            Enhanced ({enhancedSize}×{enhancedSize}) {showEnhanced ? '▼' : '▶'}
                           </h4>
                           <img src={enhancedImage} alt="Enhanced" />
                         </div>
@@ -829,7 +930,7 @@ function App() {
 
                 <h3>Enhancement Process:</h3>
                 <ol>
-                  <li><strong>Select Area:</strong> Use scroll to zoom, then drag the red 256×256 box to your desired area</li>
+                  <li><strong>Select Area:</strong> Use scroll to zoom, then drag the red {cropSize}×{cropSize} box to your desired area</li>
                   <li><strong>Enhance:</strong> Click "Enhance Selected Area" to process with AI</li>
                   <li><strong>Review Results:</strong> Compare the original and AI-enhanced images side-by-side</li>
                   <li><strong>Download:</strong> Save the enhanced image for your use</li>

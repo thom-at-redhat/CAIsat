@@ -42,6 +42,14 @@ spec:
           value: "{{ .Values.detectionBackend.env.confidenceThreshold }}"
         - name: IOU_THRESHOLD
           value: "{{ .Values.detectionBackend.env.iouThreshold }}"
+        - name: COMPUTE_PROFILE
+          value: {{ .Values.computeProfile.name | quote }}
+        - name: GPU_AVAILABLE
+          value: {{ .Values.computeProfile.gpuAvailable | quote }}
+        - name: SAHI_WINDOW
+          value: "640"
+        - name: SAHI_OVERLAP
+          value: "0.2"
         livenessProbe:
           httpGet:
             path: /health
@@ -100,7 +108,7 @@ metadata:
     {{- include "caisat.labels" . | nindent 4 }}
     app.kubernetes.io/component: detection-backend
   annotations:
-    haproxy.router.openshift.io/timeout: 2m
+    haproxy.router.openshift.io/timeout: 5m
 spec:
   host: {{ .Values.detectionBackend.route.host }}
   to:

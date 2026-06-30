@@ -5,226 +5,150 @@ This service receives images from the frontend, sends them to the
 OpenShift AI model endpoint, and returns the enhanced result.
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-import aiohttp
-import numpy as np
-from PIL import Image
+# Assisted by: cursor, claude
+
+from contextlib import asynccontextmanager
 import io
 import os
+import traceback
+
+import aiohttp
 from dotenv import load_dotenv
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from PIL import Image
+
+from capabilities import get_capabilities
+from kserve_v2 import sanitize_model_error
+from tiled_sr import enhance_image_tiled
+from logging_config import configure_logging, log_event
 
 load_dotenv()
 
-app = FastAPI(title="Zoom & Enhance API")
+logger = configure_logging("caisat-enhance", os.getenv("LOG_LEVEL", "INFO"))
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
 
-# Simple in-memory counter for enhancements
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
+MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
+KSERVE_INPUT_NAME = os.getenv("KSERVE_INPUT_NAME", "input")
+KSERVE_OUTPUT_NAME = os.getenv("KSERVE_OUTPUT_NAME", "output")
+
+if not MODEL_ENDPOINT:
+    raise ValueError("MODEL_ENDPOINT environment variable must be set. Example: http://model-service.namespace.svc.cluster.local:8080/v2/models/model-name/infer")
+
+http_session: aiohttp.ClientSession | None = None
 enhancement_counter = 0
 
-# Configure CORS
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_session
+    http_session = aiohttp.ClientSession()
+    log_event(logger, "enhancement backend started", model_endpoint=MODEL_ENDPOINT)
+    yield
+    if http_session is not None:
+        await http_session.close()
+        http_session = None
+
+
+app = FastAPI(title="Zoom & Enhance API", lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict to your frontend domain
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Model endpoint from environment variable (no default - must be configured)
-MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
-
-if not MODEL_ENDPOINT:
-    raise ValueError("MODEL_ENDPOINT environment variable must be set. Example: http://model-service.namespace.svc.cluster.local:8080/v2/models/model-name/infer")
-
-
-def preprocess_image(image: Image.Image) -> dict:
-    """
-    Preprocess image for ONNX model input.
-
-    Args:
-        image: PIL Image
-
-    Returns:
-        JSON payload for KServe v2 inference protocol
-    """
-    # Convert to RGB if needed
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-
-    # Resize to 256x256 for consistent processing
-    image = image.resize((256, 256), Image.LANCZOS)
-
-    # Convert to numpy array and normalize to [0, 1]
-    img_array = np.array(image).astype(np.float32) / 255.0
-
-    # Convert HWC to CHW format (channels first)
-    img_array = np.transpose(img_array, (2, 0, 1))
-
-    # Add batch dimension: (1, 3, H, W)
-    img_array = np.expand_dims(img_array, 0)
-
-    # Create KServe v2 inference request
-    # https://github.com/kserve/kserve/blob/master/docs/predict-api/v2/required_api.md
-    request_data = {
-        "inputs": [
-            {
-                "name": "input",
-                "shape": list(img_array.shape),
-                "datatype": "FP32",
-                "data": img_array.flatten().tolist(),
-            }
-        ]
-    }
-
-    return request_data
-
-
-def postprocess_output(output_data: dict) -> Image.Image:
-    """
-    Convert model output to PIL Image.
-
-    Args:
-        output_data: KServe v2 inference response
-
-    Returns:
-        PIL Image
-    """
-    # Extract output from response
-    outputs = output_data["outputs"][0]
-    shape = outputs["shape"]
-    data = outputs["data"]
-
-    # Reshape to (1, 3, H, W)
-    output_array = np.array(data).reshape(shape)
-
-    # Remove batch dimension
-    output_array = output_array[0]
-
-    # Convert CHW to HWC
-    output_array = np.transpose(output_array, (1, 2, 0))
-
-    # Clip to [0, 1] and convert to uint8
-    output_array = np.clip(output_array, 0, 1)
-    output_array = (output_array * 255).astype(np.uint8)
-
-    return Image.fromarray(output_array)
-
 
 @app.get("/")
 async def root():
-    """Health check endpoint."""
-    return {
-        "service": "Zoom & Enhance API",
-        "status": "operational",
-    }
+    return {"service": "Zoom & Enhance API", "status": "operational"}
 
 
 @app.get("/health")
 async def health():
-    """Kubernetes health check."""
     return {"status": "healthy"}
+
+
+@app.get("/api/capabilities")
+async def api_capabilities():
+    return get_capabilities()
 
 
 @app.get("/api/stats")
 async def get_stats():
-    """Get enhancement statistics."""
     return {"total_enhancements": enhancement_counter, "status": "operational"}
 
 
 @app.post("/api/enhance")
 async def enhance_image(image: UploadFile = File(...)):
-    """
-    Enhance an uploaded image using the AI model.
-
-    Args:
-        image: Uploaded image file
-
-    Returns:
-        Enhanced image
-    """
     global enhancement_counter
 
+    if http_session is None:
+        raise HTTPException(status_code=503, detail="Service not ready")
+
+    caps = get_capabilities()
+    max_crop = int(caps["max_crop"])
+
     try:
-        print("=== ENHANCE REQUEST STARTED ===")
-        # Read and decode image
-        print("Reading uploaded file...")
         contents = await image.read()
-        print(f"File size: {len(contents)} bytes")
+        if len(contents) > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
 
-        print("Decoding image...")
         img = Image.open(io.BytesIO(contents))
-        print(f"Received image: {img.size[0]}x{img.size[1]}, mode: {img.mode}")
+        side = min(img.size)
+        if side > max_crop:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Crop {side}px exceeds profile max_crop {max_crop}px",
+            )
 
-        # Preprocess image
-        print("Preprocessing image...")
-        request_data = preprocess_image(img)
-        print(f"Input shape: {request_data['inputs'][0]['shape']}")
-        print(f"Data points: {len(request_data['inputs'][0]['data'])}")
-
-        print(f"Sending request to model endpoint: {MODEL_ENDPOINT}")
-
-        # Send to model endpoint
-        print("Creating HTTP session...")
-        async with aiohttp.ClientSession() as session:
-            print("Sending POST request to model...")
-            async with session.post(
+        try:
+            enhanced_img = await enhance_image_tiled(
+                http_session,
                 MODEL_ENDPOINT,
-                json=request_data,
-                timeout=aiohttp.ClientTimeout(total=300),  # 5 minutes for model inference
-            ) as response:
-                print(f"Model response status: {response.status}")
-                if response.status != 200:
-                    error_text = await response.text()
-                    print(f"Model endpoint error: {error_text}")
-                    raise HTTPException(status_code=502, detail=f"Model inference failed: {error_text}")
+                img,
+                input_name=KSERVE_INPUT_NAME,
+                output_name=KSERVE_OUTPUT_NAME,
+                max_tile=int(caps["max_tile"]),
+                scale_factor=int(caps["scale_factor"]),
+                tiling_enabled=bool(caps["tiling_enabled"]),
+                timeout_seconds=float(caps["infer_timeout_seconds"]),
+            )
+        except aiohttp.ClientResponseError as exc:
+            print(f"Model endpoint error ({exc.status}): {exc.message}")
+            raise HTTPException(
+                status_code=502,
+                detail=sanitize_model_error(exc.status, exc.message or ""),
+            ) from exc
+        except RuntimeError as exc:
+            print(f"Tiled enhancement aborted: {exc}")
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-                print("Reading JSON response...")
-                result = await response.json()
-                print(f"Response keys: {list(result.keys())}")
+        print(f"Enhanced output: {enhanced_img.size[0]}x{enhanced_img.size[1]} (native 4x)")
+        log_event(logger, "enhance complete", width=enhanced_img.size[0], height=enhanced_img.size[1])
 
-        print("Model inference successful")
-
-        # Postprocess output
-        print("Starting postprocess...")
-        enhanced_img = postprocess_output(result)
-        print(f"Enhanced image from model: {enhanced_img.size[0]}x{enhanced_img.size[1]}")
-
-        # Resize to 512x512 (2x instead of 4x) for better usability
-        enhanced_img = enhanced_img.resize((512, 512), Image.LANCZOS)
-        print(f"Resized to: {enhanced_img.size[0]}x{enhanced_img.size[1]}")
-
-        # Convert to bytes
-        print("Converting to PNG bytes...")
         img_byte_arr = io.BytesIO()
         enhanced_img.save(img_byte_arr, format="PNG")
-        png_size = img_byte_arr.tell()  # Get size BEFORE seek
         img_byte_arr.seek(0)
-        print(f"PNG size: {png_size} bytes")
 
-        print("Sending response...")
-
-        # Increment counter on successful enhancement
         enhancement_counter += 1
-        print(f"Total enhancements: {enhancement_counter}")
 
-        response = StreamingResponse(
+        return StreamingResponse(
             img_byte_arr,
             media_type="image/png",
             headers={"Content-Disposition": "inline; filename=enhanced.png"},
         )
-        print("=== ENHANCE REQUEST COMPLETED ===")
-        return response
 
     except HTTPException:
         raise
-    except Exception as e:
-        import traceback
-
-        error_detail = f"{type(e).__name__}: {str(e)}"
-        print(f"Error processing image: {error_detail}")
+    except Exception as exc:
+        print(f"Error processing image: {type(exc).__name__}: {exc}")
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail="Image enhancement failed") from exc
 
 
 if __name__ == "__main__":
