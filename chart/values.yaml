@@ -9,7 +9,7 @@ model:
 
   # OCI image with the ONNX model
   image:
-    repository: quay.io/rh-ai-quickstart/caisat
+    repository: quay.io/thom_at_redhat/caisat
     tag: "model"
 
   # InferenceService name
@@ -44,7 +44,7 @@ detection:
 
   # OCI image with the ONNX model
   image:
-    repository: quay.io/rh-ai-quickstart/caisat
+    repository: quay.io/thom_at_redhat/caisat
     tag: "yoloobb"
 
   # InferenceService name
@@ -80,7 +80,7 @@ backend:
   replicaCount: 1
 
   image:
-    repository: quay.io/rh-ai-quickstart/caisat
+    repository: quay.io/thom_at_redhat/caisat
     pullPolicy: Always
     tag: "backend"
 
@@ -108,7 +108,7 @@ detectionBackend:
   replicaCount: 1
 
   image:
-    repository: quay.io/rh-ai-quickstart/caisat
+    repository: quay.io/thom_at_redhat/caisat
     pullPolicy: Always
     tag: "detection-backend"
 
@@ -141,7 +141,7 @@ frontend:
   replicaCount: 1
 
   image:
-    repository: quay.io/rh-ai-quickstart/caisat
+    repository: quay.io/thom_at_redhat/caisat
     pullPolicy: Always
     tag: "frontend"
 
@@ -164,9 +164,9 @@ frontend:
       enabled: true
       termination: edge
 
-# Image pull secrets (if using private registry)
+# Image pull secrets — not required for fork defaults (public quay.io/thom_at_redhat/caisat)
 imagePullSecrets: []
-# - name: quay-pull-secret
+# - name: quay-pull-secret  # only if overriding to a private registry
 
 # Pod annotations
 podAnnotations: {}

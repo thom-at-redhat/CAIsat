@@ -65,18 +65,25 @@ helm install zoom-enhance ./helm/zoom-enhance -f my-values.yaml
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `model.image.repository` | SwinIR model image repository | `quay.io/thom_at_redhat/caisat` |
+| `model.image.tag` | SwinIR model image tag | `model` |
 | `model.serviceName` | Model inference service name | `swinir-predictor` |
 | `model.namespace` | Namespace where model is deployed | `""` (same as release) |
 | `model.name` | Model name | `swinir` |
 | `model.port` | Model service port | `8080` |
-| `backend.replicaCount` | Backend replica count | `2` |
-| `backend.image.repository` | Backend image repository | `quay.io/rh-ai-quickstart/caisat` |
-| `backend.image.tag` | Backend image tag | `latest` |
-| `frontend.replicaCount` | Frontend replica count | `2` |
-| `frontend.image.repository` | Frontend image repository | `quay.io/rh-ai-quickstart/caisat` |
-| `frontend.image.tag` | Frontend image tag | `latest` |
+| `detection.image.repository` | YOLO OBB model image repository | `quay.io/thom_at_redhat/caisat` |
+| `detection.image.tag` | YOLO OBB model image tag | `yoloobb` |
+| `backend.replicaCount` | Backend replica count | `1` |
+| `backend.image.repository` | Backend image repository | `quay.io/thom_at_redhat/caisat` |
+| `backend.image.tag` | Backend image tag | `backend` |
+| `detectionBackend.image.repository` | Detection backend image repository | `quay.io/thom_at_redhat/caisat` |
+| `detectionBackend.image.tag` | Detection backend image tag | `detection-backend` |
+| `frontend.replicaCount` | Frontend replica count | `1` |
+| `frontend.image.repository` | Frontend image repository | `quay.io/thom_at_redhat/caisat` |
+| `frontend.image.tag` | Frontend image tag | `frontend` |
 | `frontend.route.enabled` | Enable OpenShift route | `true` |
 | `frontend.route.host` | Custom hostname | `""` (auto-generated) |
+| `imagePullSecrets` | Pull secrets for private registries | `[]` (not needed for fork defaults) |
 
 See `values.yaml` for all options.
 
