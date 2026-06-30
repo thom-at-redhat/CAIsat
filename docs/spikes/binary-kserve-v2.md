@@ -271,3 +271,5 @@ to svc port `8080` failed (service exposes port `80`); in-cluster calls via back
 4. **Pipeline JSON exception (Phase 14):** [`chart/files/analyze_seed_images_pipeline.yaml`](../../chart/files/analyze_seed_images_pipeline.yaml)
    retains JSON `flatten().tolist()` for Sentinel2 batch analysis. Rationale: Kubeflow pipeline components run in notebook pods without shared
    backend helpers; MLServer binary is blocked cluster-wide. Revisit when binary spike passes or pipeline gets a shared infer library sidecar.
+
+**Waiver (2026-06-30, MT-2):** `oc` authenticated; no CAIsat deploy for ea.2+ retest. Prior fail @ ea.1 and blocked retest @ `2aa6343` stand; JSON fallback active. Re-test when cluster + Quay egress verified.

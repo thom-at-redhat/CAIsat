@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Local smoke tests for CAIsat backends (health profile minimum).
+# Local smoke tests for CAIsat backends.
+# Profiles: health (default; CI gate via `make smoke`) and binary (encode/decode unit test via SMOKE_PROFILE=binary).
+# Cluster baseline/binary/crop round-trips are manual only — not run in CI; see docs/validation/baseline-smoke.md.
 # Assisted by: cursor, claude
 set -o errexit -o nounset -o pipefail
 
