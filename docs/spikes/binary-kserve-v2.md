@@ -10,12 +10,12 @@ on deployed MLServer predictors.
 
 ## SwinIR (`input`, shape `(1, 3, 256, 256)`)
 
-| Field           | Value                                                            |
-| --------------- | ---------------------------------------------------------------- |
-| Date            | 2026-06-30                                                       |
-| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
-| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
-| Blocks          | Phase 14 (binary tensor migration)                               |
+| Field           | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| Date            | 2026-06-30                                                                  |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500                   |
+| Cluster/profile | pre-production RHOAI 3.5.ea.1; MLServer `1.7.1+rhaiv.8`; namespace redacted |
+| Blocks          | Phase 14 (binary tensor migration)                                          |
 
 ### Command
 
@@ -83,6 +83,8 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 196: invali
 
 ### Notes
 
+**Platform:** RHOAI 3.5.ea.1 (pre-production).
+
 | Path   | Request `Content-Type`      | Request size | Latency | Response output shape | Result |
 | ------ | --------------------------- | ------------ | ------- | --------------------- | ------ |
 | JSON   | `application/json`          | ~3.98 MB     | ~88 s   | `(1, 3, 1024, 1024)`  | pass   |
@@ -98,12 +100,12 @@ JSON infer matches current [`backend/app.py`](../../backend/app.py) path. Binary
 
 ## YOLOv8-OBB (`images`, shape `(1, 3, 640, 640)`)
 
-| Field           | Value                                                            |
-| --------------- | ---------------------------------------------------------------- |
-| Date            | 2026-06-30                                                       |
-| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500        |
-| Cluster/profile | `<namespace>` on ODS QE PSI-21, MLServer `1.7.1+rhaiv.8` (RHOAI) |
-| Blocks          | Phase 14 (binary tensor migration)                               |
+| Field           | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| Date            | 2026-06-30                                                                  |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500                   |
+| Cluster/profile | pre-production RHOAI 3.5.ea.1; MLServer `1.7.1+rhaiv.8`; namespace redacted |
+| Blocks          | Phase 14 (binary tensor migration)                                          |
 
 ### Command
 
@@ -194,6 +196,56 @@ Default pipeline model endpoint: `http://sentinel2-model-predictor.release-names
 
 ---
 
+## Re-test: RHOAI 3.5.ea.2
+
+| Field           | Value                                                                                   |
+| --------------- | --------------------------------------------------------------------------------------- |
+| Date            | 2026-06-30                                                                              |
+| Verdict         | **blocked** — platform verified; CAIsat predictors not Ready; infer matrix not executed |
+| Cluster/profile | pre-production RHOAI 3.5.ea.2; MLServer `1.7.1+rhaiv.8`; namespace redacted             |
+| Blocks          | Phase 14 (binary tensor migration) — cannot confirm ea.2 fix without working predictors |
+
+### Platform verification
+
+```bash
+# RHOAI operator CSV (version only; redact hostnames in notes)
+oc get csv -n redhat-ods-operator | grep rhods
+# rhods-operator.3.5.0-ea.2   3.5.0-ea.2   Succeeded
+
+# MLServer version from ea.2 odh-mlserver image (in-cluster one-shot pod)
+oc run mlserver-ver-check --restart=Never \
+  --image=registry.redhat.io/rhoai/odh-mlserver-rhel9@sha256:<ea2-digest> \
+  --command -- python3 -c "import mlserver; print(mlserver.__version__)"
+# 1.7.1+rhaiv.8
+```
+
+### CAIsat deploy status
+
+| Check                          | Result                                                             |
+| ------------------------------ | ------------------------------------------------------------------ |
+| InferenceServices (pre-deploy) | None found                                                         |
+| Helm install attempted         | Yes — InferenceServices created but predictors not Ready           |
+| Blocker                        | Model init container: Quay image pull `unauthorized` (fork mirror) |
+| SwinIR / YOLO infer re-test    | **not run** — predictors stuck `Init:ImagePullBackOff`             |
+
+### Per-predictor vs 3.5.ea.1
+
+| Predictor  | 3.5.ea.1 (baseline)    | 3.5.ea.2 re-test | Notes                                         |
+| ---------- | ---------------------- | ---------------- | --------------------------------------------- |
+| SwinIR     | JSON pass; binary fail | **not tested**   | Blocked on deploy; MLServer version unchanged |
+| YOLOv8-OBB | JSON pass; binary fail | **not tested**   | Blocked on deploy; MLServer version unchanged |
+
+### Notes
+
+RHOAI **3.5.0-ea.2** is installed (operator CSV `3.5.0-ea.2`). The ea.2 `odh-mlserver-rhel9` image digest differs from ea.1, but the
+packaged MLServer Python version remains **`1.7.1+rhaiv.8`** — same as the ea.1 baseline spike. Without a running predictor, the JSON/binary
+infer matrix could not be re-executed; **cannot confirm** whether ea.2 fixes the `application/octet-stream` HTTP 500 observed on ea.1.
+
+**Follow-up:** Re-run this section after CAIsat deploy with valid Quay pull credentials on a 3.5.ea.2 cluster. If MLServer version is still
+`1.7.1+rhaiv.8`, expect the same binary failure unless the image contains a patch not reflected in the Python package version string.
+
+---
+
 ## Summary
 
 | Predictor           | Tensor   | Input shape        | JSON infer | Binary round-trip | Phase 14 blocker                                 |
@@ -208,7 +260,7 @@ Default pipeline model endpoint: `http://sentinel2-model-predictor.release-names
 in the validation error handler when binary bytes appear in the request body. Re-test after MLServer/runtime upgrade or RHOAI binary-extension
 configuration fix.
 
-**Cluster access used:** `oc` authenticated cluster admin on ODS QE PSI-21 (`api-ods-qe-psi-21-osp-rh-ods-com:6443`). Local `oc port-forward`
+**Cluster access used:** `oc` authenticated cluster admin on `<cluster-profile>` (`<api-server>:6443`). Local `oc port-forward`
 to svc port `8080` failed (service exposes port `80`); in-cluster calls via backend pod succeeded for JSON.
 
 **Follow-up for Phase 14:**
