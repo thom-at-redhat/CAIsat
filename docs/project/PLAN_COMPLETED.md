@@ -8,7 +8,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases 0 + 8–23.
 
-**Branch tip (2026-06-30):** fork `main` @ `12c04945`; Phase 7 close in PR #32 (open). Phase 0 Quay gate **fail** for `rh-ai-quickstart`; personal mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `acb9a79`; Phase 0 merged PR #33; Phase 8 score baseline next in PR. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -112,7 +112,7 @@ Phase 6 — CodeQL workflow green; CI test job deferred to Phase 7 (no `tests/` 
 
 **PR sequence (fork):** #21 Phase 4 Scorecard; #24 Phase 5 quick wins; #25 PLAN close; #26 markdown-link-check pin; #28 PLAN archive; #29 Phase 6 CodeQL; #31 PLAN tip sync; #32 Phase 7 smoke.
 
-**Score at Phase 4 close:** 5.2. **Score after Phase 6 + fork tip sync:** **6.0** @ `12c04945` (2026-06-30); SAST **10/10**.
+**Score at Phase 4 close:** 5.2. **Score after Phase 6 + fork tip sync:** **6.0** @ `12c04945` (2026-06-30); SAST **10/10**. **Re-baseline Phase 8:** **6.0** @ `acb9a79`.
 
 ---
 
@@ -183,7 +183,7 @@ Phase 6 — CodeQL workflow green; CI test job deferred to Phase 7 (no `tests/` 
 | Field  | Value                                                           |
 | ------ | --------------------------------------------------------------- |
 | Goal   | Baseline smoke doc + `make smoke` health profile; CI smoke step |
-| Branch | `feat/phase-7-baseline-smoke` → PR #32 (open)                   |
+| Branch | `feat/phase-7-baseline-smoke` → merged PR #32 @ `b1ee8da`       |
 | Gate   | `make check` + `make smoke` (health only)                       |
 
 Deliverables:
@@ -197,7 +197,7 @@ Waived: `tests/` + CI pytest job (no test suite yet; deferred to Phase 12+).
 
 ### Phase 7 close checklist
 
-**Status:** Done (2026-06-30). Gate branch: `feat/phase-7-baseline-smoke` → PR #32 pending merge.
+**Status:** Done (2026-06-30). Merged PR #32 @ `b1ee8da`.
 
 1. [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) — health profile documented; cluster baseline sign-off optional until Phase 13
 2. [`Makefile`](../../Makefile) — `smoke` target; [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) — health profile only (`SMOKE_PROFILE=health`)
@@ -205,5 +205,57 @@ Waived: `tests/` + CI pytest job (no test suite yet; deferred to Phase 12+).
 4. `make check` + `make smoke` green locally; green **pre-commit** workflow on PR (includes smoke)
 5. CI test job **waived** — no `tests/` directory; pytest job deferred until functional tests land (Phase 12+ or when tests added)
 6. Commit PLAN close + phase renumber; record tip SHA
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 0 — Quay gate (fork mirror)
+
+| Field  | Value                                                                                        |
+| ------ | -------------------------------------------------------------------------------------------- |
+| Goal   | Anonymous pull of all five chart tags via fork mirror                                        |
+| Branch | `chore/phase-0-quay-mirror` → merged PR #33 @ `acb9a79`                                      |
+| Gate   | `make check`; five tags pull from fork mirror (see [`quay-tags.md`](../spikes/quay-tags.md)) |
+
+Deliverables:
+
+- [`chart/values.yaml`](../../chart/values.yaml) — default image points to fork mirror (see [`quay-tags.md`](../spikes/quay-tags.md))
+- [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md) — **pass** on fork mirror; upstream `rh-ai-quickstart` still **fail**
+
+### Phase 0 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #33 @ `acb9a79`.
+
+1. All five chart tags pull anonymously from fork mirror (commands in [`quay-tags.md`](../spikes/quay-tags.md))
+2. [`chart/values.yaml`](../../chart/values.yaml) defaults updated; upstream unauthorized pull documented
+3. `make check` green; commit PLAN close; record tip SHA
+
+---
+
+## Phase 8 — OpenSSF score baseline
+
+| Field  | Value                                                                   |
+| ------ | ----------------------------------------------------------------------- |
+| Goal   | Sync PLAN/badge, finalize `scorecard-gaps.md`, record Scorecard **6.0** |
+| Branch | `chore/phase-8-score-baseline` → PR pending merge                       |
+| Gate   | `make check` (doc-only)                                                 |
+
+Deliverables:
+
+- [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — baseline @ `acb9a79`; Maintained/Contributors waivers documented
+- [`PLAN.md`](PLAN.md) — verification artifact, todos, status synced; Phase 8 archived here
+- Scorecard API confirms **6.0** @ fork `main` `acb9a79` (2026-06-30)
+
+### Phase 8 close checklist
+
+**Status:** Done (2026-06-30). Gate branch: `chore/phase-8-score-baseline`.
+
+1. Scorecard API: **6.0** on contributor fork (verified via `api.scorecard.dev`; see README badge)
+2. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — baseline SHA `acb9a79`; explicit Maintained + Contributors waiver section
+3. [`PLAN.md`](PLAN.md) — branch header, last verified, verification artifact, todos, status table updated
+4. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 8 summary archived; Phase 0 close recorded
+5. `make check` green locally; green **pre-commit** workflow on PR
+6. Commit PLAN close; record tip SHA in handover
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
