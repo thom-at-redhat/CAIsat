@@ -8,7 +8,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases 0 + 8–23.
 
-**Branch tip (2026-06-30):** fork `main` @ `1b997f1`; Phase 10 merged. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `5d02e74`; Phase 10 merged PR #38. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -303,7 +303,7 @@ Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) af
 | Field  | Value                                                                                  |
 | ------ | -------------------------------------------------------------------------------------- |
 | Goal   | Harden ruleset `protect-main`: CodeQL required, maximal settings feasible on solo fork |
-| Branch | `feat/phase-10-branch-protection` → merged PR pending                                  |
+| Branch | `feat/phase-10-branch-protection` → merged PR #38 @ `5d02e74`                          |
 | Gate   | `make check`; document ruleset before/after in `scorecard-gaps.md`                     |
 
 Deliverables:
@@ -325,7 +325,7 @@ Deliverables:
 
 ### Phase 10 close checklist
 
-**Status:** Done (2026-06-30). Branch: `feat/phase-10-branch-protection`.
+**Status:** Done (2026-06-30). Merged PR #38 @ `5d02e74`.
 
 1. `gh api` PUT ruleset `18274842` — CodeQL added; verified via GET
 2. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 10 before/after, Code-Review waiver, expected Branch-Protection impact
