@@ -334,3 +334,35 @@ Deliverables:
 5. `make check` green; green CI on PR (pre-commit + CodeQL + Scorecard)
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 11 — Pin remaining dependencies
+
+| Field  | Value                                                               |
+| ------ | ------------------------------------------------------------------- |
+| Goal   | Pin remaining workflow/pre-commit refs; Pinned-Dependencies → 10/10 |
+| Branch | `feat/phase-11-pin-dependencies` → merged PR TBD                    |
+| Gate   | `make check` + `make smoke` (health); green CI                      |
+
+Deliverables:
+
+- [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml) — 13 hook repos `rev:` → full commit SHAs; exact npm/pip pins for additional_dependencies
+- [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml) — `pip install pre-commit==4.6.0`
+- [`.secrets.baseline`](../../.secrets.baseline) — 13 HexHighEntropy false positives for hook SHAs
+- [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 11 pin table and expected impact
+- [`PLAN.md`](PLAN.md) — Phase 11 archived; Phase 12 next
+
+### Phase 11 close checklist
+
+**Status:** Done (2026-06-30). PR TBD.
+
+1. Pin 13 pre-commit hook repos to commit SHAs (same tag versions as before)
+2. Pin floating npm/pip deps: `jshint@2.13.6`, `prettier@3.1.0`, `pytest==8.3.5`, `pre-commit==4.6.0`
+3. Update `.secrets.baseline` for hook SHA false positives
+4. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 11 section; Pinned-Dependencies target 10/10
+5. [`PLAN.md`](PLAN.md) — branch header, todos, status table, verification artifact updated
+6. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 11 summary archived (this section)
+7. `make check` + `make smoke` green; green CI on PR
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.

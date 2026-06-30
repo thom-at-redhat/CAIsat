@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `5d02e74` (2026-06-30). Phase 11 next — use feature branches; never push `main`.
+**Branch:** `main` @ `195369a` (2026-06-30). Phase 12 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -37,13 +37,14 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)          | ok (fork until upstream) |
 | Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | `pre-commit` + Scorecard + CodeQL on `main`    | ok (fork)                |
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
+| Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11; 13 hook repos + npm/pip exact pins   | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started (ML spikes)                        | ok                       |
 
-**Last verified:** fork `main` @ `5d02e74` (2026-06-30); Scorecard **6.0** (Branch-Protection 4 — re-run may lag); SAST **10/10**; Phase 10 ruleset hardening; Dependabot **98→21** (8H/12M/1L)
+**Last verified:** fork `main` @ `195369a` (2026-06-30); Scorecard **6.0** (Pinned-Dependencies 10/10 post-Phase 11 — re-run may lag); SAST **10/10**; Phase 10 ruleset hardening; Dependabot **21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
-**Claims not checked:** cluster baseline sign-off (React 19 / three / react-leaflet UX → Phase 13); Phase 12 ONNX/binary/GPU spikes; post-Phase-10 and post-Phase-11 Scorecard re-runs
+**Claims not checked:** cluster baseline sign-off (React 19 / three / react-leaflet UX → Phase 13); Phase 12 ONNX/binary/GPU spikes; post-Phase-11 Scorecard overall re-run
 
 **Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 5 fork gate closed: PR #24 merged @ `f0e582a`; SECURITY.md + pre-commit permissions verified on fork `main`.
 
@@ -59,7 +60,7 @@ Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`
 | 8     | Score baseline     | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
 | 9     | Dependency hygiene | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
 | 10    | Branch protection  | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 11    | Pin dependencies   | pending       | Workflow/pre-commit SHA pins → 10/10                    |
+| 11    | Pin dependencies   | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
 | 12    | Spikes             | pending       | Parallel `12-onnx` + `12-binary`                        |
 | 13–17 | Core ML            | pending       | Per merge gates (health + manual checklists)            |
 | 18–23 | Deferred           | pending       | After Phase 17                                          |
@@ -68,7 +69,7 @@ Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`
 
 ## Status
 
-Phases **0, 1–10** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases 4–6, 8–10 archived there (OpenSSF install, score baseline, dependency hygiene, branch protection).
+Phases **0, 1–11** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phases 4–6, 8–11 archived there (OpenSSF install, score baseline, dependency hygiene, branch protection, pin dependencies).
 
 | Phase | Track                  | Status                 | Merge gate                                                                                                    |
 | ----- | ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -76,7 +77,7 @@ Phases **0, 1–10** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Phas
 | 8     | OpenSSF score baseline | **Done**               | `make check` + doc only; Scorecard **6.0** @ `acb9a79`                                                        |
 | 9     | Dependency hygiene     | **Done**               | PR #35 batch 1 @ `30c55ef` + PR #36 batch 2 @ `7d2106b`; Dependabot **98→21**; cluster UX validation Phase 13 |
 | 10    | Branch protection      | **Done**               | Ruleset `protect-main`: CodeQL required; deletion + force-push blocked; Code-Review waiver documented         |
-| 11    | Pin dependencies       | Planned                | `make check`; Pinned-Dependencies → 10/10                                                                     |
+| 11    | Pin dependencies       | **Done**               | Pre-commit/workflow SHA pins; Pinned-Dependencies → 10/10                                                     |
 | 12    | ONNX + binary spikes   | Planned                | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                            |
 | 13    | Capture/zoom (#5)      | Planned                | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md`      |
 | 14    | Binary KServe tensors  | Planned                | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                               |
@@ -146,9 +147,9 @@ Do not treat Phases 13–17 as fully automated until `smoke-local.sh` implements
 
 ## Parallel execution (multitask mode)
 
-### Serial (Phases 1–11)
+### Serial (Phases 1–12)
 
-Phases 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 must complete in order. Phases 1–7 **done** (see archive). OpenSSF score improvement (8–11) precedes ML spikes.
+Phases 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 must complete in order. Phases 1–7 **done** (see archive). OpenSSF score improvement (8–11) precedes ML spikes. Phase 11 **done** — Phase 12 next.
 
 ### After Phase 11
 
