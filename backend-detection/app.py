@@ -25,8 +25,11 @@ from capabilities import get_capabilities
 from kserve_v2 import kserve_infer, sanitize_model_error
 from obb import decode_yolov8_obb
 from sahi import generate_slices, merge_detections, offset_detection
+from logging_config import configure_logging, log_event
 
 load_dotenv()
+
+logger = configure_logging("caisat-detection", os.getenv("LOG_LEVEL", "INFO"))
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
@@ -67,6 +70,7 @@ IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.45"))
 async def lifespan(app: FastAPI):
     global http_session
     http_session = aiohttp.ClientSession()
+    log_event(logger, "detection backend started", model_endpoint=MODEL_ENDPOINT)
     yield
     if http_session is not None:
         await http_session.close()
@@ -182,6 +186,7 @@ async def detect_objects(image: UploadFile = File(...)):
             ) from exc
 
         detections = merge_detections(all_detections, iou_threshold=IOU_THRESHOLD)
+        log_event(logger, "detect complete", count=len(detections), slices=len(generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)))
         detection_counter += 1
         return JSONResponse(
             content={

@@ -22,8 +22,11 @@ from PIL import Image
 from capabilities import get_capabilities
 from kserve_v2 import sanitize_model_error
 from tiled_sr import enhance_image_tiled
+from logging_config import configure_logging, log_event
 
 load_dotenv()
+
+logger = configure_logging("caisat-enhance", os.getenv("LOG_LEVEL", "INFO"))
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 MODEL_ENDPOINT = os.getenv("MODEL_ENDPOINT")
@@ -41,6 +44,7 @@ enhancement_counter = 0
 async def lifespan(app: FastAPI):
     global http_session
     http_session = aiohttp.ClientSession()
+    log_event(logger, "enhancement backend started", model_endpoint=MODEL_ENDPOINT)
     yield
     if http_session is not None:
         await http_session.close()
@@ -124,6 +128,7 @@ async def enhance_image(image: UploadFile = File(...)):
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
         print(f"Enhanced output: {enhanced_img.size[0]}x{enhanced_img.size[1]} (native 4x)")
+        log_event(logger, "enhance complete", width=enhanced_img.size[0], height=enhanced_img.size[1])
 
         img_byte_arr = io.BytesIO()
         enhanced_img.save(img_byte_arr, format="PNG")
