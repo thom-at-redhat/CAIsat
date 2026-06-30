@@ -24,7 +24,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install pre-commit==4.6.0
 
       - name: Run pre-commit
         run: SKIP=no-commit-to-branch pre-commit run --all-files

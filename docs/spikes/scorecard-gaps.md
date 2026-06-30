@@ -17,7 +17,7 @@ See [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scoreca
 | SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)        |
 | Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**           |
 | Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10** (done)   |
-| Pinned-Dependencies | 7     | Yes         | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11**          |
+| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11** (done)   |
 | Packaging           | -1    | Maybe       | Release/publish workflow (lower priority)                   | Deferred              |
 | Signed-Releases     | -1    | Maybe       | GitHub releases with provenance (lower priority)            | Deferred              |
 | Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (waiver) |
@@ -149,6 +149,49 @@ None from the Phase 9 batch 2 scope. Re-run Dependabot alert count on `main` aft
 
 - Adds CodeQL to required contexts alongside pre-commit and Scorecard analysis.
 - Scorecard Branch-Protection was **4/10** @ `6b0a209`; re-run on `main` after Phase 10 merge (may lag via `api.scorecard.dev`).
+
+---
+
+## Phase 11 — Pin remaining dependencies
+
+**Branch:** `feat/phase-11-pin-dependencies` (PR TBD).
+
+**Baseline:** Pinned-Dependencies **7/10** @ `195369a` (2026-06-30); GitHub Actions already SHA-pinned from Phase 9.
+
+### Pinned (mechanism only — no version bumps)
+
+| Area                                      | Before                   | After                                           |
+| ----------------------------------------- | ------------------------ | ----------------------------------------------- |
+| `.pre-commit-config.yaml` — 13 hook repos | `rev: v*` tags           | Full commit SHAs with `# v*` comments           |
+| `.pre-commit-config.yaml` — jshint        | `jshint@^2.13.6`         | `jshint@2.13.6`                                 |
+| `.pre-commit-config.yaml` — prettier      | `prettier@^3.1.0`        | `prettier@3.1.0`                                |
+| `.pre-commit-config.yaml` — mypy deps     | unpinned `pytest`        | `pytest==8.3.5`                                 |
+| `.github/workflows/pre-commit.yaml`       | `pip install pre-commit` | `pip install pre-commit==4.6.0`                 |
+| `.secrets.baseline`                       | —                        | 13 HexHighEntropy false positives for hook SHAs |
+
+**Workflows:** All `uses:` refs already SHA-pinned (Phase 9 Dependabot batch 1); no workflow action changes in Phase 11.
+
+### Pre-commit repo SHAs (tag → commit)
+
+| Hook repo        | Tag            | SHA                                        |
+| ---------------- | -------------- | ------------------------------------------ |
+| pre-commit-hooks | v6.0.0         | `3e8a8703264a2f4a69428a0aa4dcb512790b2c8c` |
+| ruff-pre-commit  | v0.15.6        | `4924b0e01e032fea073ad04a1c5cfa7e4add0afb` |
+| pyupgrade        | v3.21.2        | `75992aaa40730136014f34227e0135f63fc951b4` |
+| mirrors-mypy     | v1.15.0        | `f40886d54c729f533f864ed6ce584e920feb0af7` |
+| mirrors-jshint   | v2.13.6        | `882622d2d13597740358203e9f2e2ae5976cd149` |
+| mirrors-prettier | v4.0.0-alpha.8 | `f12edd9c7be1c20cfa42420fd0e6df71e42b51ea` |
+| markdownlint-cli | v0.48.0        | `e72a3ca1632f0b11a07d171449fe447a7ff6795e` |
+| codespell        | v2.4.2         | `2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a` |
+| yamllint         | v1.38.0        | `cba56bcde1fdd01c1deb3f945e69764c291a6530` |
+| shellcheck-py    | v0.11.0.1      | `745eface02aef23e168a8afb6b5737818efbea95` |
+| detect-secrets   | v1.5.0         | `01886c8a910c64595c47f186ca1ffc0b77fa5458` |
+| actionlint       | v1.7.11        | `393031adb9afb225ee52ae2ccd7a5af5525e03e8` |
+| hadolint         | v2.14.0        | `57e1618d78fd469a92c1e584e8c9313024656623` |
+
+### Expected Pinned-Dependencies impact
+
+- Scorecard target: **10/10** after merge (re-run via `api.scorecard.dev` may lag).
 
 ---
 
