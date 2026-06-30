@@ -43,18 +43,19 @@ Decision and follow-up.
 
 ## Spike index
 
-| Spike                    | Doc                          | Status                       |
-| ------------------------ | ---------------------------- | ---------------------------- |
-| Quay image tags          | [quay-tags.md](quay-tags.md) | **fail** (unauthorized pull) |
-| SwinIR ONNX shapes       | swinir-onnx.md               | not started                  |
-| Binary KServe v2         | binary-kserve-v2.md          | not started                  |
-| RHOAI GPU ServingRuntime | gpu-servingruntime.md        | not started                  |
+| Spike                    | Doc                                    | Status                       |
+| ------------------------ | -------------------------------------- | ---------------------------- |
+| Quay image tags          | [quay-tags.md](quay-tags.md)           | **fail** (unauthorized pull) |
+| OpenSSF Scorecard gaps   | [scorecard-gaps.md](scorecard-gaps.md) | baseline 6.0 @ `12c04945`    |
+| SwinIR ONNX shapes       | swinir-onnx.md                         | not started                  |
+| Binary KServe v2         | binary-kserve-v2.md                    | not started                  |
+| RHOAI GPU ServingRuntime | gpu-servingruntime.md                  | not started                  |
 
 ---
 
 ## GPU tier deferral table
 
-Use when a GPU tier cannot be tested on schedule. Phase 11 merge requires all tiers documented **or** explicit deferral with approver.
+Use when a GPU tier cannot be tested on schedule. Phase 15 merge requires all tiers documented **or** explicit deferral with approver.
 
 | Tier   | Status   | Reason | Approver / date |
 | ------ | -------- | ------ | --------------- |

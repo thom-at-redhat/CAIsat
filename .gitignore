@@ -48,6 +48,7 @@ models/
 
 # Cursor rules and handover (local-only; copy from ~/.cursor/rule-templates/ or project bootstrap)
 .cursor/rules/
+# Runtime handoff checkpoints only; global hook scripts live in ~/.cursor/hooks
 .cursor/hooks/pending-handoff.md
 .cursor/hooks/last-compaction.txt
 chart/values-quay-local.yaml
