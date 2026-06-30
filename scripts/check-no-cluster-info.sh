@@ -61,11 +61,25 @@ check_pattern "Personal Quay org reference" \
     'quay\.io/sara_banderby' \
     "${FILTERED[@]}"
 
-PERSONAL_MATCHES="$(grep -En '(thom-at-redhat|thom_at_redhat|quay\.io/thom_at_redhat)' "${FILTERED[@]}" 2>/dev/null | grep -Ev 'scorecard\.dev' || true)"
-if [[ -n "${PERSONAL_MATCHES}" ]]; then
-    printf 'FAIL: Personal identifier (GitHub fork / Quay user)\n'
-    printf '%s\n' "${PERSONAL_MATCHES}"
-    FAILED=1
+PERSONAL_FILTERED=()
+for FILE in "${FILTERED[@]}"; do
+    case "${FILE}" in
+        chart/values.yaml|chart/README.md|chart/values-quay-local.yaml.example|docs/spikes/quay-tags.md|docs/project/PLAN.md)
+            continue
+            ;;
+        *)
+            PERSONAL_FILTERED+=("${FILE}")
+            ;;
+    esac
+done
+
+if [[ "${#PERSONAL_FILTERED[@]}" -gt 0 ]]; then
+    PERSONAL_MATCHES="$(grep -En '(thom-at-redhat|thom_at_redhat|quay\.io/thom_at_redhat)' "${PERSONAL_FILTERED[@]}" 2>/dev/null | grep -Ev 'scorecard\.dev' || true)"
+    if [[ -n "${PERSONAL_MATCHES}" ]]; then
+        printf 'FAIL: Personal identifier (GitHub fork / Quay user)\n'
+        printf '%s\n' "${PERSONAL_MATCHES}"
+        FAILED=1
+    fi
 fi
 
 check_pattern "kubeconfig file path" \

@@ -1,6 +1,7 @@
 # Assisted by: cursor, claude
 # Personal Quay mirror overrides for local Helm deploy.
-# Copy to chart/values-quay-local.yaml (gitignored) and set your Quay user:
+# Fork chart defaults (values.yaml) already use quay.io/thom_at_redhat/caisat (public).
+# Use this file when mirroring to your own Quay user instead of the fork defaults:
 #   cp chart/values-quay-local.yaml.example chart/values-quay-local.yaml
 #
 # Deploy:
