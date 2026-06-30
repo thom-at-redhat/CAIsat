@@ -4,7 +4,8 @@
 
 Actionable Scorecard checks, current scores, targets, and which PLAN phases address each gap.
 
-**Baseline:** Scorecard **6.0** @ fork `main` `6b0a209` (2026-06-30, Phase 8 close). SAST **10/10** after Phase 6 CodeQL. Prior PLAN cited **5.2** — stale.
+**Baseline:** Scorecard **6.0** @ fork `main` `6b0a209` (2026-06-30, Phase 8 close).
+Post–PR #57 re-run: **operator** — `workflow_dispatch` on Scorecard workflow (PAT lacks dispatch scope 2026-06-30); weekly schedule or push to `main` refreshes SARIF.
 
 See [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) and [`docs/project/PLAN.md`](../project/PLAN.md) Phases 8–11.
 
@@ -241,20 +242,22 @@ _Pre-batch-2 deferral table — superseded by batch 2 results above._
 
 ## Verification
 
+**Last verified:** fork `main` @ `f933c82` (2026-06-30, PR #57 GHA hardening merged). Scorecard overall score pending next scheduled or push-triggered run.
+
 Re-run Scorecard on fork `main` after Phases 9–11 close. Record tip SHA and overall score in this file and [`PLAN.md`](../project/PLAN.md) verification artifact.
 
 ---
 
 ## Phase 24 — CI egress hardening (audit mode)
 
-**Branch:** `ci/gha-hardening` (PR TBD).
+**Merged:** PR #57 @ `f933c82` (2026-06-30).
 
 **Scope:** `step-security/harden-runner` with `egress-policy: audit` on all workflow jobs (pre-commit, smoke-binary, CodeQL matrix, Scorecard).
 Audit mode sends egress telemetry to StepSecurity; no block policy yet.
 
 **Pinned:** `step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176` (# v2.17.0).
 
-**Follow-up (block mode):** After 2–3 green runs on `main`, collect allowed endpoints from StepSecurity job logs and open a separate PR with `egress-policy: block` + per-job `allowed-endpoints`.
-Do not enable block until audit baseline exists.
+**Block mode (MT-6d — deferred):** After 2–3 green runs on `main`, collect allowed endpoints from StepSecurity job logs and open a separate PR with `egress-policy: block` + per-job `allowed-endpoints`.
+Do not enable block until audit baseline exists. No block PR opened in this session — audit telemetry accumulates on subsequent CI runs.
 
-**Scorecard re-run (MT-5b):** Re-trigger Scorecard workflow on fork `main` after merge; update overall score row in this file and PLAN verification artifact.
+**Dependabot (MT-5a):** Zero open Dependabot PRs on fork @ 2026-06-30; re-check via GitHub Dependabot alerts UI (PAT lacks alerts API).
