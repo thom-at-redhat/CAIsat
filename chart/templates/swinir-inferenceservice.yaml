@@ -1,11 +1,60 @@
-{{- if .Values.detection.deploy }}
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    modelFormat: onnx
+    security.opendatahub.io/enable-auth: 'false'
+    openshift.io/description: ''
+    openshift.io/display-name: swinir
+    serving.kserve.io/deploymentMode: Standard
+    opendatahub.io/connections: swinir
+    opendatahub.io/model-type: predictive
+  name: swinir
+  finalizers:
+    - inferenceservice.finalizers
+    - odh.inferenceservice.finalizers
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    automountServiceAccountToken: false
+    deploymentStrategy:
+      type: RollingUpdate
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: onnx
+        version: '1'
+      name: ''
+      resources:
+        limits:
+          cpu: '4'
+          memory: 8Gi
+        requests:
+          cpu: '4'
+          memory: 6Gi
+      runtime: swinir-model
+      storageUri: 'oci://{{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}'
+    timeout: 300
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: swinir
+  labels:
+    opendatahub.io/dashboard: 'true'
+  annotations:
+    opendatahub.io/connection-type-protocol: uri
+    opendatahub.io/connection-type-ref: uri-v1
+    openshift.io/display-name: swinir
+stringData:
+  URI: oci://{{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}
+type: Opaque
+---
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: {{ .Values.detection.name }}
-  labels:
-    {{- include "zoom-enhance.labels" . | nindent 4 }}
-    opendatahub.io/dashboard: "true"
   annotations:
     opendatahub.io/apiProtocol: REST
     opendatahub.io/runtime-version: 1.7.1
@@ -14,21 +63,24 @@ metadata:
     opendatahub.io/template-name: mlserver-runtime-template
     openshift.io/display-name: MLServer ServingRuntime for KServe
     serving.kserve.io/server-type: mlserver
+  name: swinir-model
+  labels:
+    opendatahub.io/dashboard: 'true'
 spec:
   annotations:
-    monitoring.opendatahub.io/scrape: "true"
+    monitoring.opendatahub.io/scrape: 'true'
     opendatahub.io/kserve-runtime: mlserver
     prometheus.io/path: /metrics
-    prometheus.io/port: "8082"
+    prometheus.io/port: '8082'
   containers:
     - env:
         - name: MLSERVER_MODEL_IMPLEMENTATION
           value: '{{ "{{" }}.Labels.modelClass{{ "}}" }}'
         - name: MLSERVER_HTTP_PORT
-          value: "8080"
+          value: '8080'
         - name: MLSERVER_MODELS_DIR
           value: /mnt/models
-      image: registry.redhat.io/rhoai/odh-mlserver-rhel9@sha256:d76bea18afe7b361847babb7a8ebc51fdbcd8164435f1bcb971e1701ba1bc595
+      image: 'registry.redhat.io/rhoai/odh-mlserver-rhel9@sha256:d76bea18afe7b361847babb7a8ebc51fdbcd8164435f1bcb971e1701ba1bc595'
       livenessProbe:
         failureThreshold: 6
         httpGet:
@@ -60,7 +112,7 @@ spec:
         exec:
           command:
             - /bin/sh
-            - "-c"
+            - '-c'
             - |
               [ -n "$(ls -A /mnt/models 2>/dev/null)" ]
         failureThreshold: 1
@@ -71,17 +123,16 @@ spec:
     - v2
   supportedModelFormats:
     - name: sklearn
-      version: "0"
+      version: '0'
     - name: sklearn
-      version: "1"
+      version: '1'
     - name: xgboost
-      version: "1"
+      version: '1'
     - name: xgboost
-      version: "2"
+      version: '2'
     - name: lightgbm
-      version: "3"
+      version: '3'
     - name: lightgbm
-      version: "4"
+      version: '4'
     - name: onnx
-      version: "1"
-{{- end }}
+      version: '1'

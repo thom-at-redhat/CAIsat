@@ -1,14 +1,14 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "zoom-enhance.name" -}}
+{{- define "caisat.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Create a default fully qualified app name.
 */}}
-{{- define "zoom-enhance.fullname" -}}
+{{- define "caisat.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -24,16 +24,16 @@ Create a default fully qualified app name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "zoom-enhance.chart" -}}
+{{- define "caisat.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "zoom-enhance.labels" -}}
-helm.sh/chart: {{ include "zoom-enhance.chart" . }}
-{{ include "zoom-enhance.selectorLabels" . }}
+{{- define "caisat.labels" -}}
+helm.sh/chart: {{ include "caisat.chart" . }}
+{{ include "caisat.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -43,15 +43,15 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "zoom-enhance.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "zoom-enhance.name" . }}
+{{- define "caisat.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "caisat.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Model endpoint URL
 */}}
-{{- define "zoom-enhance.modelEndpoint" -}}
+{{- define "caisat.modelEndpoint" -}}
 {{- $namespace := .Values.model.namespace | default .Release.Namespace -}}
 {{- $serviceName := .Values.model.serviceName | default (printf "%s-predictor" .Values.model.name) -}}
 http://{{ $serviceName }}.{{ $namespace }}.svc.cluster.local:{{ .Values.model.port }}/v2/models/{{ .Values.model.name }}/infer

@@ -1,20 +1,22 @@
+---
+# Frontend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "zoom-enhance.fullname" . }}-frontend
+  name: {{ include "caisat.fullname" . }}-frontend
   labels:
-    {{- include "zoom-enhance.labels" . | nindent 4 }}
+    {{- include "caisat.labels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
     matchLabels:
-      {{- include "zoom-enhance.selectorLabels" . | nindent 6 }}
+      {{- include "caisat.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: frontend
   template:
     metadata:
       labels:
-        {{- include "zoom-enhance.selectorLabels" . | nindent 8 }}
+        {{- include "caisat.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: frontend
     spec:
       {{- with .Values.imagePullSecrets }}
@@ -59,3 +61,49 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "caisat.fullname" . }}-frontend
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: {{ .Values.frontend.service.type }}
+  ports:
+  - port: {{ .Values.frontend.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "caisat.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+
+---
+# Frontend Route
+{{- if .Values.frontend.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "caisat.fullname" . }}
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  {{- if .Values.frontend.route.host }}
+  host: {{ .Values.frontend.route.host }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "caisat.fullname" . }}-frontend
+  port:
+    targetPort: http
+  {{- if .Values.frontend.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.frontend.route.tls.termination }}
+    insecureEdgeTerminationPolicy: Redirect
+  {{- end }}
+{{- end }}

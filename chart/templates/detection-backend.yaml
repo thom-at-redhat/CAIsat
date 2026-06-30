@@ -1,20 +1,22 @@
+---
+# Detection Backend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "zoom-enhance.fullname" . }}-detection-backend
+  name: {{ include "caisat.fullname" . }}-detection-backend
   labels:
-    {{- include "zoom-enhance.labels" . | nindent 4 }}
+    {{- include "caisat.labels" . | nindent 4 }}
     app.kubernetes.io/component: detection-backend
 spec:
   replicas: {{ .Values.detectionBackend.replicaCount }}
   selector:
     matchLabels:
-      {{- include "zoom-enhance.selectorLabels" . | nindent 6 }}
+      {{- include "caisat.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: detection-backend
   template:
     metadata:
       labels:
-        {{- include "zoom-enhance.selectorLabels" . | nindent 8 }}
+        {{- include "caisat.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: detection-backend
     spec:
       {{- with .Values.imagePullSecrets }}
@@ -66,3 +68,51 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+---
+# Detection Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "caisat.fullname" . }}-detection-backend
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: detection-backend
+spec:
+  type: {{ .Values.detectionBackend.service.type }}
+  ports:
+  - port: {{ .Values.detectionBackend.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "caisat.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: detection-backend
+
+---
+# Detection Backend Route
+{{- if .Values.detectionBackend.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "caisat.fullname" . }}-detection-backend
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: detection-backend
+  annotations:
+    haproxy.router.openshift.io/timeout: 2m
+spec:
+  host: {{ .Values.detectionBackend.route.host }}
+  to:
+    kind: Service
+    name: {{ include "caisat.fullname" . }}-detection-backend
+    weight: 100
+  port:
+    targetPort: http
+  {{- if .Values.detectionBackend.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.detectionBackend.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.detectionBackend.route.tls.insecureEdgeTerminationPolicy | default "Redirect" }}
+  {{- end }}
+  wildcardPolicy: None
+{{- end }}
