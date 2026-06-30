@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `31f058d` (2026-06-29). Phase 7 next — use feature branches; never push `main`.
+**Branch:** `main` @ `aaf15b1` (2026-06-29). Phase 7 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -36,7 +36,7 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | CodeQL SAST             | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; default setup disabled     | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started                                     | ok                       |
 
-**Last verified:** `main` (2026-06-29); fork `main` merge `31f058d9ee7817faf7b19a545edd2b23e073109d` (PR #29 CodeQL @ `be45ec3`; PR #28 PLAN archive @ `0a81b29`)
+**Last verified:** `main` (2026-06-29); fork `main` merge `aaf15b1a57043d5b78e0bdaba27387c03ccd45e2` (PR #30 Phase 6 close; PR #29 CodeQL @ `be45ec3`; PR #28 PLAN archive @ `0a81b29`)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
