@@ -2,12 +2,12 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field           | Value                                                              |
-| --------------- | ------------------------------------------------------------------ |
-| Date            | 2026-06-30                                                         |
-| Verdict         | **blocked** — GPU tiers deferred; CPU profile validated locally    |
-| Cluster/profile | Chart `computeProfile.name=cpu`; GPU nodes not scheduled this pass |
-| Blocks          | Phase 16 full crop (512+) until at least one GPU tier passes       |
+| Field           | Value                                                                                |
+| --------------- | ------------------------------------------------------------------------------------ |
+| Date            | 2026-06-30                                                                           |
+| Verdict         | **blocked** — GPU tiers deferred; CPU profile validated locally                      |
+| Cluster/profile | Chart `computeProfile.name=cpu`; GPU nodes not scheduled this pass                   |
+| Follow-up       | GPU tiers (512+ crop) **deferred** until scheduled; CPU partial crop (256) validated |
 
 For per-tier commands and deferral caps, see the GPU tier table in [`README.md`](README.md).
 

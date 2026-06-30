@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `b29fa4d` (2026-06-30). **All planned phases (0–23) complete.** Open operational items below; use feature branches for follow-up; never push `main`.
+**Branch:** `main` @ `4abef20` (2026-06-30). **All planned phases (0–23) complete.** Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -28,7 +28,7 @@
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                              | ok                       |
 | Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**      | ok                       |
 | Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)               | ok                       |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `b29fa4d`; Scorecard **6.0**       | ok                       |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `4abef20`; Scorecard **6.0**       | ok                       |
 | Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | checks, targets; Phases 8–11 archived          | ok                       |
 | SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**                 | ok                       |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions         | ok                       |
@@ -38,16 +38,18 @@
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
 | Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins    | ok                       |
 | Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix    | ok                       |
-| Upstream sync           | fork `main` @ `b29fa4d`                                                                      | PR #43; change detection + S4/DSPA pipelines   | ok (inbound only)        |
+| Upstream sync           | fork `main` @ `4abef20`                                                                      | PR #43; change detection + S4/DSPA pipelines   | ok (inbound only)        |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | ML spikes documented (PR #45)                  | ok                       |
 | Phases 12–23 merge      | PR #45 @ `ee3f1b3`                                                                           | `integration/phases-12-23`                     | ok                       |
-| PLAN post-23 archive    | PR #46 @ `b29fa4d`                                                                           | stop_work PLAN sync (this archive PR follows)  | pending                  |
+| PLAN post-23 archive    | PR #47 @ `4abef20`                                                                           | stop_work PLAN archive merged                  | ok                       |
+| Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test)  | ok                       |
+| Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L75–80                | post-merge sign-off columns `_(pending)_`      | unchecked                |
 
-**Last verified:** fork `main` @ `b29fa4d` (2026-06-30); Phases **0–23** merged (#33–#45); PLAN sync PR #46; Scorecard **6.0**; SAST **10/10**; Dependabot **21** (8H/12M/1L)
+**Last verified:** fork `main` @ `4abef20` (2026-06-30); Phases **0–23** merged (#33–#45); PLAN archive PR #47; Scorecard **6.0**; SAST **10/10**; Dependabot **21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
-**Claims not checked:** Phase 13 cluster baseline (React 19 / three / map UX); 12-binary **fail**; GPU tiers **deferred**; post-Phase-11 Scorecard re-run
+**Claims not checked:** Phase 13 cluster baseline (React 19 / three / map UX); Phase 16 crop sign-off; 12-binary cluster round-trip **fail**; GPU tiers **deferred**; post-Phase-11 Scorecard re-run
 
 **Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 5 fork gate closed: PR #24 merged @ `f0e582a`; SECURITY.md + pre-commit permissions verified on fork `main`.
 
@@ -57,13 +59,14 @@
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status   | Next action                                                                                                             |
-| --------- | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| baseline  | Phase 13 sign-off    | **open** | Cluster baseline + post-p0 in [`baseline-smoke.md`](../validation/baseline-smoke.md)                                    |
-| binary    | 12-binary / Phase 14 | **open** | Re-test MLServer binary on ea.2+ when cluster access allows; JSON fallback active until pass                            |
-| gpu       | Phase 15 deferral    | **open** | Schedule T4/L40S/Hopper spike when GPU nodes available — see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) |
-| scorecard | Optional             | **open** | Re-run Scorecard on `main`; Branch-Protection score may lag API                                                         |
-| upstream  | Outbound PR          | **open** | PR back to `rh-ai-quickstart/CAIsat` still deferred per decision                                                        |
+| ID        | Track                | Status   | Next action                                                                                                                                 |
+| --------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| baseline  | Phase 13 sign-off    | **open** | Post-merge cluster baseline + post-p0 in [`baseline-smoke.md`](../validation/baseline-smoke.md)                                             |
+| binary    | 12-binary / Phase 14 | **open** | Re-test MLServer binary round-trip on ea.2+ when cluster access allows; JSON fallback active until pass                                     |
+| crop      | Phase 16 sign-off    | **open** | CPU partial (256→1024) after baseline pass; GPU full (512+) after ≥1 GPU tier pass — [`baseline-smoke.md`](../validation/baseline-smoke.md) |
+| gpu       | Phase 15 deferral    | **open** | Schedule T4/L40S/Hopper spike when GPU nodes available — see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md)                     |
+| scorecard | Optional             | **open** | Re-run Scorecard on `main`; Branch-Protection score may lag API                                                                             |
+| upstream  | Outbound PR          | **open** | PR back to `rh-ai-quickstart/CAIsat` still deferred per decision                                                                            |
 
 ---
 
@@ -100,13 +103,14 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 ## Open items
 
-Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN sync PR #46 @ `b29fa4d`). Code merged; cluster validation and spike gaps remain.
+Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                                                    |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Binary spike fail | `12-binary` **fail** @ RHOAI 3.5.ea.1 (binary HTTP 500); ea.2 re-test **blocked/inconclusive** @ `2aa6343`; Phase 14 ships JSON fallback  |
-| Phase 13 baseline | Cluster **baseline** + **post-p0** sign-off pending in [`baseline-smoke.md`](../validation/baseline-smoke.md) (React 19 / three / map UX) |
-| GPU deferral      | T4/L40S/Hopper **deferred** — CPU pass only; see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) and GPU tier deferral table   |
+| Item              | Detail                                                                                                                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Binary spike fail | `12-binary` **fail** @ RHOAI 3.5.ea.1 (binary HTTP 500); ea.2 re-test **blocked/inconclusive** @ `2aa6343`; Phase 14 ships JSON fallback                        |
+| Phase 13 baseline | Post-merge cluster **baseline** + **post-p0** sign-off pending in [`baseline-smoke.md`](../validation/baseline-smoke.md) (React 19 / three / map UX)            |
+| Crop sign-off     | CPU partial (256→1024, no tiling) after baseline; GPU full (512+, tiling) deferred until GPU tier pass — [`baseline-smoke.md`](../validation/baseline-smoke.md) |
+| GPU deferral      | T4/L40S/Hopper **deferred** — CPU pass only; see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) and GPU tier deferral table                         |
 
 ---
 
@@ -121,13 +125,13 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN sync PR #46 @ 
 
 ## Smoke profiles
 
-| Profile      | Phases | Assertions                                        | Automation                                                      |
-| ------------ | ------ | ------------------------------------------------- | --------------------------------------------------------------- |
-| **health**   | 7+     | `/health` 200 on both backends                    | `make smoke` (CI)                                               |
-| **baseline** | 13+    | health + enhance/detect HTTP 200 + valid payloads | Manual — [`baseline-smoke.md`](../validation/baseline-smoke.md) |
-| **post-p0**  | 13+    | baseline + manual capture/zoom sign-off 1×/2×/4×  | Manual                                                          |
-| **binary**   | 14+    | baseline + binary content-type + decode           | Manual (JSON path only until binary pass)                       |
-| **crop**     | 16+    | baseline/binary + profile default crop size       | Manual                                                          |
+| Profile      | Phases | Assertions                                                                                 | Automation                                                                   |
+| ------------ | ------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| **health**   | 7+     | `/health` 200 on both backends                                                             | `make smoke` (CI)                                                            |
+| **baseline** | 13+    | health + enhance/detect HTTP 200 + valid payloads                                          | Manual — [`baseline-smoke.md`](../validation/baseline-smoke.md)              |
+| **post-p0**  | 13+    | baseline + manual capture/zoom sign-off 1×/2×/4×                                           | Manual                                                                       |
+| **binary**   | 14+    | Local: encode/decode unit test. Cluster: baseline + binary content-type + infer round-trip | Local: `SMOKE_PROFILE=binary make smoke`; Cluster: manual until spike passes |
+| **crop**     | 16+    | baseline/binary + profile default crop size                                                | Manual                                                                       |
 
 See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 
