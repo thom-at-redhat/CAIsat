@@ -127,7 +127,7 @@ Do not treat Phases 13–17 as fully automated until `smoke-local.sh` implements
 | ----------------- | -------------------------------------------------- | -------------------------------------------------- | ------------------------- |
 | Quay tags         | [`../spikes/quay-tags.md`](../spikes/quay-tags.md) | Fork mirror: five tags pull; upstream unauthorized | — (fork unblocked)        |
 | SwinIR ONNX       | `../spikes/swinir-onnx.md`                         | Input/output shapes documented; branch chosen      | Phase 16                  |
-| Binary KServe v2  | `../spikes/binary-kserve-v2.md`                    | Round-trip binary infer vs MLServer                | Phase 14                  |
+| Binary KServe v2  | `../spikes/binary-kserve-v2.md`                    | Round-trip binary infer vs MLServer                | Phase 14 — see blockers   |
 | RHOAI GPU runtime | `../spikes/gpu-servingruntime.md`                  | Per-tier Ready + infer 200 (or deferral signed)    | `nvidia.com/gpu` in chart |
 
 ---
@@ -175,18 +175,28 @@ Phase 12 → 14 → 15 → 16 → 17. Phase 13 → 14. Never Phase 14 before `12
 
 ## Decisions
 
-| Topic       | Decision                                                                                               |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
-| Priority    | Larger context (512+ crop, tiled SR)                                                                   |
-| GPU         | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override                                  |
-| Detection   | Demo quality OK; defer YOLO11 eval; OBB fix before SAHI                                                |
-| Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                       |
-| PLAN source | This file after Phase 3 merge                                                                          |
-| Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail** |
-| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                         |
-| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred    |
-| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                |
-| Numbering   | Integer phases only; `-onnx`/`-binary` suffixes for parallel tracks                                    |
+| Topic       | Decision                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Priority    | Larger context (512+ crop, tiled SR)                                                                                                                         |
+| GPU         | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override                                                                                        |
+| Detection   | Demo quality OK; defer YOLO11 eval; OBB fix before SAHI                                                                                                      |
+| Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                                                                             |
+| PLAN source | This file after Phase 3 merge                                                                                                                                |
+| Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail**                                                       |
+| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                                                                               |
+| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred                                                          |
+| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                                                                      |
+| Numbering   | Integer phases only; `-onnx`/`-binary` suffixes for parallel tracks                                                                                          |
+| 12-binary   | **fail** @ RHOAI 3.5.ea.1 (binary HTTP 500); ea.2 re-test **blocked/inconclusive** @ `2aa6343` — same MLServer version; Phase 14 JSON-fallback waiver stands |
+
+---
+
+## Open blockers
+
+| Blocker              | Detail                                                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary      | ea.2 re-test **blocked/inconclusive** @ `2aa6343`: RHOAI 3.5.0-ea.2; MLServer 1.7.1+rhaiv.8; binary infer not re-run (Quay pull unauthorized) |
+| Phase 14 binary-only | Gated on spike pass; ship JSON fallback + binary-ready helpers until round-trip passes on cluster                                             |
 
 ---
 
