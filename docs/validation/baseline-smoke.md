@@ -162,7 +162,6 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 | 2×   | _(pending)_    | _(pending)_  | Use 2× button or scroll wheel       |
 | 4×   | _(pending)_    | _(pending)_  | Use 4× button or scroll wheel       |
 
-
 | Field      | Value                                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | Branch SHA | `dd40d02`                                                                                                          |
