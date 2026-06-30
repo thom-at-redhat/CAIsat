@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `1b997f1` (2026-06-30). Phase 11 next — use feature branches; never push `main`.
+**Branch:** `main` @ `5d02e74` (2026-06-30). Phase 11 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -39,7 +39,7 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started (ML spikes)                        | ok                       |
 
-**Last verified:** fork `main` @ `1b997f1` (2026-06-30); Scorecard **6.0** (re-run post-Phase-10 TBD); SAST **10/10**; Phase 10 ruleset hardening; Dependabot **98→21** (8H/12M/1L)
+**Last verified:** fork `main` @ `5d02e74` (2026-06-30); Scorecard **6.0** (Branch-Protection 4 — re-run may lag); SAST **10/10**; Phase 10 ruleset hardening; Dependabot **98→21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
