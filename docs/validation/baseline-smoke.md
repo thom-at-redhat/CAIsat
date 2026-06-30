@@ -90,7 +90,9 @@ Run on a deployed stack for post-merge cluster sign-off. Record branch SHA and n
 3. Port-forward or Route: `curl -sf https://<backend-route>/health`
 4. Port-forward or Route: `curl -sf https://<detection-backend-route>/health`
 5. Full UI workflow: capture 256×256, enhance, detect — non-empty result and `detections` in API response
-6. React 19 / three.js 0.185 / react-leaflet 5: globe loads, map tiles render, no console errors on navigation
+6. After **Detect Objects**, bounding boxes appear on the **Detected Objects** panel (third in the Original → Enhanced → Detected Objects row).
+   On typical viewports the row overflows horizontally — scroll the results row to the right; do not expect boxes on the Enhanced panel alone.
+7. React 19 / three.js 0.185 / react-leaflet 5: globe loads, map tiles render, no console errors on navigation
 
 Document SHA, cluster, and date in this file when baseline is signed off.
 
@@ -137,6 +139,19 @@ Not automated in `make smoke`; record pass/fail here after manual verification.
 | 1×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Alaska coastline; Reset zoom; box centered on capture                 |
 | 2×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Gibraltar; transient 500 from SwinIR predictor restart (not crop bug) |
 | 4×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Iceland/N Atlantic; Use 4× button or scroll wheel                     |
+
+### Detection results row (MT-1b operator note)
+
+After enhance, click **Detect Objects**. The results row shows **Original** → **Enhanced** → **Detected Objects** (left to right).
+Bounding boxes are drawn on the **Detected Objects** image in the third panel only. On viewports narrower than the full row (~1900px), scroll the results row horizontally
+(hint text appears when overflow is detected). Verify boxes align with objects in the enhanced crop; record pass/fail with cluster baseline sign-off.
+
+| Zoom | Cluster result | Local result | Notes                               |
+| ---- | -------------- | ------------ | ----------------------------------- |
+| 1×   | _(pending)_    | _(pending)_  | Reset zoom; box centered on capture |
+| 2×   | _(pending)_    | _(pending)_  | Use 2× button or scroll wheel       |
+| 4×   | _(pending)_    | _(pending)_  | Use 4× button or scroll wheel       |
+
 
 | Field      | Value                                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ |

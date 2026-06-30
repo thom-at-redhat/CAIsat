@@ -48,6 +48,8 @@ function App() {
   const earthRef = useRef(null);
   const mapRef = useRef(null);
   const cropWrapperRef = useRef(null);
+  const resultsContainerRef = useRef(null);
+  const [showResultsScrollHint, setShowResultsScrollHint] = useState(false);
 
   const clampCropArea = (x, y, imgWidth, imgHeight, size) => ({
     x: Math.max(0, Math.min(x, imgWidth - size)),
@@ -142,6 +144,28 @@ function App() {
     };
     fetchCapabilities();
   }, [BACKEND_BASE]);
+
+  useEffect(() => {
+    const container = resultsContainerRef.current;
+    if (!container || !detectedImage) {
+      setShowResultsScrollHint(false);
+      return undefined;
+    }
+
+    const checkResultsOverflow = () => {
+      setShowResultsScrollHint(container.scrollWidth > container.clientWidth + 1);
+    };
+
+    checkResultsOverflow();
+    const resizeObserver = new ResizeObserver(checkResultsOverflow);
+    resizeObserver.observe(container);
+    window.addEventListener('resize', checkResultsOverflow);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', checkResultsOverflow);
+    };
+  }, [detectedImage, showOriginal, showEnhanced, showDetected]);
 
   // Initialize Three.js globe
   useEffect(() => {
@@ -734,8 +758,14 @@ function App() {
                   <div className="results-section">
                     <h3>Enhancement Complete</h3>
 
+                    {showResultsScrollHint && (
+                      <p className="results-scroll-hint" role="note">
+                        Scroll horizontally to see detected objects with bounding boxes →
+                      </p>
+                    )}
+
                     {/* Collapsible Results Container */}
-                    <div className="results-container">
+                    <div className="results-container" ref={resultsContainerRef}>
                       {showOriginal && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowOriginal(!showOriginal)} style={{cursor: 'pointer'}}>
