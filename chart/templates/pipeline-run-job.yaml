@@ -1,0 +1,116 @@
+{{- if .Values.pipelines.runAnalysis }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "caisat.fullname" . }}-run-analysis-{{ .Release.Revision }}
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipeline
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "caisat.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: pipeline
+        app: caisat
+        component: pipeline
+    spec:
+      serviceAccountName: {{ include "caisat.fullname" . }}-pipeline-runner
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-dependencies
+        image: {{ .Values.pipelines.analysis.waitImage }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for dependencies to be ready..."
+
+          # Wait for S4
+          echo "1. Checking S4..."
+          until oc get deployment/{{ include "caisat.fullname" . }}-s4 -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
+            echo "   S4 not ready, waiting..."
+            sleep 5
+          done
+          echo "   [OK] S4 ready"
+
+          # Wait for DSPA
+          echo "2. Checking DSPA..."
+          until oc get dspa/{{ .Values.pipelines.name }} -n {{ .Release.Namespace }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
+            echo "   DSPA not ready, waiting..."
+            sleep 10
+          done
+          echo "   [OK] DSPA ready"
+
+          # Wait for Sentinel2 model
+          echo "3. Checking Sentinel2 model..."
+          until oc get pod -n {{ .Release.Namespace }} -l serving.kserve.io/inferenceservice=sentinel2-model -o jsonpath='{.items[0].status.phase}' | grep -q "Running"; do
+            echo "   Model not ready, waiting..."
+            sleep 10
+          done
+          echo "   [OK] Model ready"
+
+          echo "[OK] All dependencies ready!"
+
+      containers:
+      - name: run-pipeline
+        image: {{ .Values.pipelines.analysis.image }}
+        env:
+        - name: DSPA_API
+          value: "https://ds-pipeline-{{ .Values.pipelines.name }}.{{ .Release.Namespace }}.svc.cluster.local:8443"
+        - name: S3_ENDPOINT
+          value: "http://{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480"
+        - name: S3_ACCESS_KEY
+          value: "{{ .Values.s4.credentials.accessKey }}"
+        - name: S3_SECRET_KEY
+          value: "{{ .Values.s4.credentials.secretKey }}"
+        - name: MODEL_ENDPOINT
+          value: "http://sentinel2-model-predictor.{{ .Release.Namespace }}.svc.cluster.local:8080"
+        - name: BUCKET_NAME
+          value: "{{ .Values.s4.seed.bucketName }}"
+        - name: RUN_NAME
+          value: "caisat-analysis-{{ .Release.Revision }}"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+
+          echo "=========================================="
+          echo "UPLOADING & RUNNING ANALYSIS PIPELINE"
+          echo "=========================================="
+
+          # Install kfp SDK
+          pip install --quiet kfp==2.7.0
+
+          echo "DSPA API: $DSPA_API"
+
+          # Upload pipeline and create run
+          echo "1. Uploading pipeline and creating run..."
+          python3 /pipeline/upload_and_run.py
+
+          echo "=========================================="
+          echo "[OK] Pipeline run started!"
+          echo "View in RHOAI Data Science Pipelines UI"
+          echo "=========================================="
+
+        volumeMounts:
+        - name: pipeline-yaml
+          mountPath: /pipeline
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: pipeline-yaml
+        configMap:
+          name: {{ include "caisat.fullname" . }}-pipeline-yaml
+{{- end }}

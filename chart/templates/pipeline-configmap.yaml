@@ -1,0 +1,83 @@
+{{- if .Values.pipelines.runAnalysis }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "caisat.fullname" . }}-pipeline-yaml
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipeline
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "9"
+data:
+  analyze_seed_images_pipeline.yaml: |
+{{ .Files.Get "files/analyze_seed_images_pipeline.yaml" | nindent 4 }}
+  upload_and_run.py: |
+    import kfp
+    import requests, json, os, sys
+
+    pipeline_name = "caisat-analysis"
+
+    with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as f:
+        token = f.read().strip()
+    # with open('/pipeline/analyze_seed_images_pipeline.yaml', 'r') as f:
+    #     pipeline_yaml = f.read()
+    ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt'
+
+    client = kfp.Client(
+            host=os.environ['DSPA_API'],
+            existing_token=token,
+            ssl_ca_cert=ssl_ca_cert
+        )
+
+    pipeline = client.upload_pipeline("/pipeline/analyze_seed_images_pipeline.yaml", pipeline_name )
+    print(pipeline.pipeline_id)
+
+    import time
+    time.sleep(4)
+
+    kubeflow_pipeline_id = pipeline.pipeline_id
+
+    kubeflow_pipeline_version_id = ""
+    kubeflow_pipeline_id=kubeflow_pipeline_id
+    kubeflow_pipeline_version=pipeline_name
+    print(kubeflow_pipeline_id)
+    versions = client.list_pipeline_versions(kubeflow_pipeline_id, filter=json.dumps({
+      "predicates": [{
+          "operation": "IS_SUBSTRING",
+          "key": "display_name",
+          "stringValue": kubeflow_pipeline_version
+      }]
+    })).pipeline_versions
+
+    if len(versions) > 1:
+        for version in versions:
+            if version.display_name == kubeflow_pipeline_version:
+                kubeflow_pipeline_version_id = version.pipeline_version_id
+                print(f"Found kubeflow pipeline version: {version.display_name} with id: {kubeflow_pipeline_version_id}")
+
+    if versions is None:
+        raise Exception(f"Could not find the kubeflow pipeline version: {kubeflow_pipeline_version}")
+    elif kubeflow_pipeline_version_id!="":
+        pass
+    else:
+        kubeflow_pipeline_version_id = versions[0].pipeline_version_id
+    print(f"Found kubeflow pipeline version: {versions[0].display_name} with id: {kubeflow_pipeline_version_id}")
+
+    params = {
+        's3_endpoint': os.environ['S3_ENDPOINT'],
+        's3_access_key': os.environ['S3_ACCESS_KEY'],
+        's3_secret_key': os.environ['S3_SECRET_KEY'],
+        'model_endpoint': os.environ['MODEL_ENDPOINT'],
+        'bucket_name': os.environ['BUCKET_NAME']
+    }
+
+
+    run_id = client.run_pipeline(
+        experiment_id="",
+        job_name=os.environ['RUN_NAME'],
+        pipeline_id=kubeflow_pipeline_id,
+        version_id=kubeflow_pipeline_version_id,
+        params=params
+    )
+{{- end }}
