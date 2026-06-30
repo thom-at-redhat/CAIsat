@@ -17,10 +17,14 @@ Phase numbers match [`docs/project/PLAN.md`](../project/PLAN.md) (0–23).
 | **health**   | 7 (minimum merge gate) | `GET /health` → 200 on enhancement and detection backends                                       |
 | **baseline** | 12+ prep, 13+ required | health + `POST /api/enhance` 200 + non-empty PNG + `POST /api/detect` 200 + `detections` array  |
 | **post-p0**  | 13+                    | baseline + manual capture/zoom sign-off at 1×, 2×, 4× (see [Capture/zoom](#capturezoom-manual)) |
-| **binary**   | 14+                    | baseline + binary `content-type` + decode on enhance and detect                                 |
+| **binary**   | 14+                    | Local: encode/decode unit test. Cluster: baseline + binary infer round-trip on enhance/detect   |
 | **crop**     | 16+                    | baseline/binary + enhance at profile default crop size when >256                                |
 
-Set profile: `SMOKE_PROFILE=health make smoke` (default `health`). Only **health** is implemented in `scripts/smoke-local.sh`; other profiles use manual checklists below until extended.
+Set profile: `SMOKE_PROFILE=health make smoke` (default `health`).
+
+**Local automation:** **`health`** and **`binary`** (encode/decode unit test only; no cluster round-trip) run via [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh).
+
+Other profiles use manual checklists below.
 
 ---
 
@@ -51,17 +55,35 @@ make smoke
 
 ---
 
+## Binary profile (local)
+
+**Command:**
+
+```bash
+SMOKE_PROFILE=binary make smoke
+```
+
+**What it does:** Runs Python unit tests for `encode_kserve_binary`, `decode_kserve_binary`, and JSON round-trip in `backend/kserve_v2.py`.
+
+Does **not** call cluster predictors or exercise MLServer binary infer.
+
+**Expected:** Script prints `PASS:` lines and exits 0.
+
+Cluster binary round-trip (enhance/detect via KServe v2 octet-stream) remains manual until the `12-binary` spike passes — see [`docs/spikes/binary-kserve-v2.md`](../spikes/binary-kserve-v2.md).
+
+---
+
 ## Cluster sign-off (optional for Phase 7)
 
 Phase 7 merge gate is **health** via `make smoke` only.
 
-Full **baseline** cluster validation is required from Phase 13. Run the checklist below when a stack is deployed and record sign-off before that merge.
+Full **baseline** cluster validation is required from Phase 13. Phase 13 merged (PR #45); run the checklist below on a deployed stack and record post-merge cluster sign-off.
 
 ---
 
 ## Baseline profile (cluster checklist)
 
-Run on a deployed stack before Phase 13 merge. Record branch SHA and namespace.
+Run on a deployed stack for post-merge cluster sign-off. Record branch SHA and namespace.
 
 1. `oc get pods -n <namespace>` — five pods Running (frontend, both backends, both predictors)
 2. `oc get inferenceservice -n <namespace>` — both Ready
@@ -81,7 +103,7 @@ Document SHA, cluster, and date in this file when baseline is signed off.
 
 ### Local pre-check (no cluster)
 
-When a cluster is unavailable, run before opening the Phase 13 PR:
+When a cluster is unavailable, run as local pre-check (Phase 13 code already merged):
 
 1. `make check` and `make smoke` (health) — must pass
 2. `cd frontend && npm start` — open app, activate satellite view, capture map
