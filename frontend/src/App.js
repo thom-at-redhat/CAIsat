@@ -27,6 +27,8 @@ function App() {
   const [showEnhanced, setShowEnhanced] = useState(true);
   const [showDetected, setShowDetected] = useState(true);
   const [popup, setPopup] = useState(null); // 'purpose', 'guide', 'disclaimer', or null
+  const [userMessage, setUserMessage] = useState(null); // { type: 'error'|'info', text: string }
+  const [detectionOnline, setDetectionOnline] = useState(false);
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -109,6 +111,20 @@ function App() {
     const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
   }, [BACKEND_BASE]);
+
+  useEffect(() => {
+    const pollDetection = async () => {
+      try {
+        await axios.get(`${DETECTION_BASE}/health`, { timeout: 5000 });
+        setDetectionOnline(true);
+      } catch {
+        setDetectionOnline(false);
+      }
+    };
+    pollDetection();
+    const interval = setInterval(pollDetection, 30000);
+    return () => clearInterval(interval);
+  }, [DETECTION_BASE]);
 
   useEffect(() => {
     const fetchCapabilities = async () => {
@@ -198,7 +214,7 @@ function App() {
     leafletImage(mapRef.current, (err, canvas) => {
       if (err) {
         console.error('Error capturing map:', err);
-        alert('Error capturing map view');
+        setUserMessage({ type: 'error', text: 'Error capturing map view' });
         return;
       }
 
@@ -339,7 +355,7 @@ function App() {
 
     } catch (error) {
       console.error('Enhancement failed:', error);
-      alert('Enhancement failed: ' + error.message);
+      setUserMessage({ type: 'error', text: `Enhancement failed: ${error.message}` });
       setProcessing(false);
     }
   };
@@ -424,7 +440,7 @@ function App() {
 
     } catch (error) {
       console.error('Detection failed:', error);
-      alert('Detection failed: ' + error.message);
+      setUserMessage({ type: 'error', text: `Detection failed: ${error.message}` });
       setDetecting(false);
     }
   };
@@ -468,8 +484,32 @@ function App() {
         <div className="status">
           <div className={`status-dot ${systemOnline ? 'online' : ''}`}></div>
           {systemOnline ? 'LIVE' : 'OFFLINE'}
+          <span style={{ marginLeft: '12px', opacity: 0.85 }}>
+            Detection: {detectionOnline ? 'up' : 'down'}
+          </span>
         </div>
       </div>
+      {userMessage && (
+        <div
+          role="alert"
+          style={{
+            padding: '10px 16px',
+            margin: '8px 16px',
+            borderRadius: '4px',
+            background: userMessage.type === 'error' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(13, 110, 253, 0.2)',
+            border: `1px solid ${userMessage.type === 'error' ? '#dc3545' : '#0d6efd'}`,
+          }}
+        >
+          {userMessage.text}
+          <button
+            type="button"
+            onClick={() => setUserMessage(null)}
+            style={{ float: 'right', background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Main Container */}
       <div className="container">
