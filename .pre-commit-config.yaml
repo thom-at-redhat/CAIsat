@@ -194,3 +194,14 @@ repos:
       - id: hadolint-docker
         files: (Containerfile|Dockerfile)
         args: [--ignore, DL3006, --ignore, DL3016, --ignore, DL3041, --ignore, DL3059]
+
+  # Kubernetes manifests — kube-linter (optional local hook; Phase 21)
+  - repo: local
+    hooks:
+      - id: kube-linter-chart
+        name: kube-linter (chart templates)
+        entry: bash scripts/kube-linter-pre-commit.sh
+        language: system
+        files: ^chart/templates/.*\.yaml$
+        exclude: ^chart/templates/.*pipeline.*\.yaml$
+        pass_filenames: true
