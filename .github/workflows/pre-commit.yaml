@@ -42,7 +42,7 @@ jobs:
           cache: pip
 
       - name: Cache pre-commit
-        uses: actions/cache@0c457f73a5e8bff5547acf82b61898ba52f8db6e # v4.2.2
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
