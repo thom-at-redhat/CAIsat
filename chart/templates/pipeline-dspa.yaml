@@ -1,0 +1,55 @@
+{{- if .Values.pipelines.enabled }}
+apiVersion: datasciencepipelinesapplications.opendatahub.io/v1
+kind: DataSciencePipelinesApplication
+metadata:
+  name: {{ .Values.pipelines.name }}
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipelines
+spec:
+  apiServer:
+    deploy: true
+    enableOauth: {{ .Values.pipelines.apiServer.enableOauth }}
+    enableSamplePipeline: false
+    cacheEnabled: {{ .Values.pipelines.apiServer.cacheEnabled }}
+    pipelineStore: kubernetes
+    artifactSignedURLExpirySeconds: {{ .Values.pipelines.apiServer.artifactSignedURLExpirySeconds }}
+    caBundleFileMountPath: ''
+    caBundleFileName: ''
+    managedPipelines: {}
+
+  database:
+    disableHealthCheck: false
+    mariaDB:
+      deploy: true
+      pipelineDBName: {{ .Values.pipelines.database.pipelineDBName }}
+      pvcSize: {{ .Values.pipelines.database.pvcSize }}
+      username: {{ .Values.pipelines.database.username }}
+
+  dspVersion: v2
+
+  objectStorage:
+    disableHealthCheck: false
+    enableExternalRoute: false
+    externalStorage:
+      basePath: ''
+      bucket: {{ .Values.s4.seed.bucketName }}
+      host: '{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480'
+      port: ''
+      region: {{ .Values.s4.config.awsRegion }}
+      scheme: http
+      s3CredentialsSecret:
+        secretName: dashboard-dspa-secret
+        accessKey: AWS_ACCESS_KEY_ID
+        secretKey: AWS_SECRET_ACCESS_KEY
+
+  persistenceAgent:
+    deploy: true
+    numWorkers: {{ .Values.pipelines.persistenceAgent.numWorkers }}
+
+  podToPodTLS: {{ .Values.pipelines.podToPodTLS }}
+
+  scheduledWorkflow:
+    deploy: true
+    cronScheduleTimezone: {{ .Values.pipelines.scheduledWorkflow.cronScheduleTimezone }}
+{{- end }}

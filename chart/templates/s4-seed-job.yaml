@@ -1,0 +1,265 @@
+{{- if .Values.s4.seed.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "caisat.fullname" . }}-s4-seed-{{ .Release.Revision }}
+  labels:
+    {{- include "caisat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: s4-seed
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "caisat.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: s4-seed
+        app: caisat
+        component: s4-seed
+    spec:
+      serviceAccountName: {{ include "caisat.fullname" . }}-s4-seed
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-s4
+        image: {{ .Values.s4.seed.waitImage }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for S4 to be ready..."
+          until oc get deployment/{{ include "caisat.fullname" . }}-s4 -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
+            echo "S4 not ready yet, waiting 5 seconds..."
+            sleep 5
+          done
+          echo "S4 is ready!"
+          sleep 10
+
+      containers:
+      - name: seed
+        image: {{ .Values.s4.seed.image }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+
+          echo "=========================================="
+          echo "CAISAT S4 SEED JOB"
+          echo "=========================================="
+
+          pip install --quiet boto3 requests pillow
+
+          export S3_ENDPOINT="http://{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480"
+          export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+          export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+          export BUCKET_NAME="{{ .Values.s4.seed.bucketName }}"
+
+          echo "S3 Endpoint: $S3_ENDPOINT"
+          echo "Bucket: $BUCKET_NAME"
+
+          cat > /tmp/seed_s4.py << 'PYTHON_EOF'
+          import boto3
+          import requests
+          import os
+          from PIL import Image
+          from io import BytesIO
+          from datetime import datetime, timedelta
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url=os.environ['S3_ENDPOINT'],
+              aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY']
+          )
+
+          BUCKET_NAME = os.environ['BUCKET_NAME']
+
+          print(f"\n1. Creating bucket: {BUCKET_NAME}")
+          try:
+              s3.create_bucket(Bucket=BUCKET_NAME)
+              print(f"   [OK] Bucket '{BUCKET_NAME}' created")
+          except s3.exceptions.BucketAlreadyOwnedByYou:
+              print(f"   [INFO] Bucket '{BUCKET_NAME}' already exists")
+          except Exception as e:
+              print(f"   [ERROR] Error creating bucket: {e}")
+              raise
+
+          def fetch_gibs_image(lat, lon, bbox_size, date_str, width=512, height=512):
+              min_lon = lon - bbox_size/2
+              max_lon = lon + bbox_size/2
+              min_lat = lat - bbox_size/2
+              max_lat = lat + bbox_size/2
+
+              url = "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi"
+              params = {
+                  'SERVICE': 'WMS',
+                  'REQUEST': 'GetMap',
+                  'VERSION': '1.1.1',
+                  'LAYERS': 'MODIS_Terra_CorrectedReflectance_TrueColor',
+                  'STYLES': '',
+                  'FORMAT': 'image/png',
+                  'TRANSPARENT': 'true',
+                  'WIDTH': width,
+                  'HEIGHT': height,
+                  'SRS': 'EPSG:4326',
+                  'BBOX': f'{min_lon},{min_lat},{max_lon},{max_lat}',
+                  'TIME': date_str
+              }
+
+              response = requests.get(url, params=params, timeout=30)
+              if response.status_code == 200:
+                  return response.content
+              else:
+                  raise Exception(f"GIBS request failed: {response.status_code}")
+
+          LOCATIONS = [
+              {'name': 'las_vegas', 'lat': 36.1699, 'lon': -115.1398, 'bbox': 0.1},
+              {'name': 'dubai', 'lat': 25.2048, 'lon': 55.2708, 'bbox': 0.1},
+              {'name': 'death_valley', 'lat': 36.5323, 'lon': -116.9325, 'bbox': 0.1},
+              {'name': 'phoenix', 'lat': 33.4484, 'lon': -112.0740, 'bbox': 0.1},
+          ]
+
+          base_date = datetime(2024, 5, 15)
+          dates = [(base_date - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(14)]
+
+          print(f"\n2. Downloading satellite images from NASA GIBS")
+          print(f"   Locations: {len(LOCATIONS)}")
+          print(f"   Dates: {len(dates)}")
+          print(f"   Total images: {len(LOCATIONS) * len(dates)}")
+
+          total_uploaded = 0
+          total_size = 0
+
+          for location in LOCATIONS:
+              print(f"\n   Location: {location['name']}")
+
+              for date_str in dates:
+                  try:
+                      img_bytes = fetch_gibs_image(
+                          lat=location['lat'],
+                          lon=location['lon'],
+                          bbox_size=location['bbox'],
+                          date_str=date_str,
+                          width=512,
+                          height=512
+                      )
+
+                      s3_key = f"{location['name']}-{date_str}.png"
+                      s3.put_object(
+                          Bucket=BUCKET_NAME,
+                          Key=s3_key,
+                          Body=img_bytes,
+                          ContentType='image/png'
+                      )
+
+                      size_kb = len(img_bytes) / 1024
+                      total_size += len(img_bytes)
+                      total_uploaded += 1
+
+                      print(f"      {date_str}.png -> s3://{BUCKET_NAME}/{s3_key} ({size_kb:.1f} KB)")
+
+                  except Exception as e:
+                      print(f"      [ERROR] {date_str}: {str(e)[:60]}")
+
+          print(f"\n3. Upload Summary")
+          print(f"   Total images uploaded: {total_uploaded}")
+          print(f"   Total size: {total_size / (1024*1024):.2f} MB")
+
+          import json
+
+          print(f"\n4. Creating metadata files")
+
+          areas_metadata = {
+              "areas": [
+                  {
+                      "id": "las_vegas",
+                      "name": "Las Vegas, Nevada",
+                      "coordinates": {"lat": 36.1699, "lon": -115.1398},
+                      "status": "STABLE",
+                      "lastUpdate": dates[0],
+                      "imageCount": len(dates)
+                  },
+                  {
+                      "id": "dubai",
+                      "name": "Dubai, UAE",
+                      "coordinates": {"lat": 25.2048, "lon": 55.2708},
+                      "status": "MINIMAL",
+                      "lastUpdate": dates[0],
+                      "imageCount": len(dates)
+                  },
+                  {
+                      "id": "death_valley",
+                      "name": "Death Valley, CA",
+                      "coordinates": {"lat": 36.5323, "lon": -116.9325},
+                      "status": "STABLE",
+                      "lastUpdate": dates[0],
+                      "imageCount": len(dates)
+                  },
+                  {
+                      "id": "phoenix",
+                      "name": "Phoenix, Arizona",
+                      "coordinates": {"lat": 33.4484, "lon": -112.0740},
+                      "status": "MINIMAL",
+                      "lastUpdate": dates[0],
+                      "imageCount": len(dates)
+                  }
+              ],
+              "lastSync": datetime.utcnow().isoformat(),
+              "totalImages": total_uploaded
+          }
+
+          s3.put_object(
+              Bucket=BUCKET_NAME,
+              Key='metadata/areas.json',
+              Body=json.dumps(areas_metadata, indent=2),
+              ContentType='application/json'
+          )
+          print(f"   [OK] metadata/areas.json")
+
+          for location in LOCATIONS:
+              stats = {
+                  "location": location['name'],
+                  "coordinates": {"lat": location['lat'], "lon": location['lon']},
+                  "imageCount": len(dates),
+                  "dateRange": {"start": dates[-1], "end": dates[0]},
+                  "avgChange": 0.0,
+                  "classification": "STABLE"
+              }
+
+              s3.put_object(
+                  Bucket=BUCKET_NAME,
+                  Key=f"metadata/{location['name']}-stats.json",
+                  Body=json.dumps(stats, indent=2),
+                  ContentType='application/json'
+              )
+              print(f"   [OK] metadata/{location['name']}-stats.json")
+
+          print(f"\n========================================")
+          print(f"[OK] S4 SEED COMPLETE!")
+          print(f"========================================")
+          print(f"Bucket: s3://{BUCKET_NAME}")
+          print(f"Images: {total_uploaded}")
+          print(f"Size: {total_size / (1024*1024):.2f} MB")
+          print(f"========================================")
+
+          PYTHON_EOF
+
+          python3 /tmp/seed_s4.py
+
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "caisat.fullname" . }}-s4-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "caisat.fullname" . }}-s4-credentials
+              key: AWS_SECRET_ACCESS_KEY
+        resources:
+          {{- toYaml .Values.s4.seed.resources | nindent 12 }}
+{{- end }}
