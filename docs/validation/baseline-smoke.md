@@ -121,6 +121,8 @@ Wheel and button zoom adjust scroll to keep the focal point stable.
 
 Not automated in `make smoke`; record pass/fail here after manual verification.
 
+**MT-1a:** Operator visual sign-off complete on cluster Route (ods-qe-psi-21), 2026-06-30. Baseline SHA `dd40d02`.
+
 ### Procedure
 
 1. Deploy stack (or `npm start` + local backends for crop-only check).
@@ -130,26 +132,26 @@ Not automated in `make smoke`; record pass/fail here after manual verification.
 5. **Pass:** cropped/enhanced image shows the same geography as inside the red box (no horizontal/vertical offset).
 6. **Fail:** visible offset, wrong region, or box drifts relative to image when zooming.
 
-| Zoom | Cluster result | Local result                                               | Notes                               |
-| ---- | -------------- | ---------------------------------------------------------- | ----------------------------------- |
-| 1×   | _(pending)_    | automated smoke pass; visual capture/zoom pending operator | Reset zoom; box centered on capture |
-| 2×   | _(pending)_    | automated smoke pass; visual capture/zoom pending operator | Use 2× button or scroll wheel       |
-| 4×   | _(pending)_    | automated smoke pass; visual capture/zoom pending operator | Use 4× button or scroll wheel       |
+| Zoom | Cluster result | Local result                                             | Notes                                                                 |
+| ---- | -------------- | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| 1×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Alaska coastline; Reset zoom; box centered on capture                 |
+| 2×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Gibraltar; transient 500 from SwinIR predictor restart (not crop bug) |
+| 4×   | pass           | pass (operator cluster Route, ods-qe-psi-21, 2026-06-30) | Iceland/N Atlantic; Use 4× button or scroll wheel                     |
 
-| Field      | Value                                                                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch SHA | `ecda22e`                                                                                                                             |
-| Date       | 2026-06-30                                                                                                                            |
-| Signed off | **partial** — automated smoke pass; visual capture/zoom pending operator (`npm start` + visual alignment per [Procedure](#procedure)) |
+| Field      | Value                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------ |
+| Branch SHA | `dd40d02`                                                                                                          |
+| Date       | 2026-06-30                                                                                                         |
+| Signed off | **pass** — operator visual 1×/2×/4× on cluster Route (ods-qe-psi-21), 2026-06-30; automated smoke pass @ `dd40d02` |
 
-### Local pre-check results (MT-1a @ `ecda22e`, 2026-06-30)
+### Local pre-check results (MT-1a @ `dd40d02`, 2026-06-30)
 
-| Check                             | Result  | Notes                                                                                    |
-| --------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| `make check`                      | pass    | pre-commit + helm template                                                               |
-| `make smoke` (health)             | pass    | both backends `/health` 200                                                              |
-| `SMOKE_PROFILE=binary make smoke` | pass    | encode/decode unit test; no cluster round-trip                                           |
-| Capture/zoom 1×/2×/4×             | pending | automated smoke pass; visual capture/zoom pending operator — see [Procedure](#procedure) |
+| Check                             | Result | Notes                                                                                                      |
+| --------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
+| `make check`                      | pass   | pre-commit + helm template                                                                                 |
+| `make smoke` (health)             | pass   | both backends `/health` 200                                                                                |
+| `SMOKE_PROFILE=binary make smoke` | pass   | encode/decode unit test; no cluster round-trip                                                             |
+| Capture/zoom 1×/2×/4×             | pass   | operator visual on cluster Route (ods-qe-psi-21), 2026-06-30 — see [Procedure](#procedure) and table above |
 
 ---
 
