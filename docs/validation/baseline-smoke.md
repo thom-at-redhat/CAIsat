@@ -122,6 +122,23 @@ Not automated in `make smoke`; record pass/fail here after manual verification.
 
 ---
 
+## Crop profile (Phase 16+)
+
+Manual checklist when `max_crop` > 256 or tiling is enabled:
+
+1. `GET /api/capabilities` returns expected `max_crop`, `max_tile`, `tiling_enabled`
+2. Frontend crop box matches capabilities `max_crop`
+3. Enhance returns native 4× output (256→1024 on CPU profile; no forced 512 resize)
+4. Tiled path: all tiles succeed or request aborts with 502 (no partial stitch)
+
+| Field      | Value       |
+| ---------- | ----------- |
+| Branch SHA | _(pending)_ |
+| Date       | _(pending)_ |
+| Signed off | _(pending)_ |
+
+---
+
 ## Per-phase re-run rule
 
 Re-run **health** via `make smoke` after backend/chart changes. For baseline/binary/crop profiles, follow the manual checklist at the phase’s merge gate until `smoke-local.sh` implements them.

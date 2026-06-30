@@ -110,6 +110,19 @@ function App() {
     return () => clearInterval(interval);
   }, [BACKEND_BASE]);
 
+  useEffect(() => {
+    const fetchCapabilities = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_BASE}/api/capabilities`, { timeout: 5000 });
+        setCapabilities(response.data);
+        setCropArea((prev) => ({ ...prev, size: response.data.max_crop || 256 }));
+      } catch (error) {
+        console.log('Capabilities not available, using defaults');
+      }
+    };
+    fetchCapabilities();
+  }, [BACKEND_BASE]);
+
   // Initialize Three.js globe
   useEffect(() => {
     if (!globeRef.current || view !== 'globe') return;
@@ -198,9 +211,9 @@ function App() {
 
       // Reset crop area to center (natural image pixels; image displays 1:1 inside zoom wrapper)
       setCropArea({
-        x: canvas.width / 2 - 128,
-        y: canvas.height / 2 - 128,
-        size: 256,
+        x: canvas.width / 2 - cropSize / 2,
+        y: canvas.height / 2 - cropSize / 2,
+        size: cropSize,
       });
     });
   };
@@ -291,17 +304,16 @@ function App() {
       });
 
       const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 256;
+      canvas.width = cropSize;
+      canvas.height = cropSize;
       const ctx = canvas.getContext('2d');
 
-      // cropArea is in natural image pixels (matches visible box at any zoom level)
       const sourceX = Math.round(cropArea.x);
       const sourceY = Math.round(cropArea.y);
       ctx.drawImage(
         img,
         sourceX, sourceY, cropArea.size, cropArea.size,
-        0, 0, 256, 256
+        0, 0, cropSize, cropSize
       );
 
       // Convert to blob
@@ -575,7 +587,7 @@ function App() {
                 {/* Step 1: Select area to enhance */}
                 {!croppedImage && !enhancedImage && (
                   <div className="crop-section">
-                    <h3>Select 256x256 Area to Enhance</h3>
+                    <h3>Select {cropSize}×{cropSize} Area to Enhance</h3>
                     <p className="instruction">
                       Scroll to zoom • Drag red box to select area
                     </p>
@@ -643,7 +655,7 @@ function App() {
                                 height: `${cropArea.size}px`,
                               }}
                             >
-                              <div className="crop-label">256×256</div>
+                              <div className="crop-label">{cropSize}×{cropSize}</div>
                             </div>
                           </div>
                         </div>
@@ -675,7 +687,7 @@ function App() {
                       {showOriginal && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowOriginal(!showOriginal)} style={{cursor: 'pointer'}}>
-                            Original (256×256) {showOriginal ? '▼' : '▶'}
+                            Original ({cropSize}×{cropSize}) {showOriginal ? '▼' : '▶'}
                           </h4>
                           <img src={croppedImage} alt="Original crop" />
                         </div>
@@ -691,7 +703,7 @@ function App() {
                       {showEnhanced && (
                         <div className="result-panel">
                           <h4 onClick={() => setShowEnhanced(!showEnhanced)} style={{cursor: 'pointer'}}>
-                            Enhanced (512×512) {showEnhanced ? '▼' : '▶'}
+                            Enhanced ({enhancedSize}×{enhancedSize}) {showEnhanced ? '▼' : '▶'}
                           </h4>
                           <img src={enhancedImage} alt="Enhanced" />
                         </div>
@@ -870,7 +882,7 @@ function App() {
 
                 <h3>Enhancement Process:</h3>
                 <ol>
-                  <li><strong>Select Area:</strong> Use scroll to zoom, then drag the red 256×256 box to your desired area</li>
+                  <li><strong>Select Area:</strong> Use scroll to zoom, then drag the red {cropSize}×{cropSize} box to your desired area</li>
                   <li><strong>Enhance:</strong> Click "Enhance Selected Area" to process with AI</li>
                   <li><strong>Review Results:</strong> Compare the original and AI-enhanced images side-by-side</li>
                   <li><strong>Download:</strong> Save the enhanced image for your use</li>

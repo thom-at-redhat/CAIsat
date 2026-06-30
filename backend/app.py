@@ -13,7 +13,6 @@ import os
 import traceback
 
 import aiohttp
-import numpy as np
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +20,8 @@ from fastapi.responses import StreamingResponse
 from PIL import Image
 
 from capabilities import get_capabilities
-from kserve_v2 import kserve_infer, sanitize_model_error
+from kserve_v2 import sanitize_model_error
+from tiled_sr import enhance_image_tiled
 
 load_dotenv()
 
@@ -58,25 +58,6 @@ app.add_middleware(
 )
 
 
-def preprocess_image(image: Image.Image, crop_size: int = 256) -> np.ndarray:
-    """Convert PIL image to NCHW float32 tensor in [0, 1]."""
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-    image = image.resize((crop_size, crop_size), Image.LANCZOS)
-    img_array = np.array(image).astype(np.float32) / 255.0
-    img_array = np.transpose(img_array, (2, 0, 1))
-    return np.expand_dims(img_array, 0)
-
-
-def postprocess_output(output_array: np.ndarray) -> Image.Image:
-    """Convert model output tensor to PIL Image."""
-    output_array = output_array[0]
-    output_array = np.transpose(output_array, (1, 2, 0))
-    output_array = np.clip(output_array, 0, 1)
-    output_array = (output_array * 255).astype(np.uint8)
-    return Image.fromarray(output_array)
-
-
 @app.get("/")
 async def root():
     return {"service": "Zoom & Enhance API", "status": "operational"}
@@ -104,22 +85,33 @@ async def enhance_image(image: UploadFile = File(...)):
     if http_session is None:
         raise HTTPException(status_code=503, detail="Service not ready")
 
+    caps = get_capabilities()
+    max_crop = int(caps["max_crop"])
+
     try:
         contents = await image.read()
         if len(contents) > MAX_UPLOAD_BYTES:
             raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
 
         img = Image.open(io.BytesIO(contents))
-        tensor = preprocess_image(img)
+        side = min(img.size)
+        if side > max_crop:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Crop {side}px exceeds profile max_crop {max_crop}px",
+            )
 
         try:
-            output_tensor, protocol = await kserve_infer(
+            enhanced_img = await enhance_image_tiled(
                 http_session,
                 MODEL_ENDPOINT,
-                tensor,
+                img,
                 input_name=KSERVE_INPUT_NAME,
                 output_name=KSERVE_OUTPUT_NAME,
-                timeout_seconds=300,
+                max_tile=int(caps["max_tile"]),
+                scale_factor=int(caps["scale_factor"]),
+                tiling_enabled=bool(caps["tiling_enabled"]),
+                timeout_seconds=float(caps["infer_timeout_seconds"]),
             )
         except aiohttp.ClientResponseError as exc:
             print(f"Model endpoint error ({exc.status}): {exc.message}")
@@ -127,11 +119,11 @@ async def enhance_image(image: UploadFile = File(...)):
                 status_code=502,
                 detail=sanitize_model_error(exc.status, exc.message or ""),
             ) from exc
+        except RuntimeError as exc:
+            print(f"Tiled enhancement aborted: {exc}")
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-        print(f"Inference completed via {protocol} protocol")
-
-        enhanced_img = postprocess_output(output_tensor)
-        enhanced_img = enhanced_img.resize((512, 512), Image.LANCZOS)
+        print(f"Enhanced output: {enhanced_img.size[0]}x{enhanced_img.size[1]} (native 4x)")
 
         img_byte_arr = io.BytesIO()
         enhanced_img.save(img_byte_arr, format="PNG")
