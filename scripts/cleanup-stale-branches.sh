@@ -24,12 +24,14 @@ fi
 KEEP_LOCAL=(
   main
   fix/detection-box-overlay
+  ci/gha-hardening
 )
 
 # origin/* remotes we never delete (open PR + in-flight worktree branch).
 KEEP_REMOTE=(
   main
   fix/detection-box-overlay
+  ci/gha-hardening
 )
 
 is_kept_local() {
