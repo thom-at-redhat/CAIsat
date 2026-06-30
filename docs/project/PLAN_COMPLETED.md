@@ -8,7 +8,7 @@ Archive of merged foundation work. Active sequencing lives in [`PLAN.md`](PLAN.m
 
 **Renumbering (2026-06-30):** Inserted Phases 8–11 (OpenSSF score improvement); former 8–19 → 12–23. Active plan now phases 0 + 8–23.
 
-**Branch tip (2026-06-30):** fork `main` @ `acb9a79`; Phase 0 merged PR #33; Phase 8 score baseline next in PR. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
+**Branch tip (2026-06-30):** fork `main` @ `7d2106b`; Phase 9 merged PR #35 + PR #36. Upstream Quay gate **fail** for `rh-ai-quickstart`; fork mirror in [`../spikes/quay-tags.md`](../spikes/quay-tags.md).
 
 ---
 
@@ -257,5 +257,41 @@ Deliverables:
 4. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 8 summary archived; Phase 0 close recorded
 5. `make check` green locally; green **pre-commit** workflow on PR
 6. Commit PLAN close; record tip SHA in handover
+
+Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.
+
+---
+
+## Phase 9 — Dependency hygiene
+
+| Field  | Value                                                                                                                                                 |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Goal   | Enable/merge Dependabot updates; reduce OSV vulnerability count                                                                                       |
+| Branch | Batch 1: `feat/phase-9-dependency-hygiene` → merged PR #35 @ `30c55ef`; batch 2: `feat/phase-9-dependency-hygiene-batch2` → merged PR #36 @ `7d2106b` |
+| Gate   | `make check` + `make smoke` (health); green CI                                                                                                        |
+
+Deliverables:
+
+- Dependabot PR batches merged — safe patches in batch 1; previously deferred majors in batch 2 (Pillow 12, FastAPI, numpy 2, React 19, react-leaflet 5, three 0.185, etc.)
+- [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — Phase 9 triage tables (batch 1 + batch 2)
+- [`PLAN.md`](PLAN.md) — Phase 9 archived; Phase 10 next
+
+### Caveats (from scorecard-gaps)
+
+- **Cluster validation gap:** React 19 / Three 0.185 / react-leaflet 5 map and globe UX not validated on cluster until Phase 13 baseline sign-off.
+- **numpy 2:** requirements bump only; health smoke passes (no ONNX inference in smoke profile).
+- **Scorecard:** baseline remains **6.0** @ `6b0a209`; re-run on `main` @ `7d2106b` after Phase 9 close (TBD).
+- **Dependabot:** alert count **98→21** on `main` post-batch-2 (8H/12M/1L per push notice); re-run alert count after merge for authoritative tally.
+
+### Phase 9 close checklist
+
+**Status:** Done (2026-06-30). Merged PR #35 @ `30c55ef` + PR #36 @ `7d2106b`.
+
+1. Batch 1 — workflow pins, python-dotenv, python-multipart, axios patch, partial aiohttp (see scorecard-gaps batch 1 table)
+2. Batch 2 — all previously deferred PRs merged; `make check` + health smoke green on batch 2 branch
+3. [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md) — batch 2 complete; no remaining deferrals in Phase 9 scope
+4. [`PLAN.md`](PLAN.md) — branch header @ `7d2106b`, todos, status table, last verified
+5. [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) — Phase 9 summary archived (this section)
+6. `make check` green; green **pre-commit** workflow on PLAN close PR
 
 Handover SHA: record in local `.cursor/rules/handover-notes.mdc` (gitignored) after merge.

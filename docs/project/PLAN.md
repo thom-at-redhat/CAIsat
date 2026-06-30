@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for phase sequencing, merge gates, and spike gates. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `6b0a209` (2026-06-30). Phase 9 in progress — use feature branches; never push `main`.
+**Branch:** `main` @ `7d2106b` (2026-06-30). Phase 10 next — use feature branches; never push `main`.
 
 **Archive:** Completed work → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -39,11 +39,11 @@ Former phases 3–18 → **7–19**. Parallel spike tracks keep `-onnx`/`-binary
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned    | ok                       |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | not started (ML spikes)                        | ok                       |
 
-**Last verified:** fork `main` @ `acb9a79` (2026-06-30); Scorecard **6.0**; SAST **10/10**; Phase 0 merged PR #33; Phase 8 merged (score baseline)
+**Last verified:** fork `main` @ `7d2106b` (2026-06-30); Scorecard **6.0** (re-run post-Phase-9 TBD); SAST **10/10**; Phase 9 PR #35 + #36 merged; Dependabot **98→21** (8H/12M/1L)
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
-**Claims not checked:** cluster baseline sign-off; ONNX/binary/GPU runtime (Phase 12 spikes); post-Phase-11 Scorecard re-run
+**Claims not checked:** cluster baseline sign-off (React 19 / three / react-leaflet UX → Phase 13); Phase 12 ONNX/binary/GPU spikes; post-Phase-9 and post-Phase-11 Scorecard re-runs
 
 **Skeptical review:** Cycle 5 (2026-06-29) **Proceed** — Phase 5 fork gate closed: PR #24 merged @ `f0e582a`; SECURITY.md + pre-commit permissions verified on fork `main`.
 
@@ -57,7 +57,7 @@ Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`
 | ----- | ------------------ | ------------- | ------------------------------------------------------- |
 | 0     | Quay gate          | **completed** | Fork mirror in chart defaults; upstream still fail      |
 | 8     | Score baseline     | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
-| 9     | Dependency hygiene | in progress   | PR open — safe Dependabot batch merged                  |
+| 9     | Dependency hygiene | **completed** | Archived — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) |
 | 10    | Branch protection  | pending       | Ruleset: CodeQL required, maximal fork settings         |
 | 11    | Pin dependencies   | pending       | Workflow/pre-commit SHA pins → 10/10                    |
 | 12    | Spikes             | pending       | Parallel `12-onnx` + `12-binary`                        |
@@ -68,22 +68,22 @@ Sync with bootstrap plan frontmatter; update on phase close. Phases 1–7 → [`
 
 ## Status
 
-Phases **0, 1–8** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). OpenSSF install detail (Phases 4–6) and score baseline (Phase 8) archived there.
+Phases **0, 1–9** done — see [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). OpenSSF install detail (Phases 4–6), score baseline (Phase 8), and dependency hygiene (Phase 9) archived there.
 
-| Phase | Track                  | Status                 | Merge gate                                                                                               |
-| ----- | ---------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| 0     | Quay gate              | **Done (fork mirror)** | All five `thom_at_redhat/caisat` tags pull anonymously; upstream `rh-ai-quickstart` still fail           |
-| 8     | OpenSSF score baseline | **Done**               | `make check` + doc only; Scorecard **6.0** @ `acb9a79`                                                   |
-| 9     | Dependency hygiene     | Planned                | `make check` + `make smoke`; green CI; reduced vuln count                                                |
-| 10    | Branch protection      | Planned                | `make check`; document ruleset `protect-main` changes                                                    |
-| 11    | Pin dependencies       | Planned                | `make check`; Pinned-Dependencies → 10/10                                                                |
-| 12    | ONNX + binary spikes   | Planned                | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                       |
-| 13    | Capture/zoom (#5)      | Planned                | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md` |
-| 14    | Binary KServe tensors  | Planned                | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                          |
-| 15    | GPU profiles           | Planned                | `make check` + `make smoke` (health) + GPU spike deferral table                                          |
-| 16    | Crop + tiled SR        | Planned                | `make check` + `make smoke` (health) + manual **crop** checklist (script TBD)                            |
-| 17    | OBB + SAHI             | Planned                | `make check` + `make smoke` (health) + manual sign-off per profiles exercised                            |
-| 18–23 | Deferred               | Planned (after 17)     | Per phase one-liners below                                                                               |
+| Phase | Track                  | Status                 | Merge gate                                                                                                    |
+| ----- | ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 0     | Quay gate              | **Done (fork mirror)** | All five `thom_at_redhat/caisat` tags pull anonymously; upstream `rh-ai-quickstart` still fail                |
+| 8     | OpenSSF score baseline | **Done**               | `make check` + doc only; Scorecard **6.0** @ `acb9a79`                                                        |
+| 9     | Dependency hygiene     | **Done**               | PR #35 batch 1 @ `30c55ef` + PR #36 batch 2 @ `7d2106b`; Dependabot **98→21**; cluster UX validation Phase 13 |
+| 10    | Branch protection      | Planned                | `make check`; document ruleset `protect-main` changes                                                         |
+| 11    | Pin dependencies       | Planned                | `make check`; Pinned-Dependencies → 10/10                                                                     |
+| 12    | ONNX + binary spikes   | Planned                | Spike docs with pass/fail (`12-onnx`, `12-binary`)                                                            |
+| 13    | Capture/zoom (#5)      | Planned                | `make check` + `make smoke` (health) + manual **baseline** + **post-p0** sign-off in `baseline-smoke.md`      |
+| 14    | Binary KServe tensors  | Planned                | `make check` + `make smoke` (health) + manual **binary** checklist (script TBD)                               |
+| 15    | GPU profiles           | Planned                | `make check` + `make smoke` (health) + GPU spike deferral table                                               |
+| 16    | Crop + tiled SR        | Planned                | `make check` + `make smoke` (health) + manual **crop** checklist (script TBD)                                 |
+| 17    | OBB + SAHI             | Planned                | `make check` + `make smoke` (health) + manual sign-off per profiles exercised                                 |
+| 18–23 | Deferred               | Planned (after 17)     | Per phase one-liners below                                                                                    |
 
 ---
 
