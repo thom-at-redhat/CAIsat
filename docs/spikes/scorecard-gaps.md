@@ -260,4 +260,34 @@ Audit mode sends egress telemetry to StepSecurity; no block policy yet.
 **Block mode (MT-6d — deferred):** After 2–3 green runs on `main`, collect allowed endpoints from StepSecurity job logs and open a separate PR with `egress-policy: block` + per-job `allowed-endpoints`.
 Do not enable block until audit baseline exists. No block PR opened in this session — audit telemetry accumulates on subsequent CI runs.
 
+---
+
+## MT-CP-2 — Require `smoke-binary` (branch protection)
+
+**Ruleset:** `protect-main` (ID `18274842`) on contributor fork.
+
+### Before (2026-06-30, post Phase 10)
+
+```json
+{
+  "required_status_checks": ["pre-commit", "Scorecard analysis", "CodeQL"]
+}
+```
+
+### After (2026-06-30, MT-CP-2)
+
+```json
+{
+  "required_status_checks": ["pre-commit", "smoke-binary", "Scorecard analysis", "CodeQL"]
+}
+```
+
+**Rollback:** Restore pre-edit snapshot `/tmp/ruleset-18274842-pre-mt-cp-2.json` via rulesets API PUT (operator). Revert workflow PR if required check blocks merges.
+
+### Expected Branch-Protection impact
+
+- Adds `smoke-binary` to required contexts alongside `pre-commit`, Scorecard analysis, and CodeQL.
+- Every PR/push must pass both parallel CI jobs; MT-CP-2 removes MT-CP-1 path filters so the job always runs (required checks cannot be skipped).
+- Scorecard Branch-Protection score may improve when binary smoke is enforced; re-run Scorecard on `main` after ruleset update (may lag via `api.scorecard.dev`).
+
 **Dependabot (MT-5a):** Zero open Dependabot PRs on fork @ 2026-06-30; re-check via GitHub Dependabot alerts UI (PAT lacks alerts API).

@@ -23,7 +23,7 @@
 | ----------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------ |
 | MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`                | ok                       |
 | CI harden-runner audit  | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | step-security harden-runner audit; PR #57     | ok                       |
-| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | parallel `smoke-binary` job; PR #57           | ok                       |
+| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | required CI job `smoke-binary`; MT-CP-2       | ok                       |
 | Helm metadata fix       | [`chart/templates/backend.yaml`](../../chart/templates/backend.yaml)                         | single metadata block                         | ok                       |
 | `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health in required CI job `pre-commit`        | ok                       |
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                             | ok                       |
@@ -35,11 +35,11 @@
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions        | ok                       |
 | Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`         | ok                       |
 | README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)         | ok (fork until upstream) |
-| Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | `pre-commit` + Scorecard + CodeQL on `main`   | ok (fork)                |
+| Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | pre-commit, smoke-binary, Scorecard, CodeQL   | ok (fork)                |
 | Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned   | ok                       |
 | Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins   | ok                       |
 | Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix   | ok                       |
-| Upstream sync           | fork `main` @ `4abef20`                                                                      | PR #43; change detection + S4/DSPA pipelines  | ok (inbound only)        |
+| Upstream sync           | fork `main` @ `4abef20`                                                                      | PR #43; change detection + S4/DSPA            | ok (inbound only)        |
 | Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | ML spikes documented (PR #45)                 | ok                       |
 | Phases 12–23 merge      | PR #45 @ `ee3f1b3`                                                                           | `integration/phases-12-23`                    | ok                       |
 | PLAN post-23 archive    | PR #47 @ `4abef20`                                                                           | stop_work PLAN archive merged                 | ok                       |
@@ -126,13 +126,13 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ## Smoke profiles
 
-| Profile      | Phases | Assertions                                           | Automation                                                                      |
-| ------------ | ------ | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **health**   | 7+     | `/health` 200 on both backends                       | Required CI job `pre-commit` (`make smoke`)                                     |
-| **baseline** | 13+    | health + enhance/detect 200 + valid payloads         | Manual — `baseline-smoke.md`                                                    |
-| **post-p0**  | 13+    | baseline + capture/zoom 1×/2×/4×                     | Manual                                                                          |
-| **binary**   | 14+    | Local: encode/decode test. Cluster: infer round-trip | CI job `smoke-binary` + local `SMOKE_PROFILE=binary make smoke`; cluster manual |
-| **crop**     | 16+    | baseline/binary + profile default crop size          | Manual                                                                          |
+| Profile      | Phases | Assertions                                           | Automation                                                                               |
+| ------------ | ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **health**   | 7+     | `/health` 200 on both backends                       | Required CI job `pre-commit` (`make smoke`)                                              |
+| **baseline** | 13+    | health + enhance/detect 200 + valid payloads         | Manual — `baseline-smoke.md`                                                             |
+| **post-p0**  | 13+    | baseline + capture/zoom 1×/2×/4×                     | Manual                                                                                   |
+| **binary**   | 14+    | Local: encode/decode test. Cluster: infer round-trip | Required CI job `smoke-binary` + local `SMOKE_PROFILE=binary make smoke`; cluster manual |
+| **crop**     | 16+    | baseline/binary + profile default crop size          | Manual                                                                                   |
 
 See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 

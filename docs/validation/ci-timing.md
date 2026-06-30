@@ -4,9 +4,9 @@
 
 Track GitHub Actions job wall times on fork `main` to decide whether Phase 3 job split (MT-CP-3) is justified.
 
-Local `make check` always runs helm template; CI may skip helm when `chart/**` is unchanged (MT-CP-1).
+Local `make check` always runs helm template; CI runs helm on every push/PR (MT-CP-2 removed MT-CP-1 helm skip).
 
-**Plan reference:** Cursor plan `ci_parallelization_phases.plan.md` — MT-CP-1 (this doc), MT-CP-3 gate.
+**Plan reference:** Cursor plan `ci_parallelization_phases.plan.md` — MT-CP-1 (metrics doc), MT-CP-2 (require `smoke-binary`), MT-CP-3 gate.
 
 ---
 
@@ -21,28 +21,25 @@ Use **green runs only** for baseline tables; failed runs skew p95.
 
 ---
 
-## Baseline table template
+## Baseline table (green `main` runs)
 
-Fill after MT-CP-1 merges and at least three consecutive green `main` runs post-merge.
+| Job            | Run date (UTC) | Commit    | Wall time (min) | Notes                                                |
+| -------------- | -------------- | --------- | --------------- | ---------------------------------------------------- |
+| `pre-commit`   | 2026-06-30     | `b07bc93` | 1.13            | Post–MT-CP-1 merge; helm skipped (no chart change)   |
+| `smoke-binary` | 2026-06-30     | `b07bc93` | 0.68            | Ran (workflow change touched `.github/workflows/**`) |
+| `pre-commit`   | 2026-06-30     | `3134052` | 1.17            | Pre–MT-CP-1; no path filters                         |
+| `smoke-binary` | 2026-06-30     | `3134052` | 0.62            | Optional parallel                                    |
+| `pre-commit`   | 2026-06-30     | `f933c82` | 2.43            | PR #57 GHA hardening merge                           |
+| `smoke-binary` | 2026-06-30     | `f933c82` | 0.82            | First required parallel job on main                  |
 
-| Job            | Run date (UTC) | Commit | Wall time (min) | Notes         |
-| -------------- | -------------- | ------ | --------------- | ------------- |
-| `pre-commit`   |                |        |                 |               |
-| `smoke-binary` |                |        |                 | skipped / ran |
+**Status:** 3 of 3 target post–MT-CP-1 merge runs recorded (1 post-merge @ `b07bc93` + 2 pre-merge baselines). Add more rows after MT-CP-2 merge when both jobs are required on every push.
 
 **Aggregates (last N green `main` runs, N ≥ 5 recommended):**
 
 | Job            | N   | p50 (min) | p95 (min) | Last updated |
 | -------------- | --- | --------- | --------- | ------------ |
-| `pre-commit`   |     |           |           |              |
-| `smoke-binary` |     |           |           |              |
-
-**Post–MT-CP-1 initial row (pre-merge baseline @ `3134052`):**
-
-| Job            | Run date (UTC) | Commit    | Wall time (min)      | Notes                                 |
-| -------------- | -------------- | --------- | -------------------- | ------------------------------------- |
-| `pre-commit`   | 2026-06-30     | `3134052` | _record after merge_ | Phase 0 serial lint → helm → health   |
-| `smoke-binary` | 2026-06-30     | `3134052` | _record after merge_ | Optional parallel; no path filter yet |
+| `pre-commit`   | 3   | 1.17      | 2.43      | 2026-06-30   |
+| `smoke-binary` | 3   | 0.68      | 0.82      | 2026-06-30   |
 
 ---
 
@@ -57,18 +54,18 @@ Fill after MT-CP-1 merges and at least three consecutive green `main` runs post-
 
 - p50 ≤ ~6 minutes sustained — monolithic `pre-commit` is fast enough; prefer MT-CP-4 perf tweaks or stop.
 
+**Current read (2026-06-30):** p50 `pre-commit` ≈ 1.2 min — **defer MT-CP-3**.
+
 Update this section and [`scorecard-gaps.md`](../spikes/scorecard-gaps.md) when aggregates change a gate decision.
 
 ---
 
-## Path-filter impact (MT-CP-1)
+## Path-filter impact (MT-CP-1, removed MT-CP-2)
 
-After MT-CP-1 merges:
+MT-CP-1 (merged @ `b07bc93`) added `dorny/paths-filter` skips for helm and `smoke-binary`. MT-CP-2 removes all path filters because `smoke-binary` is a required check — skipped jobs would block merges.
 
-| Change scope                                    | `smoke-binary`                                               | Helm in `pre-commit`            |
-| ----------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
-| Docs / frontend only                            | Skipped (filter `smoke=false`)                               | Skipped if `chart/**` unchanged |
-| `chart/**`                                      | Runs if other smoke paths also hit, or skipped if only chart | Runs                            |
-| `backend/**`, smoke script, Makefile, workflows | Runs                                                         | Unchanged                       |
-
-Phase 2 (MT-CP-2) removes smoke path filters when `smoke-binary` becomes a required check.
+| Change scope        | MT-CP-1 behavior (historical) | MT-CP-2+ behavior    |
+| ------------------- | ----------------------------- | -------------------- |
+| Docs only           | `smoke-binary` skipped        | Both jobs always run |
+| `chart/**`          | Helm runs                     | Helm always runs     |
+| Backend/smoke paths | `smoke-binary` runs           | Both jobs always run |
