@@ -50,6 +50,7 @@ Decision and follow-up.
 | SwinIR ONNX shapes       | [swinir-onnx.md](swinir-onnx.md)               | **pass** — dynamic H/W; 256→1024 native 4×                       |
 | Binary KServe v2         | [binary-kserve-v2.md](binary-kserve-v2.md)     | **fail** @ 2026-06-30 — JSON OK; binary HTTP 500 both predictors |
 | RHOAI GPU ServingRuntime | [gpu-servingruntime.md](gpu-servingruntime.md) | **blocked** — CPU pass; T4/L40S/Hopper deferred                  |
+| YOLO11-OBB eval          | [yolo11-obb-eval.md](yolo11-obb-eval.md)       | **skipped** — Phase 17 QA sufficient                             |
 
 ---
 
