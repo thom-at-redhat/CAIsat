@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `d84539c` (2026-07-01). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
+**Branch:** `main` @ `e2a7704` (2026-07-01). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
@@ -49,7 +49,7 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test) | ok                    |
 | Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L101–106              | **pass** @ `b367b63` 2026-07-01               | ok (layout partial)   |
 
-**Last verified:** fork `main` @ `d84539c` (2026-07-01); operator sign-off PRs #64, #65; PLAN closure PR #66; CI parallelization PRs #59–#63 (MT-CP-3 deferred);
+**Last verified:** fork `main` @ `e2a7704` (2026-07-01); post-redeploy sign-off MT-R5; PRs #67–#68 merged; operator PR #65; CI parallelization PRs #59–#63 (MT-CP-3 deferred);
 Scorecard **6.0** unchanged; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
@@ -112,23 +112,23 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md` |
-| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`          |
-| Crop sign-off     | **partial (CPU)** @ `b367b63`; capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md`       |
-| GPU deferral      | MT-3 **skipped**; T4/L40S/Hopper **waiver**; re-test 2026-07-31 — `gpu-servingruntime.md`                            |
-| Cluster redeploy  | Quay images @ `b367b63` for capabilities, native 4× enhance, PR #54 responsive frontend                              |
+| Item              | Detail                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`           |
+| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                    |
+| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md` |
+| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                        |
+| Cluster redeploy  | **done** @ `e2a7704` — Quay `:backend`/`:detection-backend`/`:frontend` pushed @ `8be4c58`; rollout restart ods-qe-psi-21      |
 
 ---
 
 ## Open blockers
 
-| Blocker              | Detail                                                                                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| MLServer binary      | **fail** @ ea.1 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500 both predictors; RHOAI ticket required for waiver   |
-| Stale cluster images | Deployed stack pre-`b367b63`: `/api/capabilities` 404; enhance 256→512 not 1024; frontend pre-PR #54 — redeploy Quay images @ `b367b63` |
-| Phase 14 binary-only | JSON fallback active until binary round-trip passes on cluster                                                                          |
+| Blocker               | Detail                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary       | **fail** @ ea.1 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500 both predictors; RHOAI ticket required for waiver |
+| KSERVE binary default | `KSERVE_PREFER_BINARY=true` breaks enhance when binary infer fails; CPU cluster set to `false` until MLServer binary passes           |
+| Phase 14 binary-only  | JSON fallback active until binary round-trip passes on cluster                                                                        |
 
 ---
 

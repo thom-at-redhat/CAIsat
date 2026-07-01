@@ -151,10 +151,10 @@ Bounding boxes are drawn on the **Detected Objects** image in the third panel on
 At **150% browser zoom** (effective viewport shrink) or widths under ~1400px, panels **stack vertically** with down arrows so all three images are visible without horizontal scroll.
 Verify boxes align with objects in the enhanced crop; record pass/fail with cluster baseline sign-off.
 
-| Browser zoom | Expected layout                  | Pass criteria                                              | Cluster result (2026-07-01)                                         |
-| ------------ | -------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
-| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **pass** — 1600px; 3-panel row; 0 detections on tile                |
-| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **fail** — pre-PR #54 frontend (no `@media max-width:1400px` stack) |
+| Browser zoom | Expected layout                  | Pass criteria                                              | Cluster result (2026-07-01)                                           |
+| ------------ | -------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **pass** — 1600px; 3-panel row; 0 detections on tile                  |
+| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **pending** — frontend @ `e2a7704`; operator UI retest after redeploy |
 
 | Zoom | Cluster result | Local result | Notes                                                                                   |
 | ---- | -------------- | ------------ | --------------------------------------------------------------------------------------- |
@@ -190,20 +190,22 @@ Manual checklist when `max_crop` > 256 or tiling is enabled:
 3. Enhance returns native 4× output (256→1024 on CPU profile; no forced 512 resize)
 4. Tiled path: all tiles succeed or request aborts with 502 (no partial stitch)
 
-| Field      | Value                                                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch SHA | `b367b63`                                                                                                                                          |
-| Date       | 2026-07-01                                                                                                                                         |
-| Signed off | **partial (CPU)** — `GET /api/capabilities` 404 on deployed backend; enhance 256→512 (not native 4× 1024); redeploy Quay images @ `b367b63` needed |
+| Field      | Value                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch SHA | `e2a7704`                                                                                                                                 |
+| Date       | 2026-07-01                                                                                                                                |
+| Signed off | **pass (CPU)** — post-redeploy @ `e2a7704`; Quay `:backend` digest `sha256:eaa1df24…`; enhance 256→1024 with `KSERVE_PREFER_BINARY=false` |
 
-**MT-4a checklist (2026-07-01, ods-qe-psi-21):**
+**MT-4a checklist (2026-07-01, ods-qe-psi-21, post-redeploy):**
 
-| Check                                      | Result | Notes                                                              |
-| ------------------------------------------ | ------ | ------------------------------------------------------------------ |
-| `GET /api/capabilities` (`max_crop`, etc.) | fail   | HTTP 404 — endpoint absent on deployed `:backend` image            |
-| Frontend crop box matches `max_crop`       | pass   | UI shows 256×256 selector (consistent with deployed CPU profile)   |
-| Enhance native 4× (256→1024)               | fail   | API + UI return 512×512; predictor JSON infer confirms 1024 tensor |
-| Tiled path abort on tile failure           | n/a    | `tiling_enabled` not exposed on deployed backend                   |
+| Check                                      | Result | Notes                                                                       |
+| ------------------------------------------ | ------ | --------------------------------------------------------------------------- |
+| `GET /api/capabilities` (`max_crop`, etc.) | pass   | Both backends 200; `max_crop=256`, `gpu_tier=cpu`, `tiling_enabled=false`   |
+| Frontend crop box matches `max_crop`       | pass   | UI shows 256×256 selector (consistent with CPU profile)                     |
+| Enhance native 4× (256→1024)               | pass   | `POST /api/enhance` returns 1024×1024 PNG (in-pod test; JSON infer; ~110 s) |
+| Tiled path abort on tile failure           | n/a    | `tiling_enabled=false` on CPU profile                                       |
+
+**Note:** Default `KSERVE_PREFER_BINARY=true` caused enhance 500 (binary infer HTTP 500); set `KSERVE_PREFER_BINARY=false` on `caisat-backend` for CPU path until MLServer binary passes (MT-R3c).
 
 ---
 
