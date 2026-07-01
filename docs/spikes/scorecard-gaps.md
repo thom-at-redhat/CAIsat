@@ -242,9 +242,7 @@ _Pre-batch-2 deferral table — superseded by batch 2 results above._
 
 ## Verification
 
-**Last verified:** fork `main` @ `f933c82` (2026-06-30, PR #57 GHA hardening merged). Scorecard overall score pending next scheduled or push-triggered run.
-
-Re-run Scorecard on fork `main` after Phases 9–11 close. Record tip SHA and overall score in this file and [`PLAN.md`](../project/PLAN.md) verification artifact.
+**Last verified:** fork `main` @ `a98e062` (2026-07-01, MT-W14 Wave 5 investigation). Scorecard **6.0** @ API + CI run `28521726670`; badge consistent.
 
 ---
 
@@ -318,3 +316,97 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 - Scorecard Branch-Protection score may improve when binary smoke is enforced; re-run Scorecard on `main` after ruleset update (may lag via `api.scorecard.dev`).
 
 **Dependabot (MT-5a):** Zero open Dependabot PRs on fork @ 2026-06-30; re-check via GitHub Dependabot alerts UI (PAT lacks alerts API).
+
+---
+
+## Wave 5 — Scorecard 6.0 investigation
+
+**MT-ID:** MT-W14 (W5-P1c) | **Date:** 2026-07-01 | **Tip SHA:** `a98e062` (PR #71 merged)
+
+**Question:** Why is Scorecard still **6.0** after Phases 8–11 (pinned deps, SAST, branch protection, `smoke-binary`)?
+
+**Verdict:** **6.0 is expected** on this solo fork. Waived checks (Maintained, Code-Review, Fuzzing, Contributors) plus Vulnerabilities 0 (21 OSV) and Branch-Protection 4 cap the score.
+
+**No further repo work is required** unless the operator chooses fixable gaps below. Reaching **7+** needs upstream/collaborators, time (Maintained), and OSV triage.
+
+### Evidence sources
+
+| Source                 | Result                         | Notes                                                                                              |
+| ---------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `api.scorecard.dev`    | **6.0** @ 2026-07-01T13:38:23Z | Authoritative for README badge                                                                     |
+| README badge URL       | **6.0**                        | Same API endpoint — **consistent**, no lag                                                         |
+| CI run `28521726670`   | **6.0** @ commit `a98e062`     | Push trigger (PR #71); Scorecard v5.3.0 in SARIF                                                   |
+| Ruleset `18274842`     | 4 required contexts            | `pre-commit`, `smoke-binary`, `Scorecard analysis`, `CodeQL`; `required_approving_review_count: 0` |
+| Dependabot alerts API  | **403**                        | PAT lacks `dependabot` scope — use GitHub UI                                                       |
+| `make scorecard-local` | Skipped                        | `GITHUB_AUTH_TOKEN` unset in agent session                                                         |
+
+### Per-check triage @ `a98e062`
+
+| Check                  | Score | Actionable? | Fixable? | Blocks 7+? | Notes                                             |
+| ---------------------- | ----- | ----------- | -------- | ---------- | ------------------------------------------------- |
+| Maintained             | 0     | No          | No       | **Yes**    | Fork &lt;90 days — **waiver** (Phase 8)           |
+| Code-Review            | 0     | Partial     | No       | **Yes**    | 0 approvers — **solo fork waiver** (Phase 10)     |
+| Fuzzing                | 0     | Defer       | No       | **Yes**    | No OSS-Fuzz — out of scope                        |
+| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 21 OSV/GHSA via Scorecard scan; follow-up MT      |
+| Contributors           | 3     | No          | No       | **Yes**    | Single org — **waiver** (Phase 8)                 |
+| Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork     |
+| CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                  |
+| Pinned-Dependencies    | 8     | Yes         | **Yes**  | No         | Unpinned pip @ pre-commit.yaml:65; Phase 11 drift |
+| Packaging              | -1    | Defer       | Partial  | No         | No publish workflow                               |
+| Signed-Releases        | -1    | Defer       | Partial  | No         | No GitHub releases                                |
+| Dependency-Update-Tool | 10    | —           | —        | No         | Dependabot configured                             |
+| Dangerous-Workflow     | 10    | —           | —        | No         | Clean                                             |
+| Security-Policy        | 10    | —           | —        | No         | `.github/SECURITY.md`                             |
+| Token-Permissions      | 10    | —           | —        | No         | Least privilege                                   |
+| Binary-Artifacts       | 10    | —           | —        | No         | Clean                                             |
+| License                | 10    | —           | —        | No         | Apache-2.0                                        |
+| SAST                   | 10    | —           | —        | No         | CodeQL on all commits                             |
+| CI-Tests               | 10    | —           | —        | No         | 27/27 merged PRs CI-checked                       |
+
+**Checks scoring ≥7:** 10 checks at 10/10; Pinned-Dependencies at 8/10.
+
+### Hypothesis triage
+
+| Hypothesis                     | Result                                                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Waived checks drag aggregate   | **Confirmed** — Maintained 0, Code-Review 0, Fuzzing 0, Contributors 3 documented in Phase 8                      |
+| API lag behind `main`          | **Rejected** — API, badge, and CI SARIF all **6.0** @ `a98e062` same day                                          |
+| Branch-Protection still low    | **Confirmed** — 4/10; ruleset has 4 required contexts but Scorecard penalizes missing approvers/CODEOWNERS        |
+| Vulnerabilities / OSV          | **Confirmed** — 21 findings (Scorecard OSV scanner); contradicts prior “npm audit 0” note for frontend-only scope |
+| Pinned-Dependencies regression | **Partially confirmed** — 8/10 not 10/10; unpinned `pipCommand` at workflow line 65–66                            |
+
+### Ruleset vs Scorecard Branch-Protection gap
+
+Ruleset `protect-main` (ID `18274842`) @ 2026-07-01:
+
+```json
+{
+  "required_status_checks": ["pre-commit", "smoke-binary", "Scorecard analysis", "CodeQL"],
+  "strict_required_status_checks_policy": true,
+  "required_approving_review_count": 0,
+  "dismiss_stale_reviews_on_push": true
+}
+```
+
+Scorecard Branch-Protection (4/10) still warns:
+
+- Branch `main` does not require approvers
+- CODEOWNERS review not required
+- Last push approval disabled
+- Admin enforcement message present but approver count is zero
+
+**Impact:** MT-CP-2 added `smoke-binary` as required; did not raise Branch-Protection score. Approver requirement is intentionally waived for solo self-merge.
+
+### Fixable follow-ups (not in MT-W14 scope)
+
+| Gap                      | Suggested action                                                                 | Est. impact                          |
+| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ |
+| Pinned-Dependencies 8→10 | Hash-pin `pip install pre-commit==4.6.0` in workflow                             | +0 aggregate (one check only)        |
+| Vulnerabilities 0        | Triage 21 OSV IDs; merge Dependabot bumps for Python/npm transitive              | Uncertain — may raise if count drops |
+| Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 |
+| Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           |
+| Contributors 3           | Upstream merge or additional collaborators                                       | Org diversity required               |
+
+### Badge vs API consistency
+
+README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIsat/badge` — same score (**6.0**) and scan date as REST API query. No stale-badge issue.

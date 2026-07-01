@@ -33,8 +33,8 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                           | ok                    |
 | Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**   | ok                    |
 | Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)            | ok                    |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | fork `main` `4abef20`; Scorecard **6.0**    | ok                    |
-| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | checks, targets; Phases 8–11 archived       | ok                    |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | **6.0** triaged @ `a98e062` (MT-W14)        | ok                    |
+| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                        | ok                    |
 | SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**              | ok                    |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions      | ok                    |
 | Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`       | ok                    |
@@ -54,7 +54,7 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Frontend Containerfile  | [`frontend/Containerfile`](../../frontend/Containerfile) L1                                  | `ubi9/nodejs-20`; PR #70 @ `8c44336`        | ok                    |
 
 **Last verified:** fork `main` @ `8c44336` (2026-07-01); Wave 5 W5-P0 PR #70 merged; prior MT-R5 @ `e2a7704`; CI parallelization MT-CP-3 deferred;
-Scorecard **6.0** unchanged; SAST **10/10**
+Scorecard **6.0** expected (MT-W14 triaged @ `a98e062`); SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
@@ -76,7 +76,7 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 | binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                |
 | crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md` |
 | gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`       |
-| scorecard | Optional             | **open**     | Scorecard **6.0** unchanged @ `8fc76a7`; optional re-run if Branch-Protection score lags API              |
+| scorecard | Optional             | **triaged**  | **6.0 expected** @ `a98e062` (MT-W14); waivers + 21 OSV cap — `scorecard-gaps.md`                         |
 | upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)        |
 | ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight      |
 
