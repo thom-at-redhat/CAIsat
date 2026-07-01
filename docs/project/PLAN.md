@@ -4,7 +4,8 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `f933c82` (2026-06-30). **All planned phases (0–23) complete.** Open operational items below; use feature branches for follow-up; never push `main`.
+**Branch:** `main` @ `0a8223b` (2026-06-30). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
+Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -22,8 +23,10 @@
 | Claim                   | Path                                                                                         | Evidence                                      | Status                   |
 | ----------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------ |
 | MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`                | ok                       |
-| CI harden-runner audit  | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | step-security harden-runner audit; PR #57     | ok                       |
-| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | required CI job `smoke-binary`; MT-CP-2       | ok                       |
+| CI harden-runner block  | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | egress block + allowlists; MT-CP-5 PR #62     | ok                       |
+| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | required CI job `smoke-binary`; MT-CP-2 #60   | ok                       |
+| CI timing metrics       | [`docs/validation/ci-timing.md`](../validation/ci-timing.md)                                 | MT-CP-1 #59; MT-CP-3 gate p50 ≈ 1.2 min       | ok (MT-CP-3 deferred)    |
+| CI smoke venv cache     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | `.venv-smoke` cache; MT-CP-4 PR #61 −14.7%    | ok                       |
 | Helm metadata fix       | [`chart/templates/backend.yaml`](../../chart/templates/backend.yaml)                         | single metadata block                         | ok                       |
 | `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health in required CI job `pre-commit`        | ok                       |
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                             | ok                       |
@@ -46,9 +49,11 @@
 | Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test) | ok                       |
 | Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L97–102               | waiver — no deployed stack 2026-06-30         | unchecked                |
 
-**Last verified:** fork `main` @ `f933c82` (2026-06-30); PR #57 GHA hardening; PR #56 gh origin fix; MT-0 PR #48; Phases 0–23 merged; Scorecard **6.0** pending re-run; SAST **10/10**
+**Last verified:** fork `main` @ `0a8223b` (2026-06-30); CI parallelization MT-CP-1–5 PR #59–#62 (MT-CP-3 deferred); Phases 0–23 merged;
+Scorecard **6.0** pending re-run; SAST **10/10**
 
-**Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/spikes/README.md`, `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
+**Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
+`docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
 **Claims not checked:** Phase 13 cluster baseline (React 19 / three / map UX); Phase 16 crop sign-off; 12-binary cluster round-trip **fail**; GPU tiers **deferred**; post-Phase-11 Scorecard re-run
 
@@ -60,14 +65,15 @@
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status      | Next action                                                                                        |
-| --------- | -------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| baseline  | Phase 13 sign-off    | **waiver**  | No CAIsat stack (2026-06-30); local pass @ `64a472b`; cluster when deployed — `baseline-smoke.md`  |
-| binary    | 12-binary / Phase 14 | **waiver**  | ea.2 blocked @ `2aa6343`; no deploy; JSON fallback; re-test w/ Quay egress — `binary-kserve-v2.md` |
-| crop      | Phase 16 sign-off    | **blocked** | CPU partial after MT-1b; GPU full after MT-3 — `baseline-smoke.md`                                 |
-| gpu       | Phase 15 deferral    | **waiver**  | T4/L40S/Hopper deferred; re-test 2026-07-31 or 512+ demo — `gpu-servingruntime.md`                 |
-| scorecard | Optional             | **open**    | Re-run Scorecard on `main`; Branch-Protection score may lag API                                    |
-| upstream  | Outbound PR          | **open**    | PR back to `rh-ai-quickstart/CAIsat` still deferred per decision                                   |
+| ID        | Track                | Status       | Next action                                                                                          |
+| --------- | -------------------- | ------------ | ---------------------------------------------------------------------------------------------------- |
+| baseline  | Phase 13 sign-off    | **waiver**   | No CAIsat stack (2026-06-30); local pass @ `64a472b`; cluster when deployed — `baseline-smoke.md`    |
+| binary    | 12-binary / Phase 14 | **waiver**   | ea.2 blocked @ `2aa6343`; no deploy; JSON fallback; re-test w/ Quay egress — `binary-kserve-v2.md`   |
+| crop      | Phase 16 sign-off    | **blocked**  | CPU partial after MT-1b; GPU full after MT-3 — `baseline-smoke.md`                                   |
+| gpu       | Phase 15 deferral    | **waiver**   | T4/L40S/Hopper deferred; re-test 2026-07-31 or 512+ demo — `gpu-servingruntime.md`                   |
+| scorecard | Optional             | **open**     | Re-run Scorecard on `main`; Branch-Protection score may lag API                                      |
+| upstream  | Outbound PR          | **open**     | PR back to `rh-ai-quickstart/CAIsat` still deferred per decision                                     |
+| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight |
 
 ---
 
