@@ -158,13 +158,13 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 
 **MT-R3a per-check (Playwright, ods-qe-psi-21, 2026-07-01):**
 
-| Field            | Value                                                                                         |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| Branch SHA       | `2dd097b`                                                                                     |
-| Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy) |
-| Date             | 2026-07-01                                                                                    |
-| Signed off       | **blocked** — `POST /api/detect` HTTP 500; layout checks not run                              |
-| Artifacts        | `mt-r3a-artifacts/` (`results.txt`, `report.md`, `detection-500-failure.png`)                 |
+| Field            | Value                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Branch SHA       | `2dd097b`                                                                                                                    |
+| Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy)                                |
+| Date             | 2026-07-01                                                                                                                   |
+| Signed off       | **blocked** — `POST /api/detect` HTTP 500; layout checks not run                                                             |
+| Artifacts        | `docs/validation/artifacts/mt-r3a-20260701/` (`results.txt`, `report.md`, `detection-500-failure.png` — PNGs pending re-run) |
 
 | Check                            | Result      | Notes                                                                                          |
 | -------------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |

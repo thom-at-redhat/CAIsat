@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `8c44336` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 in progress (W5-P0 **done** — PR #70 nodejs-20 Containerfile).
+**Branch:** `main` @ `2f71ca7` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 in progress (W5-P0–P3 **done** — PR #80 sign-off docs merged).
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
@@ -33,7 +33,7 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                             | ok                    |
 | Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**     | ok                    |
 | Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)              | ok                    |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | **6.0** triaged @ `a98e062` (MT-W14)          | ok                    |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | **6.9** @ `d15eafe` (MT-W14 post-merge)       | ok                    |
 | Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                          | ok                    |
 | SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**                | ok                    |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions        | ok                    |
@@ -54,8 +54,8 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Frontend Containerfile  | [`frontend/Containerfile`](../../frontend/Containerfile) L1                                  | `ubi9/nodejs-20`; PR #70 @ `8c44336`          | ok                    |
 | SDD specs index         | [`docs/specs/README.md`](../specs/README.md)                                                 | CAP/KSRV accepted; DRL draft (MT-R3a pending) | ok (W5-P1b)           |
 
-**Last verified:** fork `main` @ `8c44336` (2026-07-01); Wave 5 W5-P0 PR #70 merged; prior MT-R5 @ `e2a7704`; CI parallelization MT-CP-3 deferred;
-Scorecard **6.0** expected (MT-W14 triaged @ `a98e062`); SAST **10/10**
+**Last verified:** fork `main` @ `2f71ca7` (2026-07-01); Wave 5 W5-P3 PR #80 merged; prior MT-R5 @ `e2a7704`; CI parallelization MT-CP-3 deferred;
+Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
@@ -70,17 +70,17 @@ Scorecard **6.0** expected (MT-W14 triaged @ `a98e062`); SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status       | Next action                                                                                               |
-| --------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest          |
-| baseline  | Phase 13 sign-off    | **pass**     | Frontend image @ W5-P3; 150% layout + boxes — **MT-R3a** **blocked** (detect HTTP 500 on 1024 image)      |
-| binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                |
-| crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md` |
-| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`       |
-| scorecard | Optional             | **triaged**  | **6.0** @ `a98e062`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                       |
-| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)        |
-| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight      |
-| phase-25  | S4 → SeaweedFS       | **planned**  | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25    |
+| ID        | Track                | Status       | Next action                                                                                            |
+| --------- | -------------------- | ------------ | ------------------------------------------------------------------------------------------------------ |
+| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest       |
+| baseline  | Phase 13 sign-off    | **pass**     | Frontend image @ W5-P3; 150% layout + boxes — **MT-R3a** **blocked** (detect HTTP 500 on 1024 image)   |
+| binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`             |
+| crop      | Phase 16 sign-off    | **pass**     | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`            |
+| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`    |
+| scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                    |
+| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)     |
+| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight   |
+| phase-25  | S4 → SeaweedFS       | **planned**  | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25 |
 
 ---
 
@@ -99,19 +99,19 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 ## Decisions
 
-| Topic       | Decision                                                                                                                                 |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Priority    | Larger context (512+ crop, tiled SR) — shipped Phase 16                                                                                  |
-| GPU         | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override; tiers **deferred**                                                |
-| Detection   | Demo quality OK; YOLO11 eval **skipped**; OBB + SAHI shipped Phase 17                                                                    |
-| Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                                                         |
-| PLAN source | This file after Phase 3 merge; phased work archived post-23                                                                              |
-| Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail**                                   |
-| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                                                           |
-| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred                                      |
-| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                                                  |
-| 12-binary   | **fail** @ RHOAI 3.5.ea.1 (2026-07-01 cluster retest); JSON pass / binary HTTP 500; RHOAI ticket required; Phase 14 JSON-fallback active |
-| Spike docs  | Cluster names **never** in spike docs — use `<namespace>` placeholders                                                                   |
+| Topic       | Decision                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Priority    | Larger context (512+ crop, tiled SR) — shipped Phase 16                                                                |
+| GPU         | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override; tiers **deferred**                              |
+| Detection   | Demo quality OK; YOLO11 eval **skipped**; OBB + SAHI shipped Phase 17                                                  |
+| Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                                       |
+| PLAN source | This file after Phase 3 merge; phased work archived post-23                                                            |
+| Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail**                 |
+| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                                         |
+| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred                    |
+| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                                |
+| 12-binary   | **fail** @ RHOAI 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required; Phase 14 JSON-fallback active |
+| Spike docs  | Cluster names **never** in spike docs — use `<namespace>` placeholders                                                 |
 
 ---
 
@@ -125,7 +125,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); **MT-R3a blocked** — enhance pass / detect HTTP 500 — `baseline-smoke.md` L157+    |
 | Crop sign-off     | **pass (CPU)** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                             |
 | GPU deferral      | MT-3 **skipped**; T4/L40S/Hopper deferred — `gpu-servingruntime.md`                                                       |
-| Cluster redeploy  | **pass (frontend)** W5-P3 @ `2dd097b`; imageID `01ffd782…961a7e`; helm rev **7**; route **200** — `baseline-smoke.md`     |
+| Cluster redeploy  | **pass (frontend)** W5-P3 @ `2f71ca7`; imageID `01ffd782…961a7e`; helm rev **2**; route **200** — `baseline-smoke.md`     |
 | MT-R3a layout     | **blocked** — enhance pass; detect HTTP 500 on 1024×1024 SAHI infer; 100%/150% layout pending — `baseline-smoke.md` L157+ |
 
 ### Wave 5 frontend Quay (W5-P2 / MT-W1b)
@@ -147,7 +147,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
 | Git SHA              | `2dd097b`                                                                                                |
 | Method               | `oc rollout restart deployment/caisat-frontend` (`pullPolicy: Always`, tag `:frontend`)                  |
-| Helm                 | `--reuse-values` upgrade **blocked** (chart drift); rolled back to rev **5** manifest; release rev **7** |
+| Helm                 | `--reuse-values` upgrade **blocked** (chart drift); rolled back; release rev **2** (verified 2026-07-01) |
 | Pre-rollout imageID  | `sha256:158ea4995c01ca394f9b07ad5e34e8bd0b6006c0ead1a716ad632d57f36a8136`                                |
 | Post-rollout imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e`                                |
 | Pod (post)           | `caisat-frontend-6bf8f9754d-xnw7j`                                                                       |
@@ -158,11 +158,13 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ## Open blockers
 
-| Blocker               | Detail                                                                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| MLServer binary       | **fail** @ ea.1 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500 both predictors; RHOAI ticket required for waiver |
-| KSERVE binary default | `KSERVE_PREFER_BINARY=true` breaks enhance when binary infer fails; CPU cluster set to `false` until MLServer binary passes           |
-| Phase 14 binary-only  | JSON fallback active until binary round-trip passes on cluster                                                                        |
+| Blocker               | Detail                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary       | **fail** @ 3.4.0 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500 both predictors; RHOAI ticket required for waiver                              |
+| RHOAI ea.2            | **deferred** — ea.2 bundle manifest unknown on `registry.redhat.io`; cluster on **3.4.0** fallback; does not gate MT-R3a                                            |
+| Pull secrets          | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern |
+| KSERVE binary default | `KSERVE_PREFER_BINARY=true` breaks enhance when binary infer fails; CPU cluster set to `false` until MLServer binary passes                                         |
+| Phase 14 binary-only  | JSON fallback active until binary round-trip passes on cluster                                                                                                      |
 
 ---
 
