@@ -1,6 +1,6 @@
 # Assisted by: cursor, claude
 # Personal Quay mirror overrides for local Helm deploy.
-# Fork chart defaults (values.yaml) already use quay.io/thom_at_redhat/caisat (public).
+# Fork chart defaults (values.yaml) use quay.io/thom_at_redhat/caisat (private, robot credentials).
 # Use this file when mirroring to your own Quay user instead of the fork defaults:
 #   cp chart/values-quay-local.yaml.example chart/values-quay-local.yaml
 #
@@ -32,6 +32,6 @@ frontend:
     repository: quay.io/<your-quay-user>/caisat
     tag: "frontend"
 
-# Pull private images from Quay (secret created in namespace, not in git):
-# imagePullSecrets:
-#   - name: quay-pull-secret
+# Pull secret for private Quay images (secret created in namespace, not in git):
+imagePullSecrets:
+  - name: quay-pull-secret
