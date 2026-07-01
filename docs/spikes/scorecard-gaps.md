@@ -423,7 +423,7 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 | Maintained             | 0     | No          | No       | **Yes**    | Fork &lt;90 days — **waiver** (Phase 8)                               |
 | Code-Review            | 0     | Partial     | No       | **Yes**    | 0 approvers — **solo fork waiver** (Phase 10)                         |
 | Fuzzing                | 0     | Defer       | No       | **Yes**    | No OSS-Fuzz — out of scope                                            |
-| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 22 OSV @ `2dd097b`; **MT-W14b fixed** — re-run pending              |
+| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 22 OSV @ `2dd097b`; **MT-W14b fixed** — re-run pending                |
 | Contributors           | 3     | No          | No       | **Yes**    | Single org — **waiver** (Phase 8)                                     |
 | Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork                         |
 | CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                                      |
@@ -475,13 +475,13 @@ Scorecard Branch-Protection (4/10) still warns:
 
 ### Fixable follow-ups (not in MT-W14 scope)
 
-| Gap                      | Suggested action                                                                 | Est. impact                          | Status       |
-| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ | ------------ |
-| Pinned-Dependencies 8→10 | **Done** MT-W14a — `.github/requirements-pre-commit.txt` + `--require-hashes`    | +0 aggregate (one check only)        | done         |
-| Vulnerabilities 0        | Triage 22 OSV IDs; tighten declared ranges (MT-W14b)                             | Uncertain — may raise if count drops | **done**     |
-| Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 | waived       |
-| Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           | waived       |
-| Contributors 3           | Upstream merge or additional collaborators                                       | Org diversity required               | waived       |
+| Gap                      | Suggested action                                                                 | Est. impact                          | Status   |
+| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| Pinned-Dependencies 8→10 | **Done** MT-W14a — `.github/requirements-pre-commit.txt` + `--require-hashes`    | +0 aggregate (one check only)        | done     |
+| Vulnerabilities 0        | Triage 22 OSV IDs; tighten declared ranges (MT-W14b)                             | Uncertain — may raise if count drops | **done** |
+| Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 | waived   |
+| Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           | waived   |
+| Contributors 3           | Upstream merge or additional collaborators                                       | Org diversity required               | waived   |
 
 ### Badge vs API consistency
 
