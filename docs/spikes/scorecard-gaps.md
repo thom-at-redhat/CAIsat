@@ -242,9 +242,85 @@ _Pre-batch-2 deferral table — superseded by batch 2 results above._
 
 ## Verification
 
-**Last verified:** fork `main` @ `a98e062` (2026-07-01, MT-W14 Wave 5 investigation). Scorecard **6.0** @ API + CI run `28521726670`; badge consistent.
+**Last verified:** fork `main` @ `2dd097b` (2026-07-01, MT-W14b OSV triage). Scorecard **6.0** @ API + CI run `28523536217`; badge consistent. Post-triage: 22 OSV IDs addressed (see MT-W14b section).
 
 ---
+
+## MT-W14b — OSV triage (Wave 5 follow-up)
+
+**MT-ID:** MT-W14b | **Date:** 2026-07-01 | **Tip SHA:** `2dd097b` (pre-fix); merge SHA TBD
+
+**Scope:** Triage **22 OSV/GHSA IDs** from Scorecard Vulnerabilities check @ `2dd097b` (was 21 @ `a98e062`; +1 pytest GHSA added since MT-W14).
+
+**Sources:** `api.scorecard.dev` + CI run `28523536217` @ `2dd097b`; GitHub Advisory API per ID; `pip-audit` per-backend (0 findings after floor bump); `npm audit` (0).
+
+**Root cause:** Scorecard OSV scanner evaluates **declared dependency ranges**, not lockfile-resolved versions only.
+
+- `backend/requirements.txt`: `aiohttp>=3.13.3` allowed versions below 3.14.1.
+- `requirements-dev.txt` + pre-commit mypy: `pytest==8.3.5` (&lt; 9.0.3).
+- `backend-detection/requirements.txt`: already `aiohttp==3.14.1`.
+- Frontend: `npm audit` clean (Phase 9 overrides still effective).
+
+**Verdict summary:**
+
+| Disposition           | Count  | Notes                                                   |
+| --------------------- | ------ | ------------------------------------------------------- |
+| **Fixed** (this PR)   | **22** | Backend aiohttp floor + pytest bump                     |
+| **Already satisfied** | 0      | Detection aiohttp 3.14.1 counted under fixed root cause |
+| **Waived**            | 0      | —                                                       |
+| **Deferred upstream** | 0      | —                                                       |
+| **False positive**    | 0      | —                                                       |
+
+**Repo changes:**
+
+| Path                       | Change                                            |
+| -------------------------- | ------------------------------------------------- |
+| `backend/requirements.txt` | `aiohttp>=3.13.3` → `aiohttp>=3.14.1`             |
+| `requirements-dev.txt`     | `pytest==8.3.5` → `pytest==9.0.3`                 |
+| `.pre-commit-config.yaml`  | mypy `additional_dependencies` pytest pin → 9.0.3 |
+
+**Expected Scorecard impact:** Vulnerabilities check should rise from **0** when OSV count clears (re-run via push or `workflow_dispatch`; API may lag).
+
+Aggregate **7+** not guaranteed — Maintained, Code-Review, Fuzzing, Contributors still cap score per MT-W14 verdict.
+
+### Per-OSV triage table @ `2dd097b`
+
+| OSV / GHSA                           | Package | Severity | Patched in | Manifest                                | Disposition | Rationale                  |
+| ------------------------------------ | ------- | -------- | ---------- | --------------------------------------- | ----------- | -------------------------- |
+| GHSA-2fqr-mr3j-6wp8                  | aiohttp | low      | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Floor raised to `>=3.14.1` |
+| GHSA-2vrm-gr82-f7m5                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-3wq7-rqq7-wx6j                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-4fvr-rgm6-gqmc                  | aiohttp | medium   | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-4m7w-qmgq-4wj5 / PYSEC-2026-237 | aiohttp | low      | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-63hf-3vf5-4wqf                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-63hw-fmq6-xxg2                  | aiohttp | medium   | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-966j-vmvw-g2g9                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-9x8q-7h8h-wcw9                  | aiohttp | low      | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-c427-h43c-vf67                  | aiohttp | medium   | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-g3cq-j2xw-wf74                  | aiohttp | medium   | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-hcc4-c3v8-rx92                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-hg6j-4rv6-33pg                  | aiohttp | medium   | 3.14.0     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-hpj7-wq8m-9hgp                  | aiohttp | medium   | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-jg22-mg44-37j8                  | aiohttp | medium   | 3.14.0     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-m5qp-6w8w-w647                  | aiohttp | medium   | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-m6qw-4cw2-hm4m                  | aiohttp | low      | 3.14.0     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-mwh4-6h8g-pg8w                  | aiohttp | low      | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-p998-jp59-783m                  | aiohttp | medium   | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-w2fm-2cpv-w7v5                  | aiohttp | medium   | 3.13.4     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-xcgm-r5h9-7989                  | aiohttp | medium   | 3.14.1     | backend `>=3.13.3`                      | **fixed**   | Same                       |
+| GHSA-6w46-j5rx-g56g                  | pytest  | medium   | 9.0.3      | `requirements-dev.txt`, pre-commit mypy | **fixed**   | Bumped to `pytest==9.0.3`  |
+
+**Note:** All 21 aiohttp IDs share one fix (minimum version floor). Detection backend already had `aiohttp==3.14.1`; Scorecard flagged the enhancement backend loose floor.
+
+### Fixable follow-ups (not in MT-W14 scope)
+
+| Gap                      | Suggested action                                   | Est. impact                   | Status          |
+| ------------------------ | -------------------------------------------------- | ----------------------------- | --------------- |
+| Pinned-Dependencies 8→10 | Hash-pin pre-commit pip install in workflow        | +0 aggregate (one check only) | MT-W14a pending |
+| Vulnerabilities 0        | Triage OSV IDs; tighten declared ranges            | May raise Vulnerabilities     | MT-W14b done    |
+| Branch-Protection 4→7+   | Requires approvers + second reviewer or bypass     | Blocked on solo fork          | waived          |
+| Maintained 0             | Wait until fork &gt;90 days with sustained commits | Time-based                    | waived          |
+| Contributors 3           | Upstream merge or additional collaborators         | Org diversity required        | waived          |
 
 ## Phase 24 — CI egress hardening
 
@@ -347,7 +423,7 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 | Maintained             | 0     | No          | No       | **Yes**    | Fork &lt;90 days — **waiver** (Phase 8)                               |
 | Code-Review            | 0     | Partial     | No       | **Yes**    | 0 approvers — **solo fork waiver** (Phase 10)                         |
 | Fuzzing                | 0     | Defer       | No       | **Yes**    | No OSS-Fuzz — out of scope                                            |
-| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 21 OSV/GHSA via Scorecard scan; follow-up MT                          |
+| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 22 OSV @ `2dd097b`; **MT-W14b fixed** — re-run pending                |
 | Contributors           | 3     | No          | No       | **Yes**    | Single org — **waiver** (Phase 8)                                     |
 | Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork                         |
 | CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                                      |
@@ -399,13 +475,13 @@ Scorecard Branch-Protection (4/10) still warns:
 
 ### Fixable follow-ups (not in MT-W14 scope)
 
-| Gap                      | Suggested action                                                                 | Est. impact                          |
-| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ |
-| Pinned-Dependencies 8→10 | **Done** MT-W14a — `.github/requirements-pre-commit.txt` + `--require-hashes`    | +0 aggregate (one check only)        |
-| Vulnerabilities 0        | Triage 21 OSV IDs; merge Dependabot bumps for Python/npm transitive              | Uncertain — may raise if count drops |
-| Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 |
-| Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           |
-| Contributors 3           | Upstream merge or additional collaborators                                       | Org diversity required               |
+| Gap                      | Suggested action                                                                 | Est. impact                          | Status   |
+| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| Pinned-Dependencies 8→10 | **Done** MT-W14a — `.github/requirements-pre-commit.txt` + `--require-hashes`    | +0 aggregate (one check only)        | done     |
+| Vulnerabilities 0        | Triage 22 OSV IDs; tighten declared ranges (MT-W14b)                             | Uncertain — may raise if count drops | **done** |
+| Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 | waived   |
+| Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           | waived   |
+| Contributors 3           | Upstream merge or additional collaborators                                       | Org diversity required               | waived   |
 
 ### Badge vs API consistency
 
