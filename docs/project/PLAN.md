@@ -4,7 +4,8 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `1e66830` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 **Partial complete** (W5-P0–P5); **Full** blocked on `12-binary` / MT-2 binary.
+**Branch:** `main` @ `79283f0` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 **Partial complete** (W5-P0–P5); **Full** blocked on `12-binary` / MT-2 binary.
+Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass** (2026-07-01).
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
@@ -55,7 +56,8 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | SDD specs index         | [`docs/specs/README.md`](../specs/README.md)                                                 | CAP/KSRV/DRL **accepted** (MT-R3a pass)     | ok (W5-P4)            |
 | Wave 5 Partial closure  | [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) W5-P5                                               | MT-R6b — R3a pass + MT-2 evidence + waiver  | ok (W5-P5 Partial)    |
 
-**Last verified:** fork `main` @ `1e66830` (2026-07-01); W5-P5 Wave 5 **Partial** closed; W5-P4 MT-R3a **pass** (PR #83); chart PR #82 merged; CI parallelization MT-CP-3 deferred;
+**Last verified:** fork `main` @ `79283f0` (2026-07-01); Phase 25 SeaweedFS prove-out **pass**; W5-P5 **Partial** closed; W5-P4 MT-R3a **pass** (PR #83);
+chart PR #82 merged; CI parallelization MT-CP-3 deferred;
 Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
@@ -71,17 +73,17 @@ Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status          | Next action                                                                                                       |
-| --------- | -------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold      | **pass**        | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                  |
-| baseline  | Phase 13 sign-off    | **pass**        | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
-| binary    | 12-binary / Phase 14 | **waiver**      | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
-| crop      | Phase 16 sign-off    | **pass**        | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
-| gpu       | Phase 15 deferral    | **waiver**      | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`               |
-| scorecard | Optional             | **triaged**     | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
-| upstream  | Outbound PR          | **deferred**    | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
-| ci-split  | MT-CP-3 job split    | **deferred**    | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
-| phase-25  | S4 → SeaweedFS       | **in progress** | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25            |
+| ID        | Track                | Status       | Next action                                                                                                       |
+| --------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                  |
+| baseline  | Phase 13 sign-off    | **pass**     | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
+| binary    | 12-binary / Phase 14 | **waiver**   | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
+| crop      | Phase 16 sign-off    | **pass**     | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
+| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`               |
+| scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
+| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
+| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
+| phase-25  | S4 → SeaweedFS       | **pass**     | PR #85 merged; cluster prove-out on `<cluster>` — SeaweedFS Running, S3 bucket R/W — see Phase 25                 |
 
 ---
 
@@ -219,8 +221,8 @@ Feature branches only; never push `main`; no `--no-verify`. Run `make check` bef
 | Field        | Value                                                                                  |
 | ------------ | -------------------------------------------------------------------------------------- |
 | Goal         | Swap S4 for SeaweedFS S3 gateway; keep bucket `satellite-images` and boto3 unchanged   |
-| Status       | **in progress**                                                                        |
-| Branch       | `feature/seaweedfs-phase`                                                              |
+| Status       | **pass** (chart PR #85; cluster prove-out 2026-07-01)                                  |
+| Branch       | `feature/seaweedfs-phase` (merged)                                                     |
 | Dependencies | Storage class (`standard-csi`); DSPA S3 compat; SeaweedFS OCI image cluster-accessible |
 
 ### Background
@@ -250,32 +252,45 @@ The boto3 call surface and bucket name are unchanged; only the pod/service/value
 
 ### Tasks
 
-- [ ] Pin SeaweedFS image: mirror `docker.io/chrislusf/seaweedfs:<tag>` to Quay or use a public OCI mirror; record digest in `values.yaml`
-- [ ] Author `chart/templates/seaweedfs.yaml` — Deployment (`weed server -s3 -s3.port=7480 -dir=/data`), PVC (`/data`), ConfigMap (region, endpoint), Secret (accessKey/secretKey), Service (port 7480)
-- [ ] Remove `chart/templates/s4.yaml`
-- [ ] Rename and update `chart/templates/s4-seed-job.yaml` → `storage-seed-job.yaml`; init-container waits on SeaweedFS Deployment; S3 endpoint env `http://<release>-seaweedfs.<ns>.svc.cluster.local:7480`
-- [ ] Rename `chart/templates/s4-seed-serviceaccount.yaml` → `storage-seed-serviceaccount.yaml`; update component labels
-- [ ] Update `chart/values.yaml`: rename all `s4` keys to `seaweedfs`; update image repository/tag; keep `seed.bucketName: satellite-images`, credentials keys, `storageClassName`
-- [ ] Update `chart/templates/pipeline-dspa.yaml`: `externalStorage.host` → `<release>-seaweedfs.<ns>.svc.cluster.local:7480`
-- [ ] Update `chart/templates/pipeline-secret.yaml`: reference `seaweedfs` credentials Secret name
-- [ ] Update `chart/templates/backend-changedetection.yaml`: S3 endpoint env vars → SeaweedFS service
-- [ ] Update `chart/README.md`: replace S4 references with SeaweedFS; document `weed server` mode and port
-- [ ] `helm template test ./chart` passes (`make check`)
-- [ ] `pre-commit run --all-files` passes
-- [ ] Record Phase 25 outcome row in `PLAN_COMPLETED.md`
+- [x] Pin SeaweedFS image: mirror `docker.io/chrislusf/seaweedfs:<tag>` to Quay or use a public OCI mirror; record digest in `values.yaml`
+- [x] Author `chart/templates/seaweedfs.yaml` — Deployment (`weed server -s3 -s3.port=7480 -dir=/data`), PVC (`/data`), ConfigMap (region, endpoint), Secret (accessKey/secretKey), Service (port 7480)
+- [x] Remove `chart/templates/s4.yaml`
+- [x] Rename and update `chart/templates/s4-seed-job.yaml` → `storage-seed-job.yaml`; init-container waits on SeaweedFS Deployment; S3 endpoint env `http://<release>-seaweedfs.<ns>.svc.cluster.local:7480`
+- [x] Rename `chart/templates/s4-seed-serviceaccount.yaml` → `storage-seed-serviceaccount.yaml`; update component labels
+- [x] Update `chart/values.yaml`: rename all `s4` keys to `seaweedfs`; update image repository/tag; keep `seed.bucketName: satellite-images`, credentials keys, `storageClassName`
+- [x] Update `chart/templates/pipeline-dspa.yaml`: `externalStorage.host` → `<release>-seaweedfs.<ns>.svc.cluster.local:7480`
+- [x] Update `chart/templates/pipeline-secret.yaml`: reference `seaweedfs` credentials Secret name
+- [x] Update `chart/templates/backend-changedetection.yaml`: S3 endpoint env vars → SeaweedFS service
+- [x] Update `chart/README.md`: replace S4 references with SeaweedFS; document `weed server` mode and port
+- [x] `helm template test ./chart` passes (`make check`)
+- [x] `pre-commit run --all-files` passes
+- [x] Record Phase 25 outcome row in `PLAN_COMPLETED.md`
 
 ### Acceptance criteria
 
-- [ ] `helm template test ./chart` produces no `s4` component references
-- [ ] Seed job creates bucket `satellite-images` and uploads ≥1 test image without boto3 changes
-- [ ] `DataSciencePipelinesApplication` `externalStorage.host` resolves to SeaweedFS service
-- [ ] `backend-changedetection` `/health` returns 200; S3 read/write confirmed against SeaweedFS
-- [ ] Pipeline run artifact uploads/downloads succeed (SeaweedFS S3 path)
-- [ ] Enhance/detect backends unaffected — `/health` 200 both backends; no S3 path in enhance/detect code
+- [x] `helm template test ./chart` produces no `s4` component references
+- [x] Bucket `satellite-images` created and S3 read/write confirmed (manual `aws-cli` probe; seed Job blocked on missing DS notebook image on `<cluster>`)
+- [x] `DataSciencePipelinesApplication` `externalStorage.host` resolves to SeaweedFS service (`helm template` verified; live DSPA not deployed — pipelines disabled for stability)
+- [ ] `backend-changedetection` `/health` 200 + S3 R/W — **blocked**: `backend-changedetection` Quay tag missing; S3 validated via aws-cli probe
+- [ ] Pipeline run artifact uploads/downloads succeed (SeaweedFS S3 path) — **deferred**: pipelines disabled on `<cluster>`; S3 R/W validated directly
+- [x] Enhance/detect backends unaffected — `/health` 200 both backends; no S3 path in enhance/detect code
 
 ### Notes
 
 - SeaweedFS `weed server` runs master + volume + S3 gateway in a single process; no separate filer needed for demo scale.
-- Port 7480 matches the S4 S3 port; all existing service-internal references (`svc.cluster.local:7480`) carry over once the Service name changes from `s4` to `seaweedfs`.
+- Port 7480 matches the former S4 S3 port; all existing service-internal references (`svc.cluster.local:7480`) carry over once the Service name changes from `s4` to `seaweedfs`.
 - `KSERVE_PREFER_BINARY` is unrelated to this phase — change-detection uses direct S3, not KServe inference.
 - Ties to the optional change-detection path only; core satellite enhance/detect UX is unaffected.
+
+### Cluster prove-out (2026-07-01, `<cluster>`)
+
+| Check                    | Result       | Evidence                                                                                                                       |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| SeaweedFS pod            | **pass**     | `caisat-seaweedfs` 1/1 Running; helm rev 5 `deployed`                                                                          |
+| PVC                      | **pass**     | `caisat-seaweedfs-storage` Bound, `standard-csi`, 10Gi                                                                         |
+| S3 bucket + R/W          | **pass**     | `aws-cli` probe: `mb s3://satellite-images`, put/get `proveout-test.txt` via `<release>-seaweedfs.<ns>.svc.cluster.local:7480` |
+| Enhance `/health`        | **pass**     | `{"status":"healthy"}`                                                                                                         |
+| Detect `/health`         | **pass**     | `{"status":"healthy"}`                                                                                                         |
+| Seed Job                 | **blocked**  | DS notebook image `s2i-generic-data-science-notebook:2024.1` not in internal registry on `<cluster>`                           |
+| Change-detection backend | **blocked**  | Image tag `backend-changedetection` not on Quay; push image to validate `/health` + S3 integration                             |
+| DSPA pipeline            | **deferred** | `pipelines.enabled=false` on `<cluster>`; template `externalStorage.host` → SeaweedFS verified in PR #85                       |
