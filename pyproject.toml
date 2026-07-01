@@ -3,3 +3,11 @@
 
 [tool.ruff]
 line-length = 200
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend", "backend-detection"]
+
+[[tool.mypy.overrides]]
+module = ["numpy.*"]
+ignore_missing_imports = true
