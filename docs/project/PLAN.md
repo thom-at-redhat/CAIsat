@@ -70,16 +70,16 @@ Scorecard **6.0** expected (MT-W14 triaged @ `a98e062`); SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status       | Next action                                                                                               |
-| --------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest          |
-| baseline  | Phase 13 sign-off    | **pass**     | 150% layout partial — W5-P2 Quay push + redeploy frontend @ `8c44336` (PR #70 merged)                     |
-| binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                |
-| crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md` |
-| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`       |
-| scorecard | Optional             | **triaged**  | **6.0 expected** @ `a98e062` (MT-W14); waivers + 21 OSV cap — `scorecard-gaps.md`                         |
-| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)        |
-| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight      |
+| ID        | Track                | Status       | Next action                                                                                                           |
+| --------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                      |
+| baseline  | Phase 13 sign-off    | **pass**     | 150% layout partial — W5-P2 Quay push + redeploy frontend @ `8c44336` (PR #70 merged)                                 |
+| binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                            |
+| crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md`             |
+| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`                   |
+| scorecard | Optional             | **triaged**  | **6.0 expected** @ `a98e062` (MT-W14); Pinned-Dependencies **10/10** restored (MT-W14a); 21 OSV — `scorecard-gaps.md` |
+| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                    |
+| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight                  |
 
 ---
 
