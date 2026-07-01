@@ -162,13 +162,15 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 | 2×   | _(pending)_    | _(pending)_  | Use 2× button or scroll wheel       |
 | 4×   | _(pending)_    | _(pending)_  | Use 4× button or scroll wheel       |
 
+### Local pre-check results (MT-1a @ `dd40d02`, 2026-06-30)
+
+### MT-1a sign-off (capture/zoom only — MT-1b detection still pending)
+
 | Field      | Value                                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | Branch SHA | `dd40d02`                                                                                                          |
 | Date       | 2026-06-30                                                                                                         |
 | Signed off | **pass** — operator visual 1×/2×/4× on cluster Route (ods-qe-psi-21), 2026-06-30; automated smoke pass @ `dd40d02` |
-
-### Local pre-check results (MT-1a @ `dd40d02`, 2026-06-30)
 
 | Check                             | Result | Notes                                                                                                      |
 | --------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
