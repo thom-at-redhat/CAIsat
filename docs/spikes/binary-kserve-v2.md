@@ -309,3 +309,6 @@ to svc port `8080` failed (service exposes port `80`); in-cluster calls via back
 
 **Re-test (2026-07-01, MT-2 @ ods-qe-psi-21):** Stack healthy; Quay pull **pass**; MLServer `1.7.1+rhaiv.8` on RHOAI 3.5.0-ea.1; JSON **pass** /
 binary **fail** on both predictors — see [Re-test: ods-qe-psi-21](#re-test-ods-qe-psi-21-2026-07-01). Verdict **fail**; waiver blocked (no RHOAI ticket).
+
+**Re-test (2026-07-01, MT-R3c post-redeploy @ ods-qe-psi-21):** After Quay push @ `8be4c58` / merge `e2a7704` and rollout restart; from `caisat-backend` pod — SwinIR JSON **pass**
+(89.8 s, out `[1,3,1024,1024]`); SwinIR binary **fail** HTTP 500; YOLO JSON **pass** (3.4 s); YOLO binary **fail** HTTP 500. Verdict **fail** unchanged; waiver still blocked (no RHOAI ticket).
