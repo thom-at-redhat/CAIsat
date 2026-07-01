@@ -80,6 +80,7 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 | scorecard | Optional             | **triaged**  | **6.0** @ `a98e062`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                       |
 | upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)        |
 | ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight      |
+| phase-25  | S4 → SeaweedFS       | **planned**  | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25    |
 
 ---
 
@@ -155,3 +156,71 @@ See [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md).
 ## Git rules
 
 Feature branches only; never push `main`; no `--no-verify`. Run `make check` before push (`make push`).
+
+---
+
+## Phase 25 — Replace S4 with SeaweedFS
+
+| Field        | Value                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Goal         | Swap S4 for SeaweedFS S3 gateway; keep bucket `satellite-images` and boto3 unchanged   |
+| Status       | **planned**                                                                            |
+| Branch       | `feature/seaweedfs-phase`                                                              |
+| Dependencies | Storage class (`standard-csi`); DSPA S3 compat; SeaweedFS OCI image cluster-accessible |
+
+### Background
+
+S4 (`quay.io/rh-aiservices-bu/s4`) is a demo-only S3 service that bundles a Ceph RGW wrapper with no upstream release cadence or production support path.
+SeaweedFS provides an S3-compatible gateway with an active release cycle and a single-process `weed server` mode suitable for demo and small-cluster deployments.
+The boto3 call surface and bucket name are unchanged; only the pod/service/values keys change.
+
+### Scope
+
+**In scope:**
+
+- `chart/templates/s4.yaml` → replace with `chart/templates/seaweedfs.yaml` (Deployment, PVC, ConfigMap, Secret, Service; drop S4 web-UI Route)
+- `chart/values.yaml` — rename `s4` key to `seaweedfs`; keep `credentials`, `seed.bucketName`, `storageClassName` sub-keys
+- `chart/templates/pipeline-dspa.yaml` — update `externalStorage.host` to SeaweedFS service FQDN
+- `chart/templates/s4-seed-job.yaml` → update init-container wait target to `seaweedfs` Deployment; rename file to `storage-seed-job.yaml`
+- `chart/templates/s4-seed-serviceaccount.yaml` → update component labels; rename file to `storage-seed-serviceaccount.yaml`
+- `chart/templates/pipeline-secret.yaml` — reference SeaweedFS credentials Secret
+- `chart/templates/backend-changedetection.yaml` — update S3 endpoint env var to SeaweedFS service
+- `chart/README.md` — update storage section; replace S4 references
+
+**Out of scope:**
+
+- `backend/` and `backend-detection/` — no direct S3 dependency; enhance/detect UX unaffected
+- `frontend/` — no S3 dependency
+- DSPA pipeline DAG logic — only the storage endpoint changes
+
+### Tasks
+
+- [ ] Pin SeaweedFS image: mirror `docker.io/chrislusf/seaweedfs:<tag>` to Quay or use a public OCI mirror; record digest in `values.yaml`
+- [ ] Author `chart/templates/seaweedfs.yaml` — Deployment (`weed server -s3 -s3.port=7480 -dir=/data`), PVC (`/data`), ConfigMap (region, endpoint), Secret (accessKey/secretKey), Service (port 7480)
+- [ ] Remove `chart/templates/s4.yaml`
+- [ ] Rename and update `chart/templates/s4-seed-job.yaml` → `storage-seed-job.yaml`; init-container waits on SeaweedFS Deployment; S3 endpoint env `http://<release>-seaweedfs.<ns>.svc.cluster.local:7480`
+- [ ] Rename `chart/templates/s4-seed-serviceaccount.yaml` → `storage-seed-serviceaccount.yaml`; update component labels
+- [ ] Update `chart/values.yaml`: rename all `s4` keys to `seaweedfs`; update image repository/tag; keep `seed.bucketName: satellite-images`, credentials keys, `storageClassName`
+- [ ] Update `chart/templates/pipeline-dspa.yaml`: `externalStorage.host` → `<release>-seaweedfs.<ns>.svc.cluster.local:7480`
+- [ ] Update `chart/templates/pipeline-secret.yaml`: reference `seaweedfs` credentials Secret name
+- [ ] Update `chart/templates/backend-changedetection.yaml`: S3 endpoint env vars → SeaweedFS service
+- [ ] Update `chart/README.md`: replace S4 references with SeaweedFS; document `weed server` mode and port
+- [ ] `helm template test ./chart` passes (`make check`)
+- [ ] `pre-commit run --all-files` passes
+- [ ] Record Phase 25 outcome row in `PLAN_COMPLETED.md`
+
+### Acceptance criteria
+
+- [ ] `helm template test ./chart` produces no `s4` component references
+- [ ] Seed job creates bucket `satellite-images` and uploads ≥1 test image without boto3 changes
+- [ ] `DataSciencePipelinesApplication` `externalStorage.host` resolves to SeaweedFS service
+- [ ] `backend-changedetection` `/health` returns 200; S3 read/write confirmed against SeaweedFS
+- [ ] Pipeline run artifact uploads/downloads succeed (SeaweedFS S3 path)
+- [ ] Enhance/detect backends unaffected — `/health` 200 both backends; no S3 path in enhance/detect code
+
+### Notes
+
+- SeaweedFS `weed server` runs master + volume + S3 gateway in a single process; no separate filer needed for demo scale.
+- Port 7480 matches the S4 S3 port; all existing service-internal references (`svc.cluster.local:7480`) carry over once the Service name changes from `s4` to `seaweedfs`.
+- `KSERVE_PREFER_BINARY` is unrelated to this phase — change-detection uses direct S3, not KServe inference.
+- Ties to the optional change-detection path only; core satellite enhance/detect UX is unaffected.
