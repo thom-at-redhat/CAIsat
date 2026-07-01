@@ -160,7 +160,7 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 
 | Field            | Value                                                                                                                                                 |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch SHA       | `419ff94` (fork main post-PR #81); chart fix PR #82 @ `6459038`                                                                                       |
+| Branch SHA       | `1e66830` (fork main post-PR #83); chart fix PR #82 @ `7eb9a76`                                                                                       |
 | Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy)                                                         |
 | Date             | 2026-07-01                                                                                                                                            |
 | Signed off       | **pass** — detect gate green after `KSERVE_PREFER_BINARY=false` on detection backend; 100%/150% layout Playwright pass                                |
@@ -174,6 +174,22 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 | 100% layout (3-panel row)        | **pass** | `flex-direction: row`; 3 panels @ 1600×900                    |
 | 150% layout (vertical stack)     | **pass** | `flex-direction: column` @ 1067×900 (150% effective width)    |
 | Box alignment (Detected Objects) | **pass** | 1 detection with OBB overlay on panel 3 (default map tile)    |
+
+### Wave 5 Partial closure sign-off (W5-P5 / MT-R6b)
+
+| Field      | Value                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Branch SHA | `1e66830` (post-PR #83)                                                                                                   |
+| Date       | 2026-07-01                                                                                                                |
+| Signed off | **Partial** — R3a pass; MT-2 binary fail documented; Phase 14 JSON waiver; detect RCA PR #82 `KSERVE_PREFER_BINARY=false` |
+
+| Check              | Result      | Notes                                                            |
+| ------------------ | ----------- | ---------------------------------------------------------------- |
+| MT-R3a layout      | **pass**    | 100%/150% Playwright — see table above                           |
+| MT-2 binary matrix | **fail**    | JSON pass / binary HTTP 500 @ 3.4.0 — `binary-kserve-v2.md`      |
+| Phase 14 waiver    | **active**  | JSON fallback; binary migration blocked upstream                 |
+| Detect RCA         | **fixed**   | PR #82 — `kserve.preferBinary: false` on detection backend       |
+| Wave 5 Full        | **blocked** | Requires MT-2 binary pass + RHOAI ticket — `binary-kserve-v2.md` |
 
 | Zoom | Cluster result | Local result | Notes                                                                                   |
 | ---- | -------------- | ------------ | --------------------------------------------------------------------------------------- |
