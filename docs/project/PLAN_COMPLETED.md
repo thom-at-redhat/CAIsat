@@ -29,7 +29,7 @@ Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](
 | W5-P7            | MT-GH   | 2026-07-01 | @ `2f71ca7`        | worktree hygiene — wave5-signoff removed post-PR #80; main only                                    |
 | W5-P4            | MT-R3a  | 2026-07-01 | PR #83 @ `1e66830` | **pass** — detect 200; Playwright 100%/150%; DRL-001 accepted; PR #82 `KSERVE_PREFER_BINARY=false` |
 | W5-P5            | MT-R6b  | 2026-07-01 | PR #84 @ `b851c13` | **Partial** — Wave 5 CPU path closed; Phase 14 binary waiver; Full blocked on MT-2 binary          |
-| Phase 25         | —       | 2026-07-01 | PR #85 pending     | S4 → SeaweedFS chart swap; `weed server` S3 @ 7480; helm template gate                           |
+| Phase 25         | —       | 2026-07-01 | PR #85 pending     | S4 → SeaweedFS chart swap; `weed server` S3 @ 7480; helm template gate                             |
 
 ## Phase one-liners (0, 8–11, 12–23)
 
