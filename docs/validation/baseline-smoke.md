@@ -153,8 +153,26 @@ Verify boxes align with objects in the enhanced crop; record pass/fail with clus
 
 | Browser zoom | Expected layout                  | Pass criteria                                              | Cluster result (2026-07-01)                                           |
 | ------------ | -------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
-| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **pass** — 1600px; 3-panel row; 0 detections on tile                  |
-| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **pending** — frontend @ `e2a7704`; operator UI retest after redeploy |
+| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **blocked** — MT-R3a; detect HTTP 500; 3-panel row not reached        |
+| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **pending** — MT-R3a blocked on detect gate; retest after infer green |
+
+**MT-R3a per-check (Playwright, ods-qe-psi-21, 2026-07-01):**
+
+| Field            | Value                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Branch SHA       | `2dd097b`                                                                                     |
+| Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy) |
+| Date             | 2026-07-01                                                                                    |
+| Signed off       | **blocked** — `POST /api/detect` HTTP 500; layout checks not run                              |
+| Artifacts        | `mt-r3a-artifacts/` (`results.txt`, `report.md`, `detection-500-failure.png`)                 |
+
+| Check                            | Result      | Notes                                                                                          |
+| -------------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| Enhance 256→1024                 | **pass**    | `POST /api/enhance` 200; native 1024 output (~3–4 min CPU)                                     |
+| Detect Objects                   | **fail**    | HTTP 500 — detection backend SAHI/KServe `ClientOSError` writing infer body on 1024×1024 image |
+| 100% layout (3-panel row)        | **blocked** | Detection did not complete; only Original → Enhanced panels                                    |
+| 150% layout (vertical stack)     | **pending** | Not reached — blocked on detect gate                                                           |
+| Box alignment (Detected Objects) | **N/A**     | No successful detection run                                                                    |
 
 | Zoom | Cluster result | Local result | Notes                                                                                   |
 | ---- | -------------- | ------------ | --------------------------------------------------------------------------------------- |
