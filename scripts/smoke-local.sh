@@ -105,30 +105,16 @@ health_profile() {
 }
 
 binary_profile() {
-    health_profile
+    if [[ "${SMOKE_SKIP_HEALTH:-}" != "1" ]]; then
+        health_profile
+    fi
     local PYTHON_BIN
     PYTHON_BIN="$(backend_python "${REPO_ROOT}/backend")"
-    echo "Running KServe v2 encode/decode round-trip (local, no predictor)..."
+    echo "Running KServe v2 pytest suite (local, no predictor)..."
+    "${PYTHON_BIN}" -m pip install -q -r "${REPO_ROOT}/requirements-dev.txt"
     (
         cd "${REPO_ROOT}"
-        "${PYTHON_BIN}" - <<'PY'
-import sys
-sys.path.insert(0, "backend")
-import numpy as np
-from kserve_v2 import encode_kserve_binary, encode_kserve_json, decode_kserve_json
-
-rng = np.random.default_rng(42)
-tensor = rng.random((1, 3, 256, 256), dtype=np.float32)
-headers, body = encode_kserve_binary("input", tensor, "output")
-header_len = int(headers["Inference-Header-Content-Length"])
-assert header_len > 0
-assert len(body) == header_len + tensor.nbytes
-json_payload = encode_kserve_json("input", tensor)
-roundtrip = decode_kserve_json({"outputs": [{"name": "output", "shape": list(tensor.shape), "data": tensor.flatten().tolist()}]})
-assert np.allclose(roundtrip, tensor), "JSON round-trip mismatch"
-print("PASS: encode_kserve_binary produces valid octet-stream body")
-print("PASS: encode/decode_kserve_json round-trip within tolerance")
-PY
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "${PYTHON_BIN}" -m pytest tests/
     )
 }
 

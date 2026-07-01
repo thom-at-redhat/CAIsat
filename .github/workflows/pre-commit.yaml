@@ -122,9 +122,16 @@ jobs:
           path: |
             backend/.venv-smoke
             backend-detection/.venv-smoke
-          key: smoke-venv-${{ runner.os }}-py3.12-${{ hashFiles('backend/requirements.txt', 'backend-detection/requirements.txt') }}
+          key: smoke-venv-${{ runner.os }}-py3.12-${{ hashFiles('backend/requirements.txt', 'backend-detection/requirements.txt', 'requirements-dev.txt') }}
           restore-keys: |
             smoke-venv-${{ runner.os }}-py3.12-
 
+      - name: Pytest (kserve + capabilities)
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: make test
+
       - name: Smoke (binary profile)
-        run: SMOKE_PROFILE=binary make smoke
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: SMOKE_SKIP_HEALTH=1 SMOKE_PROFILE=binary make smoke
