@@ -73,7 +73,7 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 | ID        | Track                | Status       | Next action                                                                                               |
 | --------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
 | tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest          |
-| baseline  | Phase 13 sign-off    | **pass**     | 150% layout partial — W5-P2 Quay push + redeploy frontend @ `8c44336` (PR #70 merged)                     |
+| baseline  | Phase 13 sign-off    | **pass**     | Frontend image @ W5-P3; 150% layout + boxes — **MT-R3a** pending Playwright on CPU cluster                |
 | binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                |
 | crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md` |
 | gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`       |
@@ -119,13 +119,13 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`                                               |
-| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                                                        |
-| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md`                                     |
-| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                                                            |
-| Cluster redeploy  | **partial** — backends @ `e2a7704`; frontend Quay **pushed** W5-P2 @ `2dd097b` (`sha256:01ffd782…961a7e`); cluster rollout **W5-P3** pending — `baseline-smoke.md` |
+| Item              | Detail                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket — `binary-kserve-v2.md`           |
+| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); 150% layout pending **MT-R3a** — `baseline-smoke.md`                           |
+| Crop sign-off     | **pass (CPU)** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                         |
+| GPU deferral      | MT-3 **skipped**; T4/L40S/Hopper deferred — `gpu-servingruntime.md`                                                   |
+| Cluster redeploy  | **pass (frontend)** W5-P3 @ `2dd097b`; imageID `01ffd782…961a7e`; helm rev **7**; route **200** — `baseline-smoke.md` |
 
 ### Wave 5 frontend Quay (W5-P2 / MT-W1b)
 
@@ -139,6 +139,19 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Image config                  | `sha256:107bbf18263f1f8b4b463bf7e817df5eb0c1f3ebbe38d0524b19d4bd095ace0d`                                                |
 | Anonymous pull                | **fail** — Quay returns unauthorized without credentials (cluster uses `quay-pull-secret`)                               |
 | Rollback                      | `podman tag quay.io/thom_at_redhat/caisat:frontend-pre-20260701 quay.io/thom_at_redhat/caisat:frontend && podman push …` |
+
+### Wave 5 frontend cluster rollout (W5-P3 / MT-W2b)
+
+| Field                | Value                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| Git SHA              | `2dd097b`                                                                                                |
+| Method               | `oc rollout restart deployment/caisat-frontend` (`pullPolicy: Always`, tag `:frontend`)                  |
+| Helm                 | `--reuse-values` upgrade **blocked** (chart drift); rolled back to rev **5** manifest; release rev **7** |
+| Pre-rollout imageID  | `sha256:158ea4995c01ca394f9b07ad5e34e8bd0b6006c0ead1a716ad632d57f36a8136`                                |
+| Post-rollout imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e`                                |
+| Pod (post)           | `caisat-frontend-6bf8f9754d-xnw7j`                                                                       |
+| Route smoke          | HTTP **200** (edge TLS)                                                                                  |
+| MT-R3a               | **pending** — Playwright 150% + detection boxes not run                                                  |
 
 ---
 
