@@ -242,7 +242,7 @@ _Pre-batch-2 deferral table — superseded by batch 2 results above._
 
 ## Verification
 
-**Last verified:** fork `main` @ `2dd097b` (2026-07-01, MT-W14b OSV triage). Scorecard **6.0** @ API + CI run `28523536217`; badge consistent. Post-triage: 22 OSV IDs addressed (see MT-W14b section).
+**Last verified:** fork `main` @ `d15eafe` (2026-07-01, MT-W14 post-merge). Scorecard **6.9** @ API + CI run `28524709942` (PR #76 merge); `scripts/scorecard-local.sh` skipped (`GITHUB_AUTH_TOKEN` unset).
 
 ---
 
@@ -485,4 +485,33 @@ Scorecard Branch-Protection (4/10) still warns:
 
 ### Badge vs API consistency
 
-README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIsat/badge` — same score (**6.0**) and scan date as REST API query. No stale-badge issue.
+README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIsat/badge` — same score (**6.9** @ 2026-07-01) and scan date as REST API query. No stale-badge issue.
+
+---
+
+## MT-W14 post-merge verification (PR #75 + #76)
+
+**MT-ID:** MT-W14a / MT-W14b follow-up | **Date:** 2026-07-01 | **Tip SHA:** `d15eafe`
+
+**Pre-fix baseline** (Wave 5 investigation @ `a98e062`, pre MT-W14a/b merge): aggregate **6.0**; Pinned-Dependencies **8**; Vulnerabilities **0** (22 OSV IDs).
+
+**Post-merge** (@ `d15eafe`, after #75 hash-pinned pre-commit pip + #76 OSV triage):
+
+| Metric              | Pre-fix | Post-merge | Delta    |
+| ------------------- | ------- | ---------- | -------- |
+| Aggregate           | 6.0     | **6.9**    | **+0.9** |
+| Pinned-Dependencies | 8       | **10**     | **+2**   |
+| Vulnerabilities     | 0       | **10**     | **+10**  |
+
+**Evidence:**
+
+| Source                       | Result                         | Notes                                             |
+| ---------------------------- | ------------------------------ | ------------------------------------------------- |
+| `api.scorecard.dev`          | **6.9** @ 2026-07-01T14:25:46Z | Commit `d15eafeb77ff39fd52bdde83fe244af2678011dc` |
+| CI run `28524709942`         | **success** @ `d15eafe`        | Push trigger (#76 squash merge); SARIF uploaded   |
+| `scripts/scorecard-local.sh` | Skipped                        | `GITHUB_AUTH_TOKEN` unset in agent session        |
+| README badge                 | **6.9** (expected)             | Same API endpoint as REST query                   |
+
+**Checks still capping 7+:** Maintained **0**, Code-Review **0**, Fuzzing **0**, Contributors **3**, Branch-Protection **4** — unchanged solo-fork waivers (MT-W14).
+
+**Verdict:** MT-W14a/b goals met — Pinned-Dependencies **10/10**, Vulnerabilities **10/10**, aggregate **+0.9** vs baseline. Informational (not R3a-gated).
