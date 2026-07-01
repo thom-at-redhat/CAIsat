@@ -277,7 +277,8 @@ seaweedfs:
   seed:
     enabled: true
     bucketName: satellite-images
-    image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    # DS notebook ImageStreams require RHOAI workbenches component; openshift/python works on lean clusters (psi-21 verified 2026-07-01).
+    image: image-registry.openshift-image-registry.svc:5000/openshift/python:3.12-ubi9
     waitImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
     resources:
       requests:
@@ -334,5 +335,6 @@ pipelines:
   runAnalysis: true
 
   analysis:
-    image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+    # Match seed.image; full Kubeflow pipeline components in files/analyze_seed_images_pipeline.yaml still reference DS notebook.
+    image: image-registry.openshift-image-registry.svc:5000/openshift/python:3.12-ubi9
     waitImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest

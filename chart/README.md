@@ -18,6 +18,7 @@ Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 Inferenc
 | `seaweedfs.image.repository` | `docker.io/chrislusf/seaweedfs` | Public OCI image; mirror to Quay if cluster lacks docker.io |
 | `seaweedfs.image.tag` | `4.36` | Pinned SeaweedFS release tag |
 | `seaweedfs.seed.bucketName` | `satellite-images` | S3 bucket seeded post-install |
+| `seaweedfs.seed.image` | `openshift/python:3.12-ubi9` | Seed Job runner; DS notebook only when workbenches ImageStreams exist |
 | `seaweedfs.storage.storageClassName` | `gp3-csi` | PVC storage class for `/data` volume |
 
 ## SeaweedFS storage
