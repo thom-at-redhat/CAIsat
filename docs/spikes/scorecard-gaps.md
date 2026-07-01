@@ -248,17 +248,44 @@ Re-run Scorecard on fork `main` after Phases 9–11 close. Record tip SHA and ov
 
 ---
 
-## Phase 24 — CI egress hardening (audit mode)
+## Phase 24 — CI egress hardening
 
-**Merged:** PR #57 @ `f933c82` (2026-06-30).
+**Audit mode merged:** PR #57 @ `f933c82` (2026-06-30).
 
-**Scope:** `step-security/harden-runner` with `egress-policy: audit` on all workflow jobs (pre-commit, smoke-binary, CodeQL matrix, Scorecard).
-Audit mode sends egress telemetry to StepSecurity; no block policy yet.
+**Block mode merged:** MT-CP-5 (PR pending) @ fork `main` tip after PR #61 (`b48bb55`).
+
+**Scope:** `step-security/harden-runner` on all workflow jobs (pre-commit, smoke-binary, CodeQL matrix, Scorecard).
 
 **Pinned:** `step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176` (# v2.17.0).
 
-**Block mode (MT-6d — deferred):** After 2–3 green runs on `main`, collect allowed endpoints from StepSecurity job logs and open a separate PR with `egress-policy: block` + per-job `allowed-endpoints`.
-Do not enable block until audit baseline exists. No block PR opened in this session — audit telemetry accumulates on subsequent CI runs.
+### Audit mode (2026-06-30 — PR #57)
+
+`egress-policy: audit` — telemetry to StepSecurity; no outbound blocking.
+
+### Block mode (MT-CP-5 / MT-6d)
+
+**Sources:** StepSecurity audit logs from green `main` runs @ `b48bb55` and `41d00e8` (runs `28483105946`, `28483105949`, `28481387004`).
+
+**Rollback:** Revert workflows to `egress-policy: audit` (remove `allowed-endpoints`) in one PR.
+
+**`pre-commit` (port 443):**
+
+- `api.osv.dev`, `files.pythonhosted.org`, `get.helm.sh`, `ghcr.io`, `github.com`, `pypi.org`
+- `oss-fuzz-build-logs.storage.googleapis.com`, `pkg-containers.githubusercontent.com`
+- `results-receiver.actions.githubusercontent.com`, `*.blob.core.windows.net`, `*.githubapp.com`
+
+**`smoke-binary`:** `files.pythonhosted.org`, `github.com`, `pypi.org`, `results-receiver.actions.githubusercontent.com`, `*.blob.core.windows.net`, `*.githubapp.com`
+
+**CodeQL (`Analyze`):** `api.github.com`, `github.com`, `results-receiver.actions.githubusercontent.com`, `uploads.github.com`, `*.blob.core.windows.net`, `*.githubapp.com`
+
+**Scorecard analysis (port 443):**
+
+- `api.deps.dev`, `api.github.com`, `api.osv.dev`, `api.scorecard.dev`, `codeload.github.com`, `github.com`
+- `fulcio.sigstore.dev`, `rekor.sigstore.dev`, `tuf-repo-cdn.sigstore.dev`, `www.bestpractices.dev`
+- `oss-fuzz-build-logs.storage.googleapis.com`, `results-receiver.actions.githubusercontent.com`
+- `*.actions.githubusercontent.com`, `*.blob.core.windows.net`, `*.githubapp.com`
+
+StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsecurity.io`) are auto-allowed by harden-runner and omitted from job lists.
 
 ---
 

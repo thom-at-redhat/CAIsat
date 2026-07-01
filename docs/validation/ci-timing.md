@@ -77,6 +77,15 @@ Prior aggregate p50 from baseline table: `pre-commit` 1.17 min, `smoke-binary` 0
 
 **Post-merge timings:** Record here after MT-CP-4 PR merges (cold run may match baseline; warm run shows delta).
 
+**Post-merge (MT-CP-4 @ `b48bb55`, run `28483105946`, cache warm):**
+
+| Job            | Wall time (min) | vs pre–MT-CP-4 p50 | Notes                 |
+| -------------- | --------------- | ------------------ | --------------------- |
+| `pre-commit`   | 0.87 (52s)      | −14.7% (61s→52s)   | Meets ≥10% target     |
+| `smoke-binary` | 0.67 (40s)      | −7.0% (43s→40s)    | Marginal; cache helps |
+
+Cold first run on PR #61 head (`be3da31`): `pre-commit` 1.07 min, `smoke-binary` 0.68 min — populates cache.
+
 ---
 
 ## Path-filter impact (MT-CP-1, removed MT-CP-2)
