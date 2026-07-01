@@ -10,6 +10,7 @@ Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 Inferenc
 | ----- | ------- | ----------- |
 | `computeProfile.name` | `cpu` | `cpu`, `t4`, `l40s`, or `hopper` |
 | `computeProfile.gpuAvailable` | `false` | Set `true` when GPU nodes are scheduled |
+| `kserve.preferBinary` | `false` | `KSERVE_PREFER_BINARY` on both backends; keep `false` until MLServer binary infer passes |
 | `networkPolicy.enabled` | `false` | Enable backend NetworkPolicy (Phase 19) |
 | `model.deploy` | `true` | SwinIR InferenceService |
 | `detection.deploy` | `true` | YOLOv8-OBB InferenceService |
