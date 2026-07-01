@@ -246,6 +246,39 @@ infer matrix could not be re-executed; **cannot confirm** whether ea.2 fixes the
 
 ---
 
+## Re-test: ods-qe-psi-21 (2026-07-01)
+
+| Field           | Value                                                                               |
+| --------------- | ----------------------------------------------------------------------------------- |
+| Date            | 2026-07-01                                                                          |
+| Verdict         | **fail** — JSON infer OK; binary request returns HTTP 500 (same root cause as ea.1) |
+| Cluster/profile | pre-production RHOAI 3.5.0-ea.1; MLServer `1.7.1+rhaiv.8`; namespace `caisat`       |
+| Blocks          | Phase 14 (binary tensor migration) — JSON fallback remains active                   |
+
+### Preconditions verified
+
+| Check              | Result                                                                  |
+| ------------------ | ----------------------------------------------------------------------- |
+| `quay-pull-secret` | **pass** — present; bound to `default` SA alongside `default-dockercfg` |
+| InferenceServices  | **pass** — SwinIR + YOLOv8-OBB Ready                                    |
+| MLServer version   | `1.7.1+rhaiv.8` (swinir-predictor pod)                                  |
+
+### Per-predictor infer matrix
+
+| Predictor  | JSON infer                               | Binary round-trip   | Predictor log (binary)                                       |
+| ---------- | ---------------------------------------- | ------------------- | ------------------------------------------------------------ |
+| SwinIR     | **pass** — 93.3 s; out `[1,3,1024,1024]` | **fail** — HTTP 500 | `UnicodeDecodeError` parsing `application/octet-stream` body |
+| YOLOv8-OBB | **pass** — 3.3 s; out `[1,20,8400]`      | **fail** — HTTP 500 | Same FastAPI validation-handler decode error                 |
+
+### Notes
+
+CAIsat stack healthy on ods-qe-psi-21 (Helm rev 3). Binary failure is unchanged from ea.1 baseline despite working Quay pull — MLServer
+`1.7.1+rhaiv.8` on RHOAI 3.5.0-ea.1 still rejects KServe v2 binary tensor requests.
+
+**Waiver:** Not granted — RHOAI support ticket ID required before waiving Phase 14 binary migration (operator to file).
+
+---
+
 ## Summary
 
 | Predictor           | Tensor   | Input shape        | JSON infer | Binary round-trip | Phase 14 blocker                                 |
@@ -273,3 +306,6 @@ to svc port `8080` failed (service exposes port `80`); in-cluster calls via back
    backend helpers; MLServer binary is blocked cluster-wide. Revisit when binary spike passes or pipeline gets a shared infer library sidecar.
 
 **Waiver (2026-06-30, MT-2):** `oc` authenticated; no CAIsat deploy for ea.2+ retest. Prior fail @ ea.1 and blocked retest @ `2aa6343` stand; JSON fallback active. Re-test when cluster + Quay egress verified.
+
+**Re-test (2026-07-01, MT-2 @ ods-qe-psi-21):** Stack healthy; Quay pull **pass**; MLServer `1.7.1+rhaiv.8` on RHOAI 3.5.0-ea.1; JSON **pass** /
+binary **fail** on both predictors — see [Re-test: ods-qe-psi-21](#re-test-ods-qe-psi-21-2026-07-01). Verdict **fail**; waiver blocked (no RHOAI ticket).
