@@ -71,17 +71,17 @@ Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status       | Next action                                                                                                       |
-| --------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                  |
-| baseline  | Phase 13 sign-off    | **pass**     | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
-| binary    | 12-binary / Phase 14 | **waiver**   | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
-| crop      | Phase 16 sign-off    | **pass**     | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
-| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`               |
-| scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
-| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
-| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
-| phase-25  | S4 → SeaweedFS       | **planned**  | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25            |
+| ID        | Track                | Status          | Next action                                                                                                       |
+| --------- | -------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| tests     | Pytest scaffold      | **pass**        | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                  |
+| baseline  | Phase 13 sign-off    | **pass**        | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
+| binary    | 12-binary / Phase 14 | **waiver**      | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
+| crop      | Phase 16 sign-off    | **pass**        | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
+| gpu       | Phase 15 deferral    | **waiver**      | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`               |
+| scorecard | Optional             | **triaged**     | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
+| upstream  | Outbound PR          | **deferred**    | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
+| ci-split  | MT-CP-3 job split    | **deferred**    | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
+| phase-25  | S4 → SeaweedFS       | **in progress** | Author `seaweedfs.yaml`, update values/seed/dspa/change-detection; `helm template` gate — see Phase 25            |
 
 ---
 
@@ -219,7 +219,7 @@ Feature branches only; never push `main`; no `--no-verify`. Run `make check` bef
 | Field        | Value                                                                                  |
 | ------------ | -------------------------------------------------------------------------------------- |
 | Goal         | Swap S4 for SeaweedFS S3 gateway; keep bucket `satellite-images` and boto3 unchanged   |
-| Status       | **planned**                                                                            |
+| Status       | **in progress**                                                                        |
 | Branch       | `feature/seaweedfs-phase`                                                              |
 | Dependencies | Storage class (`standard-csi`); DSPA S3 compat; SeaweedFS OCI image cluster-accessible |
 

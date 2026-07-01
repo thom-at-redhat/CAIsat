@@ -33,10 +33,10 @@ spec:
     enableExternalRoute: false
     externalStorage:
       basePath: ''
-      bucket: {{ .Values.s4.seed.bucketName }}
-      host: '{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480'
+      bucket: {{ .Values.seaweedfs.seed.bucketName }}
+      host: '{{ include "caisat.fullname" . }}-seaweedfs.{{ .Release.Namespace }}.svc.cluster.local:7480'
       port: ''
-      region: {{ .Values.s4.config.awsRegion }}
+      region: {{ .Values.seaweedfs.config.awsRegion }}
       scheme: http
       s3CredentialsSecret:
         secretName: dashboard-dspa-secret  # pragma: allowlist secret

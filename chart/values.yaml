@@ -245,14 +245,15 @@ tolerations: []
 # Affinity
 affinity: {}
 
-# S4 Storage configuration
-s4:
+# SeaweedFS S3-compatible object storage (weed server mode; port 7480).
+seaweedfs:
   enabled: true
 
   image:
-    repository: quay.io/rh-aiservices-bu/s4
-    tag: latest
-    pullPolicy: Always
+    # Public OCI image — pin tag; mirror to Quay if cluster lacks docker.io access.
+    repository: docker.io/chrislusf/seaweedfs
+    tag: "4.36"
+    pullPolicy: IfNotPresent
 
   storage:
     size: 10Gi
@@ -260,13 +261,6 @@ s4:
 
   config:
     awsRegion: us-east-1
-    s3Endpoint: http://localhost:7480
-    ip: 0.0.0.0
-    jwtExpirationHours: "8"
-    localStoragePaths: ""
-    maxConcurrentTransfers: "2"
-    maxFileSizeGb: "20"
-    port: "5000"
 
   credentials:
     accessKey: caisat-access-key

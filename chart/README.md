@@ -2,7 +2,7 @@
 
 <!-- Assisted by: cursor, claude -->
 
-Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 InferenceServices, S4 storage, and optional pipelines.
+Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 InferenceServices, SeaweedFS S3 storage, and optional pipelines.
 
 ## Key values
 
@@ -14,6 +14,22 @@ Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 Inferenc
 | `networkPolicy.enabled` | `false` | Enable backend NetworkPolicy (Phase 19) |
 | `model.deploy` | `true` | SwinIR InferenceService |
 | `detection.deploy` | `true` | YOLOv8-OBB InferenceService |
+| `seaweedfs.enabled` | `true` | SeaweedFS `weed server` S3 gateway (port 7480) |
+| `seaweedfs.image.repository` | `docker.io/chrislusf/seaweedfs` | Public OCI image; mirror to Quay if cluster lacks docker.io |
+| `seaweedfs.image.tag` | `4.36` | Pinned SeaweedFS release tag |
+| `seaweedfs.seed.bucketName` | `satellite-images` | S3 bucket seeded post-install |
+| `seaweedfs.storage.storageClassName` | `gp3-csi` | PVC storage class for `/data` volume |
+
+## SeaweedFS storage
+
+SeaweedFS runs in single-process **`weed server`** mode: master, volume, and S3 gateway on one pod. The S3 API listens on **port 7480** (ClusterIP service `<release>-seaweedfs.<namespace>.svc.cluster.local:7480`). No web UI Route is deployed.
+
+Credentials live in `<release>-seaweedfs-credentials`; DSPA and change-detection backends reference the same keys. Override the storage class when your cluster default differs:
+
+```bash
+helm upgrade --install caisat ./chart -n <namespace> \
+  --set seaweedfs.storage.storageClassName=<your-storage-class>
+```
 
 ## Pull secrets
 

@@ -935,7 +935,7 @@ root:
         isOptional: true
         parameterType: STRING
       s3_endpoint:
-        defaultValue: http://s4.release-namespace.svc.cluster.local:7480
+        defaultValue: http://seaweedfs.release-namespace.svc.cluster.local:7480
         isOptional: true
         parameterType: STRING
       s3_secret_key:

@@ -31,13 +31,13 @@ spec:
         - |
           echo "Waiting for dependencies to be ready..."
 
-          # Wait for S4
-          echo "1. Checking S4..."
-          until oc get deployment/{{ include "caisat.fullname" . }}-s4 -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
-            echo "   S4 not ready, waiting..."
+          # Wait for SeaweedFS
+          echo "1. Checking SeaweedFS..."
+          until oc get deployment/{{ include "caisat.fullname" . }}-seaweedfs -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
+            echo "   SeaweedFS not ready, waiting..."
             sleep 5
           done
-          echo "   [OK] S4 ready"
+          echo "   [OK] SeaweedFS ready"
 
           # Wait for DSPA
           echo "2. Checking DSPA..."
@@ -64,15 +64,15 @@ spec:
         - name: DSPA_API
           value: "https://ds-pipeline-{{ .Values.pipelines.name }}.{{ .Release.Namespace }}.svc.cluster.local:8443"
         - name: S3_ENDPOINT
-          value: "http://{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480"
+          value: "http://{{ include "caisat.fullname" . }}-seaweedfs.{{ .Release.Namespace }}.svc.cluster.local:7480"
         - name: S3_ACCESS_KEY
-          value: "{{ .Values.s4.credentials.accessKey }}"
+          value: "{{ .Values.seaweedfs.credentials.accessKey }}"
         - name: S3_SECRET_KEY
-          value: "{{ .Values.s4.credentials.secretKey }}"
+          value: "{{ .Values.seaweedfs.credentials.secretKey }}"
         - name: MODEL_ENDPOINT
           value: "http://sentinel2-model-predictor.{{ .Release.Namespace }}.svc.cluster.local:8080"
         - name: BUCKET_NAME
-          value: "{{ .Values.s4.seed.bucketName }}"
+          value: "{{ .Values.seaweedfs.seed.bucketName }}"
         - name: RUN_NAME
           value: "caisat-analysis-{{ .Release.Revision }}"
         command:
