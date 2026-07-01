@@ -4,7 +4,8 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `e2a7704` (2026-07-01). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
+**Branch:** `main` @ `8c44336` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 in progress (W5-P0 **done** — PR #70 nodejs-20 Containerfile).
+CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
@@ -48,8 +49,9 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | PLAN post-23 archive    | PR #47 @ `4abef20`                                                                           | PLAN archive merged                           | ok                    |
 | Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test) | ok                    |
 | Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L101–106              | **pass** @ `b367b63` 2026-07-01               | ok (layout partial)   |
+| Frontend Containerfile  | [`frontend/Containerfile`](../../frontend/Containerfile) L1                                  | `ubi9/nodejs-20`; PR #70 @ `8c44336`          | ok                    |
 
-**Last verified:** fork `main` @ `e2a7704` (2026-07-01); post-redeploy sign-off MT-R5; PRs #67–#68 merged; operator PR #65; CI parallelization PRs #59–#63 (MT-CP-3 deferred);
+**Last verified:** fork `main` @ `8c44336` (2026-07-01); Wave 5 W5-P0 PR #70 merged; prior MT-R5 @ `e2a7704`; CI parallelization MT-CP-3 deferred;
 Scorecard **6.0** unchanged; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
@@ -67,7 +69,7 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 
 | ID        | Track                | Status       | Next action                                                                                               |
 | --------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| baseline  | Phase 13 sign-off    | **pass**     | Cluster pass @ `b367b63` (PR #65); detection 150% layout partial — redeploy frontend @ `b367b63`          |
+| baseline  | Phase 13 sign-off    | **pass**     | 150% layout partial — W5-P2 Quay push + redeploy frontend @ `8c44336` (PR #70 merged)                     |
 | binary    | 12-binary / Phase 14 | **fail**     | ea.1 JSON pass / binary HTTP 500; RHOAI ticket required for waiver — `binary-kserve-v2.md`                |
 | crop      | Phase 16 sign-off    | **partial**  | CPU partial @ `b367b63` — capabilities 404 on stale deploy; redeploy for full MT-4a — `baseline-smoke.md` |
 | gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`       |
@@ -112,13 +114,13 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`           |
-| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                    |
-| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md` |
-| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                        |
-| Cluster redeploy  | **done** @ `e2a7704` — Quay `:backend`/`:detection-backend`/`:frontend` pushed @ `8be4c58`; rollout restart ods-qe-psi-21      |
+| Item              | Detail                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`                         |
+| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                                  |
+| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md`               |
+| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                                      |
+| Cluster redeploy  | **partial** — backends @ `e2a7704`; frontend Containerfile @ `8c44336` (PR #70); Quay push + rollout **W5-P2** pending — `baseline-smoke.md` |
 
 ---
 
