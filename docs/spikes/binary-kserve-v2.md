@@ -279,6 +279,62 @@ CAIsat stack healthy on ods-qe-psi-21 (Helm rev 3). Binary failure is unchanged 
 
 ---
 
+## Re-test: cloudtest2 Wave 9 / MT-EA2 (2026-07-01)
+
+| Field           | Value                                                                             |
+| --------------- | --------------------------------------------------------------------------------- |
+| Date            | 2026-07-01                                                                        |
+| Verdict         | **fail** (binary) — JSON infer OK; binary HTTP 500 unchanged from ea.1 / psi-21   |
+| Cluster/profile | pre-production RHOAI **3.5.0-ea.2**; MLServer `1.7.1+rhaiv.8`; namespace `caisat` |
+| Blocks          | Phase 14 binary migration; Wave 9 Path A still blocked (bundle tag not published) |
+
+### Preconditions verified
+
+| Check              | Result                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| RHOAI operator CSV | **pass** — `3.5.0-ea.2` Succeeded                                                                                     |
+| `quay-pull-secret` | **pass** — copied from cluster marketplace `quay-secret`; linked to `default` SA                                      |
+| InferenceServices  | **pass** — SwinIR + YOLOv8-OBB Ready (CPU profile; GPU tier blocked on single T4 node)                                |
+| MLServer image     | `registry.redhat.io/rhoai/odh-mlserver-rhel9@sha256:d76bea18afe7b361847babb7a8ebc51fdbcd8164435f1bcb971e1701ba1bc595` |
+| MLServer version   | `1.7.1+rhaiv.8` (swinir-predictor pod)                                                                                |
+| Helm release       | rev **2** (`failed` — post-install run-analysis hook; IS Ready)                                                       |
+
+### Deploy notes
+
+- Initial GPU profile (`t4`) failed scheduling: single T4 consumed by sentinel2 predictor; SwinIR/YOLO Pending (`Insufficient nvidia.com/gpu`).
+- Switched to **CPU profile**; SwinIR + YOLO Ready. Minimal overrides: seed/pipelines/changedetection disabled.
+- `kserve.preferBinary=true` in Helm values — HTTP `/api/enhance` and `/api/detect` return **500** (binary infer path). JSON API paths verified with temporary `KSERVE_PREFER_BINARY=false` on backends.
+
+### Per-predictor infer matrix (MT-2)
+
+| Predictor  | JSON infer                               | Binary round-trip   | Predictor log (binary)                                       |
+| ---------- | ---------------------------------------- | ------------------- | ------------------------------------------------------------ |
+| SwinIR     | **pass** — 22.9 s; out `[1,3,1024,1024]` | **fail** — HTTP 500 | `UnicodeDecodeError` parsing `application/octet-stream` body |
+| YOLOv8-OBB | **pass** — 1.7 s; out `[1,20,8400]`      | **fail** — HTTP 500 | Same FastAPI validation-handler decode error                 |
+
+### HTTP API (JSON fallback, `KSERVE_PREFER_BINARY=false`)
+
+| Endpoint                     | Result                                                |
+| ---------------------------- | ----------------------------------------------------- |
+| `GET /health` (both)         | **pass**                                              |
+| `POST /api/enhance` 256→1024 | **pass** — HTTP 200; output `(1024, 1024)`; ~37 s CPU |
+| `POST /api/detect`           | **pass** — HTTP 200; `detections: []`; ~1.5 s         |
+
+### vs 3.5.ea.1 / psi-21 baseline
+
+| Predictor  | ea.1 / psi-21          | ea.2 cloudtest2 (2026-07-01) | Notes                      |
+| ---------- | ---------------------- | ---------------------------- | -------------------------- |
+| SwinIR     | JSON pass; binary fail | JSON pass; binary fail       | MLServer version unchanged |
+| YOLOv8-OBB | JSON pass; binary fail | JSON pass; binary fail       | Same root cause on ea.2    |
+
+### Notes
+
+RHOAI **3.5.0-ea.2** on cloudtest2 confirms operator/catalog health without psi-21 upgrade. MLServer **1.7.1+rhaiv.8** on ea.2 image digest
+`d76bea18…` still rejects KServe v2 binary tensor requests — **no ea.2 fix** for Phase 14 binary migration. Wave 9 Path A (psi-21 upgrade) remains
+blocked on bundle tag publish; **validation path** on cloudtest2 is **partial pass** (MT-EA2 platform + JSON stack; binary **fail**).
+
+---
+
 ## RHOAI support ticket (operator prep)
 
 Use this section when filing a Red Hat support case for MLServer binary infer failure. **Do not** include cluster FQDNs or personal identifiers in committed docs —
@@ -394,3 +450,7 @@ binary **fail** on both predictors — see [Re-test: ods-qe-psi-21](#re-test-ods
 
 **Re-test (2026-07-01, MT-R3c post-redeploy @ ods-qe-psi-21):** After Quay push @ `8be4c58` / merge `e2a7704` and rollout restart; from `caisat-backend` pod — SwinIR JSON **pass**
 (89.8 s, out `[1,3,1024,1024]`); SwinIR binary **fail** HTTP 500; YOLO JSON **pass** (3.4 s); YOLO binary **fail** HTTP 500. Verdict **fail** unchanged; waiver still blocked (no RHOAI ticket).
+
+**Re-test (2026-07-01, MT-EA2 @ cloudtest2):** RHOAI **3.5.0-ea.2**; CAIsat deployed (helm rev 2, CPU profile); JSON **pass** / binary **fail** on both
+predictors — see [Re-test: cloudtest2 Wave 9 / MT-EA2](#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01). Verdict **fail** (binary); Wave 9 validation
+**partial pass**.
