@@ -12,6 +12,14 @@ Archive of merged phased work (phases **0–23**). Operational follow-up lives i
 
 Fork synced from upstream via PR #43; outbound PR to rh-ai-quickstart still deferred.
 
+## Wave 5 operational phases
+
+Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](PLAN.md) Active todos.
+
+| Phase | MT-ID  | Date       | SHA / PR           | Outcome                                            |
+| ----- | ------ | ---------- | ------------------ | -------------------------------------------------- |
+| W5-P0 | MT-W11 | 2026-07-01 | PR #70 @ `8c44336` | `frontend/Containerfile` → `ubi9/nodejs-20` merged |
+
 ## Phase one-liners (0, 8–11, 12–23)
 
 | Phase  | Goal                                                                                                 |
