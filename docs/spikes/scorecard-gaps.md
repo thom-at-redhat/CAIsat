@@ -342,28 +342,28 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 
 ### Per-check triage @ `a98e062`
 
-| Check                  | Score | Actionable? | Fixable? | Blocks 7+? | Notes                                             |
-| ---------------------- | ----- | ----------- | -------- | ---------- | ------------------------------------------------- |
-| Maintained             | 0     | No          | No       | **Yes**    | Fork &lt;90 days — **waiver** (Phase 8)           |
-| Code-Review            | 0     | Partial     | No       | **Yes**    | 0 approvers — **solo fork waiver** (Phase 10)     |
-| Fuzzing                | 0     | Defer       | No       | **Yes**    | No OSS-Fuzz — out of scope                        |
-| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 21 OSV/GHSA via Scorecard scan; follow-up MT      |
-| Contributors           | 3     | No          | No       | **Yes**    | Single org — **waiver** (Phase 8)                 |
-| Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork     |
-| CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                  |
-| Pinned-Dependencies    | 8     | Yes         | **Yes**  | No         | Unpinned pip @ pre-commit.yaml:65; Phase 11 drift |
-| Packaging              | -1    | Defer       | Partial  | No         | No publish workflow                               |
-| Signed-Releases        | -1    | Defer       | Partial  | No         | No GitHub releases                                |
-| Dependency-Update-Tool | 10    | —           | —        | No         | Dependabot configured                             |
-| Dangerous-Workflow     | 10    | —           | —        | No         | Clean                                             |
-| Security-Policy        | 10    | —           | —        | No         | `.github/SECURITY.md`                             |
-| Token-Permissions      | 10    | —           | —        | No         | Least privilege                                   |
-| Binary-Artifacts       | 10    | —           | —        | No         | Clean                                             |
-| License                | 10    | —           | —        | No         | Apache-2.0                                        |
-| SAST                   | 10    | —           | —        | No         | CodeQL on all commits                             |
-| CI-Tests               | 10    | —           | —        | No         | 27/27 merged PRs CI-checked                       |
+| Check                  | Score | Actionable? | Fixable? | Blocks 7+? | Notes                                                                 |
+| ---------------------- | ----- | ----------- | -------- | ---------- | --------------------------------------------------------------------- |
+| Maintained             | 0     | No          | No       | **Yes**    | Fork &lt;90 days — **waiver** (Phase 8)                               |
+| Code-Review            | 0     | Partial     | No       | **Yes**    | 0 approvers — **solo fork waiver** (Phase 10)                         |
+| Fuzzing                | 0     | Defer       | No       | **Yes**    | No OSS-Fuzz — out of scope                                            |
+| Vulnerabilities        | 0     | Yes         | Partial  | **Yes**    | 21 OSV/GHSA via Scorecard scan; follow-up MT                          |
+| Contributors           | 3     | No          | No       | **Yes**    | Single org — **waiver** (Phase 8)                                     |
+| Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork                         |
+| CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                                      |
+| Pinned-Dependencies    | 10    | —           | —        | No         | **Fixed** MT-W14a — hash-locked `.github/requirements-pre-commit.txt` |
+| Packaging              | -1    | Defer       | Partial  | No         | No publish workflow                                                   |
+| Signed-Releases        | -1    | Defer       | Partial  | No         | No GitHub releases                                                    |
+| Dependency-Update-Tool | 10    | —           | —        | No         | Dependabot configured                                                 |
+| Dangerous-Workflow     | 10    | —           | —        | No         | Clean                                                                 |
+| Security-Policy        | 10    | —           | —        | No         | `.github/SECURITY.md`                                                 |
+| Token-Permissions      | 10    | —           | —        | No         | Least privilege                                                       |
+| Binary-Artifacts       | 10    | —           | —        | No         | Clean                                                                 |
+| License                | 10    | —           | —        | No         | Apache-2.0                                                            |
+| SAST                   | 10    | —           | —        | No         | CodeQL on all commits                                                 |
+| CI-Tests               | 10    | —           | —        | No         | 27/27 merged PRs CI-checked                                           |
 
-**Checks scoring ≥7:** 10 checks at 10/10; Pinned-Dependencies at 8/10.
+**Checks scoring ≥7:** 11 checks at 10/10 (Pinned-Dependencies restored MT-W14a).
 
 ### Hypothesis triage
 
@@ -373,7 +373,7 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 | API lag behind `main`          | **Rejected** — API, badge, and CI SARIF all **6.0** @ `a98e062` same day                                          |
 | Branch-Protection still low    | **Confirmed** — 4/10; ruleset has 4 required contexts but Scorecard penalizes missing approvers/CODEOWNERS        |
 | Vulnerabilities / OSV          | **Confirmed** — 21 findings (Scorecard OSV scanner); contradicts prior “npm audit 0” note for frontend-only scope |
-| Pinned-Dependencies regression | **Partially confirmed** — 8/10 not 10/10; unpinned `pipCommand` at workflow line 65–66                            |
+| Pinned-Dependencies regression | **Fixed** MT-W14a — was 8/10 (unpinned `pipCommand`); hash-locked requirements + `--require-hashes` in workflow   |
 
 ### Ruleset vs Scorecard Branch-Protection gap
 
@@ -401,7 +401,7 @@ Scorecard Branch-Protection (4/10) still warns:
 
 | Gap                      | Suggested action                                                                 | Est. impact                          |
 | ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------ |
-| Pinned-Dependencies 8→10 | Hash-pin `pip install pre-commit==4.6.0` in workflow                             | +0 aggregate (one check only)        |
+| Pinned-Dependencies 8→10 | **Done** MT-W14a — `.github/requirements-pre-commit.txt` + `--require-hashes`    | +0 aggregate (one check only)        |
 | Vulnerabilities 0        | Triage 21 OSV IDs; merge Dependabot bumps for Python/npm transitive              | Uncertain — may raise if count drops |
 | Branch-Protection 4→7+   | Requires `required_approving_review_count: 1` + second reviewer or bypass policy | Blocked on solo fork                 |
 | Maintained 0             | Wait until fork &gt;90 days with sustained commits                               | Time-based                           |

@@ -62,7 +62,7 @@ jobs:
             pre-commit-${{ runner.os }}-
 
       - name: Install pre-commit
-        run: pip install pre-commit==4.6.0
+        run: pip install --require-hashes -r .github/requirements-pre-commit.txt
 
       - name: Run pre-commit
         run: SKIP=no-commit-to-branch pre-commit run --all-files
