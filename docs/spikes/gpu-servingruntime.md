@@ -2,12 +2,12 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field           | Value                                                                                |
-| --------------- | ------------------------------------------------------------------------------------ |
-| Date            | 2026-06-30                                                                           |
-| Verdict         | **blocked** — GPU tiers deferred; CPU profile validated locally                      |
-| Cluster/profile | Chart `computeProfile.name=cpu`; GPU nodes not scheduled this pass                   |
-| Follow-up       | GPU tiers (512+ crop) **deferred** until scheduled; CPU partial crop (256) validated |
+| Field           | Value                                                                             |
+| --------------- | --------------------------------------------------------------------------------- |
+| Date            | 2026-07-01 (Wave 8 re-test)                                                       |
+| Verdict         | **partial** — CPU cluster pass; GPU tiers deferred (no GPU nodes / expired creds) |
+| Cluster/profile | psi-21 `computeProfile.name=cpu`; helm rev 19 deployed                            |
+| Follow-up       | Re-test T4/L40S/Hopper on GPU clusters when credentials restored                  |
 
 For per-tier commands and deferral caps, see the GPU tier table in [`README.md`](README.md).
 
@@ -39,14 +39,20 @@ oc exec -n <namespace> deploy/swinir-predictor -c kserve-container -- \
 
 ## Notes
 
-| Tier   | Ready | Infer 200 | Status   | Cap when deferred       |
-| ------ | ----- | --------- | -------- | ----------------------- |
-| CPU    | pass  | N/A       | **pass** | max_crop=256, no tiling |
-| T4     | —     | —         | deferred | capped to CPU limits    |
-| L40S   | —     | —         | deferred | capped to CPU limits    |
-| Hopper | —     | —         | deferred | capped to CPU limits    |
+| Tier   | Ready | Infer 200 | MT-4b caps API | Status       | Notes                                                                                                              |
+| ------ | ----- | --------- | -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| CPU    | pass  | pass      | pass           | **pass**     | swinir `/ready` HTTP 200; JSON infer 52.6 s → `[1,3,1024,1024]`; enhance + detect `/api/capabilities` max_crop=256 |
+| T4     | —     | —         | local defer    | **deferred** | psi-21: no `nvidia.com/gpu` nodes; nvd-srv-18: creds expired; helm template + local caps defer OK                  |
+| L40S   | —     | —         | local defer    | **deferred** | same as T4                                                                                                         |
+| Hopper | —     | —         | local defer    | **deferred** | same as T4                                                                                                         |
 
 Chart ships `computeProfile.name` and `computeProfile.gpuAvailable` values. Backends expose `GET /api/capabilities` with deferral caps per plan.
 Re-test GPU tiers on T4/L40S/Hopper clusters when scheduled; set `GPU_AVAILABLE=true` only after Ready + infer 200.
 
-**Waiver (2026-06-30):** `oc` authenticated but no CAIsat namespace/deploy on accessible cluster; tiers remain deferred. Re-test target: **2026-07-31** or when 512+ crop demo is required.
+**Wave 8 (2026-07-01):** psi-21 has zero GPU-labeled nodes (`oc get nodes -l nvidia.com/gpu` empty). Alternate contexts (`nvd-srv-18`, `qualitycustomer`) require re-login.
+
+Local validation: helm template emits `nvidia.com/gpu: "1"` for t4/l40s/hopper with `gpuAvailable=true`; capabilities API returns `max_crop=256`, `gpu_deferred=True` when `GPU_AVAILABLE=false`.
+
+MT-R4 (512+ crop Playwright) not run — requires live GPU tier.
+
+**Prior waiver (2026-06-30):** No CAIsat deploy on accessible GPU cluster; superseded by Wave 8 CPU pass on psi-21.

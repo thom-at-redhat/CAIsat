@@ -193,6 +193,32 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | runAnalysis E2E | **pass** — workflow `analyze-seed-images-b8hfb` **Succeeded**; SeaweedFS artifacts `metadata/*-stats.json`, `areas.json`         |
 | Verdict         | **complete** — DSPA + SeaweedFS path validated; operator deferrals: RHOAI binary ticket, upstream PR, GPU tiers                  |
 
+### Wave 8 GPU validation (partial — 2026-07-01)
+
+| Field     | Value                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| Cluster   | psi-21 CPU only — zero `nvidia.com/gpu` nodes; GPU cluster contexts expired                            |
+| CPU tier  | **pass** — swinir Ready HTTP 200; JSON infer 52.6 s; enhance + detect `/api/capabilities` max_crop=256 |
+| GPU tiers | **deferred** — T4/L40S/Hopper; local helm template + caps defer validated; MT-R4 not run               |
+| Doc       | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) updated on `feature/waves-8-9-10`           |
+
+### Wave 9 RHOAI ea.2 retry (blocked — 2026-07-01)
+
+| Field   | Value                                                                                                       |
+| ------- | ----------------------------------------------------------------------------------------------------------- |
+| Bundle  | `registry.redhat.io/rhoai/rhods-operator-bundle:v3.5.0-ea.2` — **unauthorized** (skopeo + podman auth file) |
+| Cluster | **unchanged** — RHOAI **3.4.2** on `redhat-operators` stable-3.4; helm rev 19 deployed; swinir Running      |
+| Secret  | `rhoai-quay-pull` not created — requires rhoai-scoped robot creds (not CAIsat robot)                        |
+
+### Wave 10 ecosystem (assessed — 2026-07-01)
+
+| Item         | Verdict                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Upstream PR  | ~30 commits / 96 files vs `rh-ai-quickstart/main` — draft PR deferred pending user decision   |
+| Scorecard 7+ | Aggregate **6.9**; 7+ blocked by Maintained/Code-Review waivers — no low-cost doc/config wins |
+| MT-CP-3      | **deferred** — p50 pre-commit ≈ 1.2 min (`ci-timing.md`)                                      |
+| Vite         | **skip** — frontend still CRA; not scoped in PLAN                                             |
+
 ---
 
 ## Open blockers
@@ -200,7 +226,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Blocker         | Detail                                                                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | MLServer binary | **fail** @ 3.4.0 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500; blocks Wave 5 **Full**; RHOAI ticket prep — `binary-kserve-v2.md`             |
-| RHOAI ea.2      | **deferred** — ea.2 bundle manifest unknown on `registry.redhat.io`; cluster on **3.4.0** fallback                                                                  |
+| RHOAI ea.2      | **blocked** — bundle unauthorized on `registry.redhat.io` (2026-07-01 Wave 9); cluster on **3.4.2**; upgrade not attempted                                          |
 | Pull secrets    | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern |
 
 ---
