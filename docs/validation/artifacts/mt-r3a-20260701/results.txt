@@ -1,0 +1,33 @@
+# MT-R3a Playwright session (2026-07-01)
+# Assisted by: cursor, claude
+# Cluster profile: ods-qe-psi-21 (redacted FQDNs in committed docs)
+
+## MT-DETECT (post-fix)
+
+route_smoke_frontend_http=200
+detection_health_http=200
+detect_on_1024_http=200
+detect_elapsed_s=2.1
+detect_count_api_probe=0
+
+## MT-R3a Playwright
+
+status=pass
+enhance_elapsed_s=65
+detect_result=pass
+detection_count_ui=1
+layout_100pct=pass (flex-direction row, 3 panels)
+layout_150pct=pass (flex-direction column @ 1067px, third panel visible)
+box_alignment=pass (1 OBB overlay)
+
+screenshots=01-100pct-detection-results.png,02-150pct-detection-results.png
+summary=mt-r3a-playwright-summary.json
+
+## MT-2 (unchanged)
+
+binary_json=pass
+binary_octet_stream=fail (upstream MLServer 1.7.1+rhaiv.8)
+
+helm_revision=2
+KSERVE_PREFER_BINARY=false (live on both backends)
+chart_fix=PR #82 @ 6459038

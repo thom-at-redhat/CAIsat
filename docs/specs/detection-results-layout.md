@@ -4,7 +4,7 @@
 
 | Field      | Value                                                  |
 | ---------- | ------------------------------------------------------ |
-| Status     | draft                                                  |
+| Status     | accepted                                               |
 | Spec ID    | DRL-001                                                |
 | Tests      | _(manual — Playwright MT-R3a; no pytest yet)_          |
 | Validation | `baseline-smoke.md` L145–157                           |
@@ -15,7 +15,7 @@
 After **Enhance Selected Area**, the user may click **Detect Objects**. The results row shows three panels left-to-right: **Original** → **Enhanced** → **Detected Objects**.
 Oriented bounding boxes render on the **Detected Objects** image only (third panel). Layout adapts at a CSS breakpoint and under browser zoom (MT-1b / MT-R3a).
 
-Operator sign-off for 150% layout is **pending** redeploy of frontend @ PR #70 (`ubi9/nodejs-20`) — see `baseline-smoke.md` L157.
+Operator sign-off for 150% layout **pass** @ MT-R3a (2026-07-01) — see `baseline-smoke.md` L157+.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ Operator sign-off for 150% layout is **pending** redeploy of frontend @ PR #70 (
 - At **150% browser zoom** (or `deviceScaleFactor: 1.5` in Playwright at 1600px width), effective viewport shrinks; panels **must** stack vertically per DRL-001-R3
 - Third panel fully visible without clipped content off-screen
 - Viewport-only resize ≤1067px is a **supplementary** CSS check, not sole pass criterion (`baseline-smoke.md` L151)
-- **Pending:** operator retest after frontend redeploy (MT-R3a / W5-P4)
+- **Pass (MT-R3a 2026-07-01):** operator retest complete — see `baseline-smoke.md` L157+
 
 ### DRL-001-R5: Box alignment
 
@@ -54,7 +54,7 @@ Operator sign-off for 150% layout is **pending** redeploy of frontend @ PR #70 (
 
 ## Acceptance criteria
 
-- [x] 100% wide layout **pass** @ 1600px — `baseline-smoke.md` L156 (0 detections on tile; boxes N/A)
-- [ ] 150% vertical stack **pass** — `baseline-smoke.md` L157 **pending** (MT-R3a after W5-P2 redeploy)
-- [ ] Box alignment with non-zero detections — harbor or airport tile (MT-R3a)
-- [ ] Playwright artifacts under `docs/validation/artifacts/mt-r3a-<YYYYMMDD>/` (operator choice)
+- [x] 100% wide layout **pass** @ 1600px — MT-R3a 2026-07-01 (1 detection with box overlay)
+- [x] 150% vertical stack **pass** — MT-R3a 2026-07-01 @ 1067px effective width
+- [x] Box alignment with non-zero detections — 1 detection on default map tile (MT-R3a)
+- [x] Playwright artifacts under `docs/validation/artifacts/mt-r3a-20260701/`

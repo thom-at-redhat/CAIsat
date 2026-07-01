@@ -26,7 +26,7 @@ Requirements use `### <SPEC-ID>-R<n>:` headings. Acceptance criteria are checkbo
 | -------- | ------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------- |
 | CAP-001  | [`capabilities-api.md`](capabilities-api.md)                 | `tests/test_capabilities.py`   | `baseline-smoke.md` L188, L203                                                        |
 | KSRV-001 | [`kserve-v2-tensors.md`](kserve-v2-tensors.md)               | `tests/test_kserve_v2.py`      | `baseline-smoke.md` L66; spike [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) |
-| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | _(manual / Playwright MT-R3a)_ | `baseline-smoke.md` L145–157                                                          |
+| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | _(manual / Playwright MT-R3a)_ | `baseline-smoke.md` L145–157 — **accepted** MT-R3a 2026-07-01                         |
 
 ## Backend module parity
 
@@ -39,4 +39,4 @@ CAP-001 and KSRV-001 specs document both modules; pytest parametrizes over both 
 | ------------------------------------ | -------------- | ------------------------------------------------ |
 | `tests/test_app_import.py`           | MT-W12+        | `MODEL_ENDPOINT` import guard with `monkeypatch` |
 | `baseline-smoke.md` intro cross-link | MT-R6 (W5-P5)  | Pointer to this index                            |
-| DRL-001 → `accepted`                 | MT-R3a (W5-P4) | 150% layout operator sign-off                    |
+| DRL-001 → `accepted`                 | MT-R3a (W5-P4) | **done** 2026-07-01 — 100%/150% Playwright pass  |
