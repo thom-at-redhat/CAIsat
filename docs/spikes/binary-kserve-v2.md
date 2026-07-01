@@ -323,6 +323,42 @@ paste redacted values into the ticket only.
 - [`docs/specs/kserve-v2-tensors.md`](../specs/kserve-v2-tensors.md)
 - [`docs/project/PLAN.md`](../project/PLAN.md) Open blockers — MLServer binary
 
+### Paste-ready ticket body (Red Hat Customer Portal)
+
+Copy below into a new support case. Replace `<namespace>` and attach predictor logs from a binary infer attempt. **Do not** paste cluster FQDNs into committed docs.
+
+```text
+Summary: RHOAI MLServer 1.7.1+rhaiv.8 returns HTTP 500 on KServe v2 binary infer (Content-Type: application/octet-stream). JSON infer on the same predictors succeeds.
+
+Product: Red Hat OpenShift AI
+Version: 3.4.0 (stable-3.4 channel)
+MLServer: 1.7.1+rhaiv.8 (swinir-predictor pod, kserve-container)
+
+Symptoms:
+- POST /v2/models/swinir/infer with application/octet-stream + Inference-Header-Content-Length → HTTP 500
+- POST /v2/models/yolov8m-satelite/infer — same failure
+- JSON infer (Content-Type: application/json) passes on both predictors
+
+Predictor log (binary attempt):
+UnicodeDecodeError: 'utf-8' codec can't decode byte ... in position ...: invalid start byte
+(at FastAPI validation error handler when parsing binary request body as text)
+
+Repro: From any pod in namespace <namespace>, send KServe v2 binary tensor request per
+https://kserve.github.io/website/docs/concepts/architecture/data-plane/v2-protocol/binary-tensor-data-extension
+Header: Content-Type: application/octet-stream, Inference-Header-Content-Length: <json-header-length>
+Body: <json-metadata-bytes><raw-tensor-bytes>
+
+Expected: Binary infer returns decoded output matching JSON infer within 1e-4 max abs diff.
+Actual: HTTP 500 Internal Server Error on both SwinIR and YOLOv8-OBB predictors.
+
+Impact: Cannot enable KSERVE_PREFER_BINARY=true; large JSON payloads (~25 MB YOLO) remain required.
+Workaround: JSON infer only (KSERVE_PREFER_BINARY=false).
+
+Request: Fix MLServer binary tensor extension handling or document required runtime configuration for RHOAI 3.4.0.
+```
+
+**Status:** Draft ready — operator to file and record ticket ID in PLAN Open blockers (no fake ID in repo).
+
 ---
 
 ## Summary
