@@ -21,42 +21,43 @@ Open operational items below; use feature branches for follow-up; never push `ma
 
 ## Verification artifact
 
-| Claim                   | Path                                                                                         | Evidence                                    | Status                |
-| ----------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------- | --------------------- |
-| MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`              | ok                    |
-| CI harden-runner block  | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | egress block + allowlists; MT-CP-5 PR #62   | ok                    |
-| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | required CI job `smoke-binary`; MT-CP-2 #60 | ok                    |
-| CI timing metrics       | [`docs/validation/ci-timing.md`](../validation/ci-timing.md)                                 | MT-CP-1 #59; MT-CP-3 gate p50 ≈ 1.2 min     | ok (MT-CP-3 deferred) |
-| CI smoke venv cache     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | `.venv-smoke` cache; MT-CP-4 PR #61 −14.7%  | ok                    |
-| Helm metadata fix       | [`chart/templates/backend.yaml`](../../chart/templates/backend.yaml)                         | single metadata block                       | ok                    |
-| `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health in required CI job `pre-commit`      | ok                    |
-| Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                           | ok                    |
-| Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**   | ok                    |
-| Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)            | ok                    |
-| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | **6.0** triaged @ `a98e062` (MT-W14)        | ok                    |
-| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                        | ok                    |
-| SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**              | ok                    |
-| SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions      | ok                    |
-| Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`       | ok                    |
-| README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)       | ok (fork)             |
-| Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | pre-commit, smoke-binary, Scorecard, CodeQL | ok (fork)             |
-| Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned | ok                    |
-| Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins | ok                    |
-| Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix | ok                    |
-| Upstream sync           | fork `main` @ `4abef20`                                                                      | PR #43 inbound sync                         | ok (inbound)          |
-| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | ML spikes documented (PR #45)               | ok                    |
-| Phases 12–23 merge      | PR #45 @ `ee3f1b3`                                                                           | phases-12-23 integration                    | ok                    |
-| PLAN post-23 archive    | PR #47 @ `4abef20`                                                                           | PLAN archive merged                         | ok                    |
-| Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (pytest `tests/`)       | ok                    |
-| Pytest suite            | [`tests/`](../../tests/)                                                                     | kserve_v2 + capabilities; both backends     | ok                    |
-| `make test`             | [`Makefile`](../../Makefile)                                                                 | pytest via `requirements-dev.txt`           | ok                    |
-| Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L101–106              | **pass** @ `b367b63` 2026-07-01             | ok (layout partial)   |
-| Frontend Containerfile  | [`frontend/Containerfile`](../../frontend/Containerfile) L1                                  | `ubi9/nodejs-20`; PR #70 @ `8c44336`        | ok                    |
+| Claim                   | Path                                                                                         | Evidence                                      | Status                |
+| ----------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------- | --------------------- |
+| MODEL_ENDPOINT required | [`backend/app.py`](../../backend/app.py) L35–39                                              | `if not MODEL_ENDPOINT: raise`                | ok                    |
+| CI harden-runner block  | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | egress block + allowlists; MT-CP-5 PR #62     | ok                    |
+| CI binary smoke job     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | required CI job `smoke-binary`; MT-CP-2 #60   | ok                    |
+| CI timing metrics       | [`docs/validation/ci-timing.md`](../validation/ci-timing.md)                                 | MT-CP-1 #59; MT-CP-3 gate p50 ≈ 1.2 min       | ok (MT-CP-3 deferred) |
+| CI smoke venv cache     | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | `.venv-smoke` cache; MT-CP-4 PR #61 −14.7%    | ok                    |
+| Helm metadata fix       | [`chart/templates/backend.yaml`](../../chart/templates/backend.yaml)                         | single metadata block                         | ok                    |
+| `make smoke` health     | [`Makefile`](../../Makefile), [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh)       | health in required CI job `pre-commit`        | ok                    |
+| Baseline smoke phases   | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md)                       | phases 7/13/14/16                             | ok                    |
+| Quay gate               | [`docs/spikes/quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**     | ok                    |
+| Chart image default     | [`chart/values.yaml`](../../chart/values.yaml)                                               | `thom_at_redhat/caisat` (public)              | ok                    |
+| OpenSSF Scorecard       | [`.github/workflows/scorecard-analysis.yml`](../../.github/workflows/scorecard-analysis.yml) | **6.0** triaged @ `a98e062` (MT-W14)          | ok                    |
+| Scorecard gap plan      | [`docs/spikes/scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                          | ok                    |
+| SAST (CodeQL)           | [`.github/workflows/codeql-analysis.yml`](../../.github/workflows/codeql-analysis.yml)       | PR #29; Python + JS; **10/10**                | ok                    |
+| SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                                           | PR #24; reporting + supported versions        | ok                    |
+| Workflow permissions    | [`.github/workflows/pre-commit.yaml`](../../.github/workflows/pre-commit.yaml)               | PR #24; `permissions: contents: read`         | ok                    |
+| README Scorecard badge  | [`README.md`](../../README.md)                                                               | contributor fork slug (see badge URL)         | ok (fork)             |
+| Branch protection       | GitHub ruleset `protect-main` (ID `18274842`)                                                | pre-commit, smoke-binary, Scorecard, CodeQL   | ok (fork)             |
+| Markdown link check pin | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #26; `markdown-link-check@3.14.2` pinned   | ok                    |
+| Pre-commit SHA pins     | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | Phase 11 PR #41; 13 hook repos + exact pins   | ok                    |
+| Scorecard pre-commit    | [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml)                                   | PR #42; local Scorecard hook + npm vuln fix   | ok                    |
+| Upstream sync           | fork `main` @ `4abef20`                                                                      | PR #43 inbound sync                           | ok (inbound)          |
+| Spike doc index         | [`docs/spikes/`](../spikes/)                                                                 | ML spikes documented (PR #45)                 | ok                    |
+| Phases 12–23 merge      | PR #45 @ `ee3f1b3`                                                                           | phases-12-23 integration                      | ok                    |
+| PLAN post-23 archive    | PR #47 @ `4abef20`                                                                           | PLAN archive merged                           | ok                    |
+| Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (pytest `tests/`)         | ok                    |
+| Pytest suite            | [`tests/`](../../tests/)                                                                     | kserve_v2 + capabilities; both backends       | ok                    |
+| `make test`             | [`Makefile`](../../Makefile)                                                                 | pytest via `requirements-dev.txt`             | ok                    |
+| Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L101–106              | **pass** @ `b367b63` 2026-07-01               | ok (layout partial)   |
+| Frontend Containerfile  | [`frontend/Containerfile`](../../frontend/Containerfile) L1                                  | `ubi9/nodejs-20`; PR #70 @ `8c44336`          | ok                    |
+| SDD specs index         | [`docs/specs/README.md`](../specs/README.md)                                                 | CAP/KSRV accepted; DRL draft (MT-R3a pending) | ok (W5-P1b)           |
 
 **Last verified:** fork `main` @ `8c44336` (2026-07-01); Wave 5 W5-P0 PR #70 merged; prior MT-R5 @ `e2a7704`; CI parallelization MT-CP-3 deferred;
 Scorecard **6.0** expected (MT-W14 triaged @ `a98e062`); SAST **10/10**
 
-**Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
+**Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
 
 **Claims not checked:** MT-1b detection 150% layout (pre-PR #54 frontend image); MT-4a full crop after redeploy @ `b367b63`; GPU tiers **deferred**; upstream outbound PR
