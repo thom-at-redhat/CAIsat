@@ -16,20 +16,20 @@ Fork synced from upstream via PR #43; outbound PR to rh-ai-quickstart still defe
 
 Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](PLAN.md) Active todos.
 
-| Phase            | MT-ID   | Date       | SHA / PR           | Outcome                                                                                                 |
-| ---------------- | ------- | ---------- | ------------------ | ------------------------------------------------------------------------------------------------------- |
-| W5-P0            | MT-W11  | 2026-07-01 | PR #70 @ `8c44336` | `frontend/Containerfile` → `ubi9/nodejs-20` merged                                                      |
-| W5-P1a           | MT-W12  | 2026-07-01 | PR #72 @ `5643256` | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary)                                         |
-| W5-P1c           | MT-W14  | 2026-07-01 | PR #73 @ `2984066` | Scorecard 6.0 investigation — expected; waivers + OSV cap                                               |
-| W5-P1b           | MT-W13  | 2026-07-01 | PR #74 @ `2dd097b` | SDD index + CAP/KSRV/DRL specs merged                                                                   |
-| W5-P2            | MT-W1b  | 2026-07-01 | docs @ `2dd097b`   | frontend Quay push — manifest `sha256:01ffd782…961a7e`; retention `frontend-pre-20260701`               |
-| W5-P3            | MT-W2b  | 2026-07-01 | PR #80 @ `2f71ca7` | frontend redeploy — imageID `01ffd782…961a7e`; helm rev 2; route **200**                                |
-| W5-P1c follow-up | MT-W14a | 2026-07-01 | PR #75 @ `445401a` | Pinned-Dependencies hash-pin pre-commit pip install restored 10/10                                      |
-| W5-P1c follow-up | MT-W14b | 2026-07-01 | PR #76 @ `d15eafe` | OSV triage 21 IDs; Scorecard **6.9** post-merge                                                         |
-| W5-P7            | MT-GH   | 2026-07-01 | @ `2f71ca7`        | worktree hygiene — wave5-signoff removed post-PR #80; main only                                         |
-| W5-P4            | MT-R3a  | 2026-07-01 | PR #83 @ `1e66830` | **pass** — detect 200; Playwright 100%/150%; DRL-001 accepted; PR #82 `KSERVE_PREFER_BINARY=false`      |
-| W5-P5            | MT-R6b  | 2026-07-01 | PR #84 @ `b851c13` | **Partial** — Wave 5 CPU path closed; Phase 14 binary waiver; Full blocked on MT-2 binary               |
-| Phase 25         | —       | 2026-07-01 | PR #85 @ `79283f0` | S4 → SeaweedFS; cluster prove-out **pass** — SeaweedFS Running, S3 R/W; seed/changedetection image gaps |
+| Phase            | MT-ID   | Date       | SHA / PR                                     | Outcome                                                                                               |
+| ---------------- | ------- | ---------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| W5-P0            | MT-W11  | 2026-07-01 | PR #70 @ `8c44336`                           | `frontend/Containerfile` → `ubi9/nodejs-20` merged                                                    |
+| W5-P1a           | MT-W12  | 2026-07-01 | PR #72 @ `5643256`                           | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary)                                       |
+| W5-P1c           | MT-W14  | 2026-07-01 | PR #73 @ `2984066`                           | Scorecard 6.0 investigation — expected; waivers + OSV cap                                             |
+| W5-P1b           | MT-W13  | 2026-07-01 | PR #74 @ `2dd097b`                           | SDD index + CAP/KSRV/DRL specs merged                                                                 |
+| W5-P2            | MT-W1b  | 2026-07-01 | docs @ `2dd097b`                             | frontend Quay push — manifest `sha256:01ffd782…961a7e`; retention `frontend-pre-20260701`             |
+| W5-P3            | MT-W2b  | 2026-07-01 | PR #80 @ `2f71ca7`                           | frontend redeploy — imageID `01ffd782…961a7e`; helm rev 2; route **200**                              |
+| W5-P1c follow-up | MT-W14a | 2026-07-01 | PR #75 @ `445401a`                           | Pinned-Dependencies hash-pin pre-commit pip install restored 10/10                                    |
+| W5-P1c follow-up | MT-W14b | 2026-07-01 | PR #76 @ `d15eafe`                           | OSV triage 21 IDs; Scorecard **6.9** post-merge                                                       |
+| W5-P7            | MT-GH   | 2026-07-01 | @ `2f71ca7`                                  | worktree hygiene — wave5-signoff removed post-PR #80; main only                                       |
+| W5-P4            | MT-R3a  | 2026-07-01 | PR #83 @ `1e66830`                           | **pass** — detect 200; Playwright 100%/150%; DRL-001 accepted; PR #82 `KSERVE_PREFER_BINARY=false`    |
+| W5-P5            | MT-R6b  | 2026-07-01 | PR #84 @ `b851c13`                           | **Partial** — Wave 5 CPU path closed; Phase 14 binary waiver; Full blocked on MT-2 binary             |
+| Phase 25         | —       | 2026-07-01 | PR #85 @ `79283f0`; pipeline E2E @ `6b281b7` | S4 → SeaweedFS **pass**; runAnalysis pipeline E2E **pass** (PR #88–#89); changedetection tag optional |
 
 ## Phase one-liners (0, 8–11, 12–23)
 
