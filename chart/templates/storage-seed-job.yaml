@@ -1,11 +1,13 @@
-{{- if .Values.s4.seed.enabled }}
+# Post-install hook: seed satellite-images bucket via SeaweedFS S3 gateway.
+# Assisted by: cursor, claude
+{{- if .Values.seaweedfs.seed.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "caisat.fullname" . }}-s4-seed-{{ .Release.Revision }}
+  name: {{ include "caisat.fullname" . }}-storage-seed-{{ .Release.Revision }}
   labels:
     {{- include "caisat.labels" . | nindent 4 }}
-    app.kubernetes.io/component: s4-seed
+    app.kubernetes.io/component: storage-seed
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
@@ -16,30 +18,30 @@ spec:
     metadata:
       labels:
         {{- include "caisat.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: s4-seed
+        app.kubernetes.io/component: storage-seed
         app: caisat
-        component: s4-seed
+        component: storage-seed
     spec:
-      serviceAccountName: {{ include "caisat.fullname" . }}-s4-seed
+      serviceAccountName: {{ include "caisat.fullname" . }}-storage-seed
       restartPolicy: OnFailure
       initContainers:
-      - name: wait-for-s4
-        image: {{ .Values.s4.seed.waitImage }}
+      - name: wait-for-seaweedfs
+        image: {{ .Values.seaweedfs.seed.waitImage }}
         command:
         - /bin/bash
         - -c
         - |
-          echo "Waiting for S4 to be ready..."
-          until oc get deployment/{{ include "caisat.fullname" . }}-s4 -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
-            echo "S4 not ready yet, waiting 5 seconds..."
+          echo "Waiting for SeaweedFS to be ready..."
+          until oc get deployment/{{ include "caisat.fullname" . }}-seaweedfs -n {{ .Release.Namespace }} -o jsonpath='{.status.availableReplicas}' | grep -q "1"; do
+            echo "SeaweedFS not ready yet, waiting 5 seconds..."
             sleep 5
           done
-          echo "S4 is ready!"
+          echo "SeaweedFS is ready!"
           sleep 10
 
       containers:
       - name: seed
-        image: {{ .Values.s4.seed.image }}
+        image: {{ .Values.seaweedfs.seed.image }}
         command:
         - /bin/bash
         - -c
@@ -47,20 +49,20 @@ spec:
           set -e
 
           echo "=========================================="
-          echo "CAISAT S4 SEED JOB"
+          echo "CAISAT STORAGE SEED JOB"
           echo "=========================================="
 
           pip install --quiet boto3 requests pillow
 
-          export S3_ENDPOINT="http://{{ include "caisat.fullname" . }}-s4.{{ .Release.Namespace }}.svc.cluster.local:7480"
+          export S3_ENDPOINT="http://{{ include "caisat.fullname" . }}-seaweedfs.{{ .Release.Namespace }}.svc.cluster.local:7480"
           export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
           export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-          export BUCKET_NAME="{{ .Values.s4.seed.bucketName }}"
+          export BUCKET_NAME="{{ .Values.seaweedfs.seed.bucketName }}"
 
           echo "S3 Endpoint: $S3_ENDPOINT"
           echo "Bucket: $BUCKET_NAME"
 
-          cat > /tmp/seed_s4.py << 'PYTHON_EOF'
+          cat > /tmp/seed_storage.py << 'PYTHON_EOF'
           import boto3
           import requests
           import os
@@ -238,7 +240,7 @@ spec:
               print(f"   [OK] metadata/{location['name']}-stats.json")
 
           print(f"\n========================================")
-          print(f"[OK] S4 SEED COMPLETE!")
+          print(f"[OK] STORAGE SEED COMPLETE!")
           print(f"========================================")
           print(f"Bucket: s3://{BUCKET_NAME}")
           print(f"Images: {total_uploaded}")
@@ -247,19 +249,19 @@ spec:
 
           PYTHON_EOF
 
-          python3 /tmp/seed_s4.py
+          python3 /tmp/seed_storage.py
 
         env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: {{ include "caisat.fullname" . }}-s4-credentials
+              name: {{ include "caisat.fullname" . }}-seaweedfs-credentials
               key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "caisat.fullname" . }}-s4-credentials
+              name: {{ include "caisat.fullname" . }}-seaweedfs-credentials
               key: AWS_SECRET_ACCESS_KEY
         resources:
-          {{- toYaml .Values.s4.seed.resources | nindent 12 }}
+          {{- toYaml .Values.seaweedfs.seed.resources | nindent 12 }}
 {{- end }}
