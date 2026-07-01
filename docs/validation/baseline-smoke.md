@@ -151,28 +151,29 @@ Bounding boxes are drawn on the **Detected Objects** image in the third panel on
 At **150% browser zoom** (effective viewport shrink) or widths under ~1400px, panels **stack vertically** with down arrows so all three images are visible without horizontal scroll.
 Verify boxes align with objects in the enhanced crop; record pass/fail with cluster baseline sign-off.
 
-| Browser zoom | Expected layout                  | Pass criteria                                              | Cluster result (2026-07-01)                                           |
-| ------------ | -------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
-| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **blocked** — MT-R3a; detect HTTP 500; 3-panel row not reached        |
-| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **pending** — MT-R3a blocked on detect gate; retest after infer green |
+| Browser zoom | Expected layout                  | Pass criteria                                              | Cluster result (2026-07-01)                                             |
+| ------------ | -------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 100% (wide)  | Horizontal row; scroll if needed | All three panels reachable; boxes on Detected Objects only | **pass** — MT-R3a Playwright; 3-panel row; 1 detection with box overlay |
+| 150%+        | Vertical stack                   | Third panel fully visible; no clipped content off-screen   | **pass** — MT-R3a Playwright @ 1067px effective width (1600/1.5)        |
 
 **MT-R3a per-check (Playwright, ods-qe-psi-21, 2026-07-01):**
 
-| Field            | Value                                                                                                                        |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Branch SHA       | `2dd097b`                                                                                                                    |
-| Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy)                                |
-| Date             | 2026-07-01                                                                                                                   |
-| Signed off       | **blocked** — `POST /api/detect` HTTP 500; layout checks not run                                                             |
-| Artifacts        | `docs/validation/artifacts/mt-r3a-20260701/` (`results.txt`, `report.md`, `detection-500-failure.png` — PNGs pending re-run) |
+| Field            | Value                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch SHA       | `419ff94` (fork main post-PR #81); chart fix PR #82 @ `6459038`                                                                                       |
+| Frontend imageID | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e` (W5-P2/P3 redeploy)                                                         |
+| Date             | 2026-07-01                                                                                                                                            |
+| Signed off       | **pass** — detect gate green after `KSERVE_PREFER_BINARY=false` on detection backend; 100%/150% layout Playwright pass                                |
+| Artifacts        | `docs/validation/artifacts/mt-r3a-20260701/` (`01-100pct-detection-results.png`, `02-150pct-detection-results.png`, `mt-r3a-playwright-summary.json`) |
 
-| Check                            | Result      | Notes                                                                                          |
-| -------------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
-| Enhance 256→1024                 | **pass**    | `POST /api/enhance` 200; native 1024 output (~3–4 min CPU)                                     |
-| Detect Objects                   | **fail**    | HTTP 500 — detection backend SAHI/KServe `ClientOSError` writing infer body on 1024×1024 image |
-| 100% layout (3-panel row)        | **blocked** | Detection did not complete; only Original → Enhanced panels                                    |
-| 150% layout (vertical stack)     | **pending** | Not reached — blocked on detect gate                                                           |
-| Box alignment (Detected Objects) | **N/A**     | No successful detection run                                                                    |
+| Check                            | Result   | Notes                                                         |
+| -------------------------------- | -------- | ------------------------------------------------------------- |
+| Route smoke (frontend)           | **pass** | HTTP 200 on cluster Route                                     |
+| Enhance 256→1024                 | **pass** | Playwright flow ~65 s CPU (RHOAI 3.4.0)                       |
+| Detect Objects                   | **pass** | HTTP 200; 1 detection; bounding box on Detected Objects panel |
+| 100% layout (3-panel row)        | **pass** | `flex-direction: row`; 3 panels @ 1600×900                    |
+| 150% layout (vertical stack)     | **pass** | `flex-direction: column` @ 1067×900 (150% effective width)    |
+| Box alignment (Detected Objects) | **pass** | 1 detection with OBB overlay on panel 3 (default map tile)    |
 
 | Zoom | Cluster result | Local result | Notes                                                                                   |
 | ---- | -------------- | ------------ | --------------------------------------------------------------------------------------- |
