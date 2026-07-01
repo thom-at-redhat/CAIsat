@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `0a8223b` (2026-06-30). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
+**Branch:** `main` @ `b367b63` (2026-07-01). **All planned phases (0–23) complete.** CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
@@ -49,7 +49,7 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Local smoke profiles    | [`scripts/smoke-local.sh`](../../scripts/smoke-local.sh) L133–143                            | `health` + `binary` (encode/decode unit test) | ok                       |
 | Cluster baseline        | [`docs/validation/baseline-smoke.md`](../validation/baseline-smoke.md) L97–102               | waiver — no deployed stack 2026-06-30         | unchecked                |
 
-**Last verified:** fork `main` @ `0a8223b` (2026-06-30); CI parallelization MT-CP-1–5 PR #59–#62 (MT-CP-3 deferred); Phases 0–23 merged;
+**Last verified:** fork `main` @ `b367b63` (2026-07-01); CI parallelization PRs #59–#63 (MT-CP-3 deferred); Phases 0–23 merged;
 Scorecard **6.0** pending re-run; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
