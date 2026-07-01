@@ -312,9 +312,10 @@ paste redacted values into the ticket only.
 
 ### Impact on CAIsat
 
-- `KSERVE_PREFER_BINARY=true` breaks enhance when binary infer fails — cluster set to `KSERVE_PREFER_BINARY=false` on backend Deployment.
+- `KSERVE_PREFER_BINARY=true` breaks enhance and detect when binary infer fails — chart sets `kserve.preferBinary: false` on both backends (PR #82 @ `7eb9a76`).
+- Detection backend HTTP 500 on 1024 SAHI (2026-07-01) traced to same root cause — missing `KSERVE_PREFER_BINARY=false`; fixed in PR #82.
 - Phase 14 binary migration **blocked**; JSON fallback active in both backends.
-- **Waiver gate:** Real ticket ID required in this doc before waiving Phase 14 binary-only mode.
+- **Partial waiver (Wave 5):** Phase 14 JSON fallback accepted for Partial closure 2026-07-01; **Full** closure requires RHOAI ticket + MT-2 binary pass.
 
 ### Cross-links
 
