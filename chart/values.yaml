@@ -211,9 +211,17 @@ frontend:
       enabled: true
       termination: edge
 
-# Image pull secrets — not required for fork defaults (public quay.io/thom_at_redhat/caisat)
-imagePullSecrets: []
-# - name: quay-pull-secret  # only if overriding to a private registry
+# Image pull secrets — quay.io/thom_at_redhat/caisat is private (robot credentials)
+# The secret must exist in the target namespace before helm install.
+# Create once per namespace:
+#   oc create secret docker-registry quay-pull-secret \
+#     --docker-server=quay.io \
+#     --docker-username=<robot-name> \
+#     --docker-password=<robot-token> \
+#     -n <namespace>
+#   oc secrets link default quay-pull-secret --for=pull -n <namespace>
+imagePullSecrets:
+  - name: quay-pull-secret
 
 # Pod annotations
 podAnnotations: {}
