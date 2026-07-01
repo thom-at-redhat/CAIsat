@@ -11,7 +11,7 @@ metadata:
     "helm.sh/hook-weight": "9"
 data:
   analyze_seed_images_pipeline.yaml: |
-{{ .Files.Get "files/analyze_seed_images_pipeline.yaml" | nindent 4 }}
+{{ .Files.Get "files/analyze_seed_images_pipeline.yaml" | replace "__CAISAT_PIPELINE_COMPONENT_IMAGE__" .Values.pipelines.analysis.image | nindent 4 }}
   upload_and_run.py: |
     import kfp
     import requests, json, os, sys
