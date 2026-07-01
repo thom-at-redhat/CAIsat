@@ -279,6 +279,51 @@ CAIsat stack healthy on ods-qe-psi-21 (Helm rev 3). Binary failure is unchanged 
 
 ---
 
+## RHOAI support ticket (operator prep)
+
+Use this section when filing a Red Hat support case for MLServer binary infer failure. **Do not** include cluster FQDNs or personal identifiers in committed docs —
+paste redacted values into the ticket only.
+
+### Ticket title (suggested)
+
+`RHOAI MLServer 1.7.1+rhaiv.8 rejects KServe v2 binary infer (application/octet-stream) — HTTP 500 UnicodeDecodeError`
+
+### Environment
+
+| Field         | Value                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| RHOAI version | **3.4.0** (stable-3.4 fallback; ea.2 deferred)                                            |
+| MLServer      | `1.7.1+rhaiv.8` (swinir-predictor pod)                                                    |
+| KServe        | v2 JSON infer **pass**; binary `Content-Type: application/octet-stream` **fail** HTTP 500 |
+| Workload      | CAIsat SwinIR + YOLOv8-OBB InferenceServices in `<namespace>`                             |
+
+### Repro (in-cluster, from backend pod)
+
+1. Confirm both InferenceServices Ready; JSON infer pass on SwinIR `(1,3,256,256)` and YOLO `(1,3,640,640)`.
+2. POST binary infer with KServe v2 header `Inference-Header-Content-Length` + tensor body per [encode pattern](#re-test-ods-qe-psi-21-2026-07-01).
+3. Observe HTTP **500** on both predictors; predictor log shows `UnicodeDecodeError` in FastAPI validation handler when parsing binary body as text.
+
+### Expected vs actual
+
+|                | Expected                                                       | Actual                                            |
+| -------------- | -------------------------------------------------------------- | ------------------------------------------------- |
+| Binary infer   | Decoded output matches JSON within `1e-4` max abs diff         | HTTP 500; no binary tensor response               |
+| Error handling | MLServer accepts `application/octet-stream` per KServe v2 spec | FastAPI `UnicodeDecodeError` on octet-stream body |
+
+### Impact on CAIsat
+
+- `KSERVE_PREFER_BINARY=true` breaks enhance when binary infer fails — cluster set to `KSERVE_PREFER_BINARY=false` on backend Deployment.
+- Phase 14 binary migration **blocked**; JSON fallback active in both backends.
+- **Waiver gate:** Real ticket ID required in this doc before waiving Phase 14 binary-only mode.
+
+### Cross-links
+
+- [Re-test: ods-qe-psi-21 (2026-07-01)](#re-test-ods-qe-psi-21-2026-07-01)
+- [`docs/specs/kserve-v2-tensors.md`](../specs/kserve-v2-tensors.md)
+- [`docs/project/PLAN.md`](../project/PLAN.md) Open blockers — MLServer binary
+
+---
+
 ## Summary
 
 | Predictor           | Tensor   | Input shape        | JSON infer | Binary round-trip | Phase 14 blocker                                 |
