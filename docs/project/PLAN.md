@@ -119,13 +119,26 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                                                       |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`                         |
-| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                                  |
-| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md`               |
-| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                                      |
-| Cluster redeploy  | **partial** — backends @ `e2a7704`; frontend Containerfile @ `8c44336` (PR #70); Quay push + rollout **W5-P2** pending — `baseline-smoke.md` |
+| Item              | Detail                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Binary spike fail | `12-binary` **fail** @ ea.1 (2026-07-01); JSON pass / binary HTTP 500; RHOAI ticket required — `binary-kserve-v2.md`                                               |
+| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); detection 150% layout partial pending redeploy — `baseline-smoke.md`                                                        |
+| Crop sign-off     | **pass (CPU)** @ `e2a7704` post-redeploy; JSON enhance 256→1024; `KSERVE_PREFER_BINARY=false` on cluster — `baseline-smoke.md`                                     |
+| GPU deferral      | MT-3 **skipped**; T4/L40S not found; Hopper cluster unhealthy — `gpu-servingruntime.md`                                                                            |
+| Cluster redeploy  | **partial** — backends @ `e2a7704`; frontend Quay **pushed** W5-P2 @ `2dd097b` (`sha256:01ffd782…961a7e`); cluster rollout **W5-P3** pending — `baseline-smoke.md` |
+
+### Wave 5 frontend Quay (W5-P2 / MT-W1b)
+
+| Field                         | Value                                                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Git SHA                       | `2dd097b` (`2dd097bac0a3a220cba2ee91dd11fce4704be685`)                                                                   |
+| Containerfile                 | `ubi9/nodejs-20` in-container build (post-PR #70)                                                                        |
+| Tags pushed                   | `frontend`, `frontend-2dd097b`, retention `frontend-pre-20260701`                                                        |
+| Pre-push digest (`:frontend`) | `sha256:158ea4995c01ca394f9b07ad5e34e8bd0b6006c0ead1a716ad632d57f36a8136`                                                |
+| Post-push manifest digest     | `sha256:01ffd7825c5f71d35f84613822157380471dec4d70274aae69223632ee961a7e`                                                |
+| Image config                  | `sha256:107bbf18263f1f8b4b463bf7e817df5eb0c1f3ebbe38d0524b19d4bd095ace0d`                                                |
+| Anonymous pull                | **fail** — Quay returns unauthorized without credentials (cluster uses `quay-pull-secret`)                               |
+| Rollback                      | `podman tag quay.io/thom_at_redhat/caisat:frontend-pre-20260701 quay.io/thom_at_redhat/caisat:frontend && podman push …` |
 
 ---
 
