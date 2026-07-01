@@ -335,6 +335,6 @@ pipelines:
   runAnalysis: true
 
   analysis:
-    # Match seed.image; full Kubeflow pipeline components in files/analyze_seed_images_pipeline.yaml still reference DS notebook.
+    # Match seed.image; substituted into analyze_seed_images_pipeline.yaml via pipeline-configmap placeholder.
     image: image-registry.openshift-image-registry.svc:5000/openshift/python:3.12-ubi9
     waitImage: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
