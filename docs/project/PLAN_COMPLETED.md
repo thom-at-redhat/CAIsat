@@ -16,12 +16,13 @@ Fork synced from upstream via PR #43; outbound PR to rh-ai-quickstart still defe
 
 Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](PLAN.md) Active todos.
 
-| Phase  | MT-ID  | Date       | SHA / PR           | Outcome                                                         |
-| ------ | ------ | ---------- | ------------------ | --------------------------------------------------------------- |
-| W5-P0  | MT-W11 | 2026-07-01 | PR #70 @ `8c44336` | `frontend/Containerfile` → `ubi9/nodejs-20` merged              |
-| W5-P1a | MT-W12 | 2026-07-01 | PR #72 @ `5643256` | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary) |
-| W5-P1c | MT-W14 | 2026-07-01 | PR #73 @ `2984066` | Scorecard 6.0 investigation — expected; waivers + OSV cap       |
-| W5-P1b | MT-W13 | 2026-07-01 | PR #74 pending     | SDD index + CAP/KSRV/DRL specs merged                           |
+| Phase  | MT-ID  | Date       | SHA / PR           | Outcome                                                                                   |
+| ------ | ------ | ---------- | ------------------ | ----------------------------------------------------------------------------------------- |
+| W5-P0  | MT-W11 | 2026-07-01 | PR #70 @ `8c44336` | `frontend/Containerfile` → `ubi9/nodejs-20` merged                                        |
+| W5-P1a | MT-W12 | 2026-07-01 | PR #72 @ `5643256` | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary)                           |
+| W5-P1c | MT-W14 | 2026-07-01 | PR #73 @ `2984066` | Scorecard 6.0 investigation — expected; waivers + OSV cap                                 |
+| W5-P1b | MT-W13 | 2026-07-01 | PR #74 @ `2dd097b` | SDD index + CAP/KSRV/DRL specs merged                                                     |
+| W5-P2  | MT-W1b | 2026-07-01 | docs @ `2dd097b`   | frontend Quay push — manifest `sha256:01ffd782…961a7e`; retention `frontend-pre-20260701` |
 
 ## Phase one-liners (0, 8–11, 12–23)
 
