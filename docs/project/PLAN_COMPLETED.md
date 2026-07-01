@@ -19,7 +19,7 @@ Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](
 | Phase  | MT-ID  | Date       | SHA / PR           | Outcome                                                         |
 | ------ | ------ | ---------- | ------------------ | --------------------------------------------------------------- |
 | W5-P0  | MT-W11 | 2026-07-01 | PR #70 @ `8c44336` | `frontend/Containerfile` → `ubi9/nodejs-20` merged              |
-| W5-P1a | MT-W12 | 2026-07-01 | PR #NN @ `<sha>`   | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary) |
+| W5-P1a | MT-W12 | 2026-07-01 | PR #NN @ `330ba64` | pytest scaffold merged (`tests/`, `make test`, CI smoke-binary) |
 
 ## Phase one-liners (0, 8–11, 12–23)
 
