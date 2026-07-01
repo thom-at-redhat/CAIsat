@@ -92,7 +92,7 @@ The application consists of eight containerized components deployed on OpenShift
 5. **SwinIR Model Server (OpenShift AI)**: ONNX model served via MLServer for 2× resolution enhancement
 6. **YOLOv8-OBB Model Server (OpenShift AI)**: ONNX model served via MLServer for object detection in satellite imagery
 7. **Sentinel2 Model Server (OpenShift AI)**: ONNX model served via MLServer for change detection analysis
-8. **S4 Storage & Data Science Pipelines**: S3-compatible storage with automated change analysis pipeline
+8. **SeaweedFS S3 Storage & Data Science Pipelines**: S3-compatible storage (`weed server` gateway on port 7480) with optional automated change analysis pipeline
 
 Activate satellite view to browse satellite imagery, capture a screenshot, select a 256×256 region of interest, enhance it to 512×512, then detect objects like planes, ships, and vehicles with bounding boxes.
 
@@ -151,13 +151,15 @@ Before `helm install`, confirm the cluster can serve CAIsat workloads:
    # or: oc project caisat
    ```
 
-3. **Storage class** — chart default is `gp3-csi` for S4 PVCs. List classes and override when your cluster uses another default:
+3. **Storage class** — chart default is `gp3-csi` for SeaweedFS PVCs. List classes and override when your cluster uses another default (see [chart/README.md](chart/README.md)):
 
    ```bash
    oc get sc
    helm install caisat ./chart --namespace caisat \
-     --set s4.storage.storageClassName=<your-storage-class>
+     --set seaweedfs.storage.storageClassName=<your-storage-class>
    ```
+
+   SeaweedFS pulls from `docker.io/chrislusf/seaweedfs` by default. Mirror to Quay if your cluster blocks docker.io egress.
 
 4. **Image pull** — fork images are public on Quay; verify egress using the `frontend` tag from [chart/values.yaml](chart/values.yaml):
 
@@ -194,7 +196,7 @@ Before `helm install`, confirm the cluster can serve CAIsat workloads:
 
    **What happens automatically:**
 
-   - S4 storage deploys and seeds with 56 satellite images from NASA GIBS (4 locations × 14 days)
+   - SeaweedFS deploys and (when seed is enabled) populates bucket `satellite-images` with NASA GIBS imagery (4 locations × 14 days)
    - All three AI models deploy: SwinIR, YOLO, Sentinel2
    - Analysis pipeline runs automatically, generating change detection metrics
    - Results appear in the "Monitored Areas" tab
@@ -229,7 +231,7 @@ Before `helm install`, confirm the cluster can serve CAIsat workloads:
    swinir-predictor-xxxxxxxxx-xxxxx              2/2     Running   0          5m
    yolov8m-satelite-predictor-xxxxxxxxx-xxxxx    2/2     Running   0          5m
    sentinel2-predictor-xxxxxxxxx-xxxxx           2/2     Running   0          5m
-   caisat-s4-xxxxxxxxx-xxxxx                     1/1     Running   0          5m
+   caisat-seaweedfs-xxxxxxxxx-xxxxx              1/1     Running   0          5m
    ```
 
 2. **Verify all model servers are ready**:
