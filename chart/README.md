@@ -159,3 +159,20 @@ helm upgrade caisat ./chart -n <namespace> --reuse-values --server-side=false \
 ```
 
 See root [`README.md`](../README.md) for full deployment guide.
+
+## Chart releases
+
+Published `.tgz` artifacts are attached to [GitHub Releases](https://github.com/thom-at-redhat/CAIsat/releases) via the **Publish Helm chart** workflow (`.github/workflows/publish-chart.yml`).
+
+| Trigger | Action |
+| ------- | ------ |
+| Push tag `v*` (e.g. `v0.1.0`) | `helm package chart/` → upload `caisat-<version>.tgz` to the matching release |
+| `workflow_dispatch` | Same packaging path; use a `v*` tag push for Scorecard Packaging checks |
+
+Install from a release artifact:
+
+```bash
+helm upgrade --install caisat ./caisat-0.1.0.tgz -n <namespace> -f values.yaml
+```
+
+**Operator:** create the first `v*` tag after merge when ready to refresh OpenSSF Packaging score (API may lag up to ~7 days).

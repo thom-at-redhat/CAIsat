@@ -566,6 +566,20 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ---
 
+## Phase 26 — Packaging (MT-SC26-PACKAGING)
+
+**MT-ID:** MT-SC26-PACKAGING | **Branch:** `feat/sc-packaging` | **Target:** Packaging **-1 → ≥0**
+
+| Item     | Detail                                                                                                                                                                           |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow | [`.github/workflows/publish-chart.yml`](../../.github/workflows/publish-chart.yml) — `workflow_dispatch` + `v*` tag push; `helm package chart/`; attach `.tgz` to GitHub Release |
+| Docs     | [`chart/README.md`](../../chart/README.md) chart releases section                                                                                                                |
+| Operator | Push first `v*` tag post-merge for Scorecard Packaging refresh                                                                                                                   |
+
+**Score gate:** Packaging ≥0 @ `api.scorecard.dev` within ~7d of first tagged release, or SARIF Packaging check pass. Per-check hygiene only — aggregate **7+** not expected from Phase 26 alone.
+
+---
+
 ## Phase 30 — Maintained re-check (MT-SC30-MAINTAINED)
 
 **Status:** **deferred** (time-gated) | **Earliest gate:** **2026-09-27** (fork created `2026-06-29T15:20:04Z`)
