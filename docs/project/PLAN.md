@@ -4,10 +4,10 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `9f66915` (2026-07-02). **All planned phases (0–23) complete.** Wave 5 **Partial complete** (W5-P0–P5); **Full** blocked on `12-binary` / MT-2 binary.
+**Branch:** `main` @ `1294cc0` (2026-07-02). Phases 0–23 **complete**. Wave 5 **Partial** (canonical); **Full** + RHOAI operator cases **deferred** (MT-TICKET, MT-EA2-\*, MT-2-RETEST, MT-W5-FULL).
 Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; changedetection image + `/health` **pass**; Wave 7 pipeline runAnalysis E2E **pass** (2026-07-01).
 Wave 8 T4 GPU validation **pass** (PR #94 chart @ `032cefa`, PR #96 MT-GPU artifact); Wave 9 cloudtest2 ea.2 **partial pass** (PR #92).
-Wave 10 ecosystem tracks **in progress** (Scorecard 7+, MT-CP-3 assess, Vite spike, L40S/Hopper) — see Wave 10 table below.
+Wave 10 ecosystem tracks **complete** (PRs #97–#102); OpenSSF Phases **26–31** — see tables below.
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
@@ -36,7 +36,7 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Baseline smoke phases   | [`baseline-smoke.md`](../validation/baseline-smoke.md)                           | phases 7/13/14/16                           | ok                    |
 | Quay gate               | [`quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**   | ok                    |
 | Chart image default     | [`values.yaml`](../../chart/values.yaml)                                         | `thom_at_redhat/caisat` (public)            | ok                    |
-| OpenSSF Scorecard       | [scorecard-analysis.yml](../../.github/workflows/scorecard-analysis.yml)         | **6.9** @ `d15eafe` (MT-W14)                | ok                    |
+| OpenSSF Scorecard       | [scorecard-analysis.yml](../../.github/workflows/scorecard-analysis.yml)         | **6.9** @ `1294cc0` (Wave 10)               | ok                    |
 | Scorecard gap plan      | [`scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                        | ok                    |
 | SAST (CodeQL)           | [codeql-analysis.yml](../../.github/workflows/codeql-analysis.yml)               | PR #29; Python + JS; **10/10**              | ok                    |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                               | PR #24; reporting + supported versions      | ok                    |
@@ -59,9 +59,9 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | Wave 5 Partial closure  | [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) W5-P5                                   | MT-R6b — R3a pass + MT-2 evidence + waiver  | ok (W5-P5 Partial)    |
 | MT-GPU cloudtest2       | [`mt-gpu-20260702/report.md`](../validation/artifacts/mt-gpu-20260702/report.md) | MT-3A/3B/4b **pass** @ helm rev 14; PR #96  | ok                    |
 
-**Last verified:** fork `main` @ `9f66915` (2026-07-02); Phase 25 **pass**; Wave 7 E2E **pass** (PR #89);
+**Last verified:** fork `main` @ `1294cc0` (2026-07-02); Phase 25 **pass**; Wave 7 E2E **pass** (PR #89);
 Wave 8 T4 **pass** (PR #94 + #96); Wave 9 cloudtest2 **partial pass** (PR #92); Chart GPU **resolved** @ PR #94;
-Scorecard **6.9** @ `d15eafe`; SAST **10/10**
+Wave 10 **complete**; Scorecard **6.9** @ `1294cc0`; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
@@ -76,18 +76,18 @@ Scorecard **6.9** @ `d15eafe`; SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status          | Next action                                                              |
-| --------- | -------------------- | --------------- | ------------------------------------------------------------------------ |
-| tests     | Pytest scaffold      | **pass**        | W5-P1a merged — `tests/` + `make test`; CI `smoke-binary`                |
-| baseline  | Phase 13 sign-off    | **pass**        | MT-R3a pass — `baseline-smoke.md` L157+; DRL-001 accepted                |
-| binary    | 12-binary / Phase 14 | **waiver**      | JSON pass / binary fail @ 3.4.0; RHOAI ticket — `binary-kserve-v2.md`    |
-| crop      | Phase 16 sign-off    | **pass**        | CPU pass @ `e2a7704`; JSON 256→1024 — `baseline-smoke.md`                |
-| gpu       | Phase 15 deferral    | **pass** (T4)   | T4 pass cloudtest2 PR #94/#96; L40S/Hopper N/A — `gpu-servingruntime.md` |
-| scorecard | Wave 10 optional     | **in progress** | **6.9** @ `d15eafe`; MT-SCORECARD assess — `scorecard-gaps.md`           |
-| upstream  | Outbound PR          | **deferred**    | PR to rh-ai-quickstart deferred; MT-1b + MT-2 recorded                   |
-| ci-split  | MT-CP-3 job split    | **assess**      | MT-CP-3-ASSESS refresh p50 — gate >12 min — `ci-timing.md`               |
-| vite      | CRA → Vite           | **assess**      | MT-VITE-SPIKE — `docs/spikes/vite-migration.md` (planned)                |
-| phase-25  | S4 → SeaweedFS       | **pass**        | PR #85 SeaweedFS; Wave 7 E2E pass PR #88–#89; Phase 25 + Wave 7 summary  |
+| ID        | Track                | Status        | Next action                                                               |
+| --------- | -------------------- | ------------- | ------------------------------------------------------------------------- |
+| tests     | Pytest scaffold      | **pass**      | W5-P1a merged — `tests/` + `make test`; CI `smoke-binary`                 |
+| baseline  | Phase 13 sign-off    | **pass**      | MT-R3a pass — `baseline-smoke.md` L157+; DRL-001 accepted                 |
+| binary    | 12-binary / Phase 14 | **waiver**    | JSON pass / binary fail; RHOAI cases **deferred** — `binary-kserve-v2.md` |
+| crop      | Phase 16 sign-off    | **pass**      | CPU pass @ `e2a7704`; JSON 256→1024 — `baseline-smoke.md`                 |
+| gpu       | Phase 15 deferral    | **pass** (T4) | T4 pass cloudtest2 PR #94/#96; L40S/Hopper N/A — `gpu-servingruntime.md`  |
+| scorecard | Wave 10              | **complete**  | **6.9** @ `1294cc0`; Phases 26–31 — `scorecard-gaps.md`                   |
+| upstream  | Outbound PR          | **deferred**  | PR to rh-ai-quickstart deferred; MT-1b + MT-2 recorded                    |
+| ci-split  | MT-CP-3 job split    | **defer**     | p50 gate OK; split cancelled — `ci-timing.md`                             |
+| vite      | CRA → Vite           | **defer**     | MT-VITE-SPIKE merged; CRA sufficient — `vite-migration.md`                |
+| phase-25  | S4 → SeaweedFS       | **pass**      | PR #85 SeaweedFS; Wave 7 E2E pass PR #88–#89; Phase 25 + Wave 7 summary   |
 
 ---
 
@@ -219,26 +219,47 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | MLServer                | `1.7.1+rhaiv.8` digest `d76bea18…` — **no ea.2 fix** for binary path                                                                                              |
 | Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [cloudtest2 Wave 9 / MT-EA2](../spikes/binary-kserve-v2.md#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01) |
 
-### Wave 10 ecosystem (in progress — 2026-07-02)
+### Wave 10 ecosystem (complete — 2026-07-02)
 
-| Item         | Verdict                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------- |
-| Upstream PR  | ~175 commits / 97 files vs `rh-ai-quickstart/main` — **deferred** (user choice)                                     |
-| Scorecard 7+ | **assess** — aggregate **6.9** @ `d15eafe`; 7+ likely capped by Maintained/Code-Review waivers; MT-SCORECARD-ASSESS |
-| MT-CP-3      | **assess** — p50 pre-commit ≈ 1.2 min; split only if gate >12 min + ruleset `18274842` migration                    |
-| Vite         | **spike** — CRA (`react-scripts` 5); MT-VITE-SPIKE planned                                                          |
-| L40S/Hopper  | **N/A** on current clusters — MT-R4 deferral when no hardware                                                       |
+| Item        | Verdict                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| Upstream PR | ~175 commits / 97 files vs `rh-ai-quickstart/main` — **deferred** (user choice)                              |
+| Scorecard   | **complete** — aggregate **6.9** @ `1294cc0`; MT-SCORECARD-ASSESS closed; Phases 26–31 for per-check hygiene |
+| MT-CP-3     | **defer** — p50 gate OK; split cancelled — `ci-timing.md`                                                    |
+| Vite        | **defer** — MT-VITE-SPIKE (#101); CRA + overrides sufficient                                                 |
+| L40S/Hopper | **N/A** — GPU tier docs merged (#102)                                                                        |
+
+### Phases 26–31 — OpenSSF score improvement
+
+**MT-ID = phase number** (`MT-SC26` … `MT-SC31`). One worktree per phase; serial PLAN writes after Batch 1 merge.
+
+| Phase | MT-ID   | Check target             | Status       | Notes                                                           |
+| ----- | ------- | ------------------------ | ------------ | --------------------------------------------------------------- |
+| 26    | MT-SC26 | Packaging -1 → ≥0        | **planned**  | Helm chart publish workflow + GitHub Release                    |
+| 27    | MT-SC27 | Signed-Releases -1 → ≥0  | **planned**  | Build provenance on release; operator **`v*` tag** post-merge   |
+| 28    | MT-SC28 | Branch-Protection delta  | **planned**  | Rewrite CODEOWNERS; solo fork — **no** ruleset approver PUT     |
+| 29    | MT-SC29 | CII-Best-Practices 2 → ↑ | **planned**  | [bestpractices.dev](https://www.bestpractices.dev/) gap closure |
+| 30    | MT-SC30 | Maintained 0 → 10        | **deferred** | Re-query API after **2026-09-27** (fork created 2026-06-29)     |
+| 31    | MT-SC31 | Fuzzing 0                | **deferred** | OSS-Fuzz spike optional — default defer                         |
+
+### Honest aggregate score expectations
+
+| Milestone                  | Expected outcome                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| Phases 26–29               | Per-check improvements (Packaging, Signed-Releases, CII); aggregate may stay **~6.9** |
+| Phase 30 (post 2026-09-27) | Maintained **0 → 10** — largest aggregate lift                                        |
+| Sustained **7+**           | Phase 30 **plus** Contributors/Code-Review (collaborator or upstream PR)              |
 
 ---
 
 ## Open blockers
 
-| Blocker           | Detail                                                                                                                                                                |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MLServer binary   | **fail** @ 3.4.0 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500; blocks Wave 5 **Full**; RHOAI ticket prep — `binary-kserve-v2.md`               |
-| RHOAI ea.2 Path A | **blocked** — `v3.5.0-ea.2` bundle tag not published on `odh-operator-bundle` (2026-07-01); cloudtest2 **partial pass** @ ea.2 (PR #92); psi-21 unchanged @ **3.4.2** |
-| Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                                       |
-| Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern   |
+| Blocker           | Detail                                                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary   | **fail** @ 3.4.0 — blocks Wave 5 **Full**; RHOAI operator cases **deferred** (user choice 2026-07-02) — `binary-kserve-v2.md`                                       |
+| RHOAI ea.2 Path A | **deferred** — bundle tag blocked 2026-07-01; resume via MT-RHOAI-RESUME when operator proceeds                                                                     |
+| Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                                     |
+| Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern |
 
 ---
 

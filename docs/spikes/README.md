@@ -46,7 +46,7 @@ Decision and follow-up.
 | Spike                    | Doc                                            | Status                                                                                                 |
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | Quay image tags          | [quay-tags.md](quay-tags.md)                   | **pass** (fork mirror); upstream **fail**                                                              |
-| OpenSSF Scorecard gaps   | [scorecard-gaps.md](scorecard-gaps.md)         | **6.9** @ `d15eafe` (MT-W14b); Wave 10 assess in progress                                              |
+| OpenSSF Scorecard gaps   | [scorecard-gaps.md](scorecard-gaps.md)         | **6.9** @ `1294cc0`; assess **complete**; Phases 26–31 in [`PLAN.md`](../project/PLAN.md)              |
 | SwinIR ONNX shapes       | [swinir-onnx.md](swinir-onnx.md)               | **pass** — dynamic H/W; 256→1024 native 4×                                                             |
 | Binary KServe v2         | [binary-kserve-v2.md](binary-kserve-v2.md)     | **fail** @ 3.4.0 + ea.2 — JSON pass / binary HTTP 500; ea.2 retest **done** on cloudtest2 (2026-07-01) |
 | RHOAI GPU ServingRuntime | [gpu-servingruntime.md](gpu-servingruntime.md) | **pass** (T4) @ helm rev 14; L40S/Hopper **N/A** deferred                                              |
