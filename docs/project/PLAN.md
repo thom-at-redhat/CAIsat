@@ -4,8 +4,9 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `6b281b7` (2026-07-01). **All planned phases (0–23) complete.** Wave 5 **Partial complete** (W5-P0–P5); **Full** blocked on `12-binary` / MT-2 binary.
-Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; Wave 7 pipeline runAnalysis E2E **pass** (2026-07-01).
+**Branch:** `main` @ `4bcfb9a` (2026-07-02). **All planned phases (0–23) complete.** Wave 5 **Partial complete** (W5-P0–P5); **Full** blocked on `12-binary` / MT-2 binary.
+Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; changedetection image + `/health` **pass**; Wave 7 pipeline runAnalysis E2E **pass** (2026-07-01).
+Wave 8 T4 GPU validation **pass** (PR #93); Wave 9 cloudtest2 ea.2 **partial pass** (PR #92).
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
 Open operational items below; use feature branches for follow-up; never push `main`.
 
@@ -56,8 +57,8 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | SDD specs index         | [`docs/specs/README.md`](../specs/README.md)                                                 | CAP/KSRV/DRL **accepted** (MT-R3a pass)     | ok (W5-P4)            |
 | Wave 5 Partial closure  | [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) W5-P5                                               | MT-R6b — R3a pass + MT-2 evidence + waiver  | ok (W5-P5 Partial)    |
 
-**Last verified:** fork `main` @ `6b281b7` (2026-07-01); Phase 25 SeaweedFS + pipeline acceptance **pass**; Wave 7 E2E **pass** (PR #89); W5-P5 **Partial** closed; W5-P4 MT-R3a **pass** (PR #83);
-chart PR #82 merged; CI parallelization MT-CP-3 deferred;
+**Last verified:** fork `main` @ `4bcfb9a` (2026-07-02); Phase 25 **pass** (SeaweedFS + changedetection); Wave 7 E2E **pass** (PR #89);
+Wave 8 T4 **pass** (PR #93); Wave 9 cloudtest2 **partial pass** (PR #92); W5-P5 Partial closed; chart GPU hardening **in progress**;
 Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
@@ -73,17 +74,17 @@ Scorecard **6.9** @ `d15eafe` (MT-W14a/b); SAST **10/10**
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                | Status       | Next action                                                                                                       |
-| --------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test` in `make check`; CI `smoke-binary` runs standalone pytest                  |
-| baseline  | Phase 13 sign-off    | **pass**     | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
-| binary    | 12-binary / Phase 14 | **waiver**   | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
-| crop      | Phase 16 sign-off    | **pass**     | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
-| gpu       | Phase 15 deferral    | **partial**  | T4 **pass** on cloud GPU cluster (helm rev 6); L40S/Hopper N/A; single-GPU contention — `gpu-servingruntime.md`   |
-| scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
-| upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
-| ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
-| phase-25  | S4 → SeaweedFS       | **pass**     | PR #85 SeaweedFS; Wave 7 runAnalysis E2E **pass** (PR #88–#89); see Phase 25 + Wave 7 summary                     |
+| ID        | Track                | Status       | Next action                                                                          |
+| --------- | -------------------- | ------------ | ------------------------------------------------------------------------------------ |
+| tests     | Pytest scaffold      | **pass**     | W5-P1a merged — `tests/` + `make test`; CI `smoke-binary`                            |
+| baseline  | Phase 13 sign-off    | **pass**     | MT-R3a pass — `baseline-smoke.md` L157+; DRL-001 accepted                            |
+| binary    | 12-binary / Phase 14 | **waiver**   | JSON pass / binary fail @ 3.4.0; RHOAI ticket — `binary-kserve-v2.md`                |
+| crop      | Phase 16 sign-off    | **pass**     | CPU pass @ `e2a7704`; JSON 256→1024 — `baseline-smoke.md`                            |
+| gpu       | Phase 15 deferral    | **partial**  | T4 pass cloudtest2 PR #93; chart GPU hardening in progress — `gpu-servingruntime.md` |
+| scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 — `scorecard-gaps.md`                                 |
+| upstream  | Outbound PR          | **deferred** | PR to rh-ai-quickstart deferred; MT-1b + MT-2 recorded                               |
+| ci-split  | MT-CP-3 job split    | **deferred** | p50 pre-commit ≈ 1.2 min — `ci-timing.md`                                            |
+| phase-25  | S4 → SeaweedFS       | **pass**     | PR #85 SeaweedFS; Wave 7 E2E pass PR #88–#89; Phase 25 + Wave 7 summary              |
 
 ---
 
@@ -195,22 +196,25 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ### Wave 8 GPU validation (partial — 2026-07-01)
 
-| Field       | Value                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Cluster     | cloud GPU cluster — 1× Tesla T4 (`g4dn.xlarge`); RHOAI **3.5.0-ea.2**; CAIsat helm rev **6** (`t4`, `gpuAvailable=true`)              |
-| CPU tier    | **pass** — psi-21: swinir Ready HTTP 200; JSON infer 52.6 s; `/api/capabilities` max_crop=256                                         |
-| T4 tier     | **pass** — swinir + yolo Ready+infer on GPU node (sequential); caps `gpu_tier=t4`, `max_crop=512`; enhance 256→1024 + detect route OK |
-| L40S/Hopper | **N/A** — no nodes on test cluster                                                                                                    |
-| Ops         | sentinel2 at 0; GPU tolerations + CPU request patches applied (not in chart); single GPU — swinir prioritized for enhance UX          |
-| Doc         | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) — PR `docs/wave8-gpu-cloudtest2`                                           |
+| Field       | Value                                                                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cluster     | cloud GPU cluster — 1× Tesla T4 (`g4dn.xlarge`); RHOAI **3.5.0-ea.2**; CAIsat helm rev **6** (`t4`, `gpuAvailable=true`)                            |
+| CPU tier    | **pass** — psi-21: swinir Ready HTTP 200; JSON infer 52.6 s; `/api/capabilities` max_crop=256                                                       |
+| T4 tier     | **pass** — swinir + yolo Ready+infer on GPU node (sequential); caps `gpu_tier=t4`, `max_crop=512`; enhance 256→1024 + detect route OK               |
+| L40S/Hopper | **N/A** — no nodes on test cluster                                                                                                                  |
+| Ops         | sentinel2 at 0; GPU tolerations + CPU request patches applied (chart GPU hardening **in progress**); single GPU — swinir prioritized for enhance UX |
+| Doc         | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) — PR #93 merged (`docs/wave8-gpu-cloudtest2`)                                            |
 
-### Wave 9 RHOAI ea.2 retry (blocked — 2026-07-01)
+### Wave 9 RHOAI ea.2 retry (partial pass — 2026-07-01)
 
-| Field   | Value                                                                                                       |
-| ------- | ----------------------------------------------------------------------------------------------------------- |
-| Bundle  | `registry.redhat.io/rhoai/rhods-operator-bundle:v3.5.0-ea.2` — **unauthorized** (skopeo + podman auth file) |
-| Cluster | **unchanged** — RHOAI **3.4.2** on `redhat-operators` stable-3.4; helm rev 19 deployed; swinir Running      |
-| Secret  | `rhoai-quay-pull` not created — requires rhoai-scoped robot creds (not CAIsat robot)                        |
+| Field                   | Value                                                                                                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Path A (psi-21 upgrade) | **blocked** — `registry.redhat.io/rhoai/odh-operator-bundle:v3.5.0-ea.2` tag **not published** (skopeo manifest unknown); psi-21 unchanged @ **3.4.2**            |
+| cloudtest2 validation   | **partial pass** — PR #92; RHOAI **3.5.0-ea.2**; CAIsat helm rev **2** (CPU profile; SwinIR + YOLO IS Ready)                                                      |
+| MT-2 @ ea.2             | JSON **pass** (SwinIR 22.9 s, YOLO 1.7 s); binary **fail** HTTP 500 — same `UnicodeDecodeError` as ea.1 / psi-21                                                  |
+| HTTP API                | `/health` **pass**; JSON enhance 256→1024 **pass** (~37 s); detect **pass** with `KSERVE_PREFER_BINARY=false`                                                     |
+| MLServer                | `1.7.1+rhaiv.8` digest `d76bea18…` — **no ea.2 fix** for binary path                                                                                              |
+| Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [cloudtest2 Wave 9 / MT-EA2](../spikes/binary-kserve-v2.md#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01) |
 
 ### Wave 10 ecosystem (assessed — 2026-07-01)
 
@@ -225,11 +229,12 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ## Open blockers
 
-| Blocker         | Detail                                                                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MLServer binary | **fail** @ 3.4.0 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500; blocks Wave 5 **Full**; RHOAI ticket prep — `binary-kserve-v2.md`             |
-| RHOAI ea.2      | **blocked** — bundle unauthorized on `registry.redhat.io` (2026-07-01 Wave 9); cluster on **3.4.2**; upgrade not attempted                                          |
-| Pull secrets    | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern |
+| Blocker           | Detail                                                                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary   | **fail** @ 3.4.0 (2026-07-01): MLServer `1.7.1+rhaiv.8`; JSON pass / binary HTTP 500; blocks Wave 5 **Full**; RHOAI ticket prep — `binary-kserve-v2.md`               |
+| RHOAI ea.2 Path A | **blocked** — `v3.5.0-ea.2` bundle tag not published on `odh-operator-bundle` (2026-07-01); cloudtest2 **partial pass** @ ea.2 (PR #92); psi-21 unchanged @ **3.4.2** |
+| Chart GPU         | **in progress** — tolerations + hybrid resources + `minReplicas` wiring; ops patches on cloudtest2 until merged                                                       |
+| Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created** — see [`chart/README.md`](../../chart/README.md) two-secret pattern   |
 
 ---
 
@@ -308,7 +313,7 @@ The boto3 call surface and bucket name are unchanged; only the pod/service/value
 - [x] `helm template test ./chart` produces no `s4` component references
 - [x] Bucket `satellite-images` created and S3 read/write confirmed (manual `aws-cli` probe; seed Job blocked on missing DS notebook image on `<cluster>`)
 - [x] `DataSciencePipelinesApplication` `externalStorage.host` resolves to SeaweedFS service (live DSPA + SeaweedFS on `<cluster>`; helm template verified in PR #85)
-- [ ] `backend-changedetection` `/health` 200 + S3 R/W — **blocked**: `backend-changedetection` Quay tag missing; S3 validated via aws-cli probe
+- [x] `backend-changedetection` `/health` 200 + S3 R/W — image mirrored to `quay.io/thom_at_redhat/caisat:backend-changedetection`; cluster `/health` verified (Wave 7 ops 2026-07-01)
 - [x] Pipeline run artifact uploads/downloads succeed (SeaweedFS S3 path) — runAnalysis E2E **pass** (workflow `analyze-seed-images-b8hfb`; `metadata/*-stats.json` + `areas.json` on SeaweedFS)
 - [x] Enhance/detect backends unaffected — `/health` 200 both backends; no S3 path in enhance/detect code
 
@@ -321,13 +326,13 @@ The boto3 call surface and bucket name are unchanged; only the pod/service/value
 
 ### Cluster prove-out (2026-07-01, `<cluster>`)
 
-| Check                    | Result      | Evidence                                                                                                                       |
-| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| SeaweedFS pod            | **pass**    | `caisat-seaweedfs` 1/1 Running; helm rev 5 `deployed`                                                                          |
-| PVC                      | **pass**    | `caisat-seaweedfs-storage` Bound, `standard-csi`, 10Gi                                                                         |
-| S3 bucket + R/W          | **pass**    | `aws-cli` probe: `mb s3://satellite-images`, put/get `proveout-test.txt` via `<release>-seaweedfs.<ns>.svc.cluster.local:7480` |
-| Enhance `/health`        | **pass**    | `{"status":"healthy"}`                                                                                                         |
-| Detect `/health`         | **pass**    | `{"status":"healthy"}`                                                                                                         |
-| Seed Job                 | **pass**    | PR #88 — `openshift/python:3.12-ubi9` seed/pipeline image; lean-cluster path validated                                         |
-| Change-detection backend | **blocked** | Image tag `backend-changedetection` not on Quay; push image to validate `/health` + S3 integration                             |
-| DSPA pipeline            | **pass**    | `pipelines.enabled=true`; runAnalysis workflow **Succeeded**; component image via PR #89 `pipelines.analysis.image`            |
+| Check                    | Result   | Evidence                                                                                                                       |
+| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| SeaweedFS pod            | **pass** | `caisat-seaweedfs` 1/1 Running; helm rev 5 `deployed`                                                                          |
+| PVC                      | **pass** | `caisat-seaweedfs-storage` Bound, `standard-csi`, 10Gi                                                                         |
+| S3 bucket + R/W          | **pass** | `aws-cli` probe: `mb s3://satellite-images`, put/get `proveout-test.txt` via `<release>-seaweedfs.<ns>.svc.cluster.local:7480` |
+| Enhance `/health`        | **pass** | `{"status":"healthy"}`                                                                                                         |
+| Detect `/health`         | **pass** | `{"status":"healthy"}`                                                                                                         |
+| Seed Job                 | **pass** | PR #88 — `openshift/python:3.12-ubi9` seed/pipeline image; lean-cluster path validated                                         |
+| Change-detection backend | **pass** | Image mirrored to Quay; cluster `/health` 200 + S3 ok (`s3_connection":"ok"`) — Wave 7 ops rev 6 test                          |
+| DSPA pipeline            | **pass** | `pipelines.enabled=true`; runAnalysis workflow **Succeeded**; component image via PR #89 `pipelines.analysis.image`            |
