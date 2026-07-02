@@ -515,3 +515,51 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 **Checks still capping 7+:** Maintained **0**, Code-Review **0**, Fuzzing **0**, Contributors **3**, Branch-Protection **4** — unchanged solo-fork waivers (MT-W14).
 
 **Verdict:** MT-W14a/b goals met — Pinned-Dependencies **10/10**, Vulnerabilities **10/10**, aggregate **+0.9** vs baseline. Informational (not R3a-gated).
+
+---
+
+## MT-SCORECARD-ASSESS — Wave 10 refresh
+
+**MT-ID:** MT-SCORECARD-ASSESS | **Date:** 2026-07-02 | **Tip SHA:** `9f66915`
+
+**Question:** Can aggregate Scorecard reach **7+** on current fork tip after MT-W14a/b fixes?
+
+**Sources:** `api.scorecard.dev` @ 2026-07-02T14:37:55Z; zero open Dependabot PRs (`gh pr list --author app/dependabot`).
+
+### Current score @ `9f66915`
+
+| Metric              | Score   | vs MT-W14 post-merge         |
+| ------------------- | ------- | ---------------------------- |
+| **Aggregate**       | **6.9** | unchanged                    |
+| Pinned-Dependencies | 10      | unchanged                    |
+| Vulnerabilities     | 10      | unchanged (0 OSV)            |
+| Branch-Protection   | 4       | unchanged                    |
+| Maintained          | 0       | unchanged (fork &lt;90 days) |
+| Code-Review         | 0       | unchanged (0 approvers)      |
+| Fuzzing             | 0       | unchanged                    |
+| Contributors        | 3       | unchanged                    |
+
+### Fixable vs waived gaps
+
+| Check               | Score | Fixable? | Disposition                              |
+| ------------------- | ----- | -------- | ---------------------------------------- |
+| Vulnerabilities     | 10    | —        | **done** (MT-W14b)                       |
+| Pinned-Dependencies | 10    | —        | **done** (MT-W14a)                       |
+| Branch-Protection   | 4     | Partial  | **waived** — approvers blocked solo fork |
+| Maintained          | 0     | No       | **waived** — time-based (&lt;90 days)    |
+| Code-Review         | 0     | No       | **waived** — solo fork                   |
+| Contributors        | 3     | No       | **waived** — single org                  |
+| Fuzzing             | 0     | Defer    | **out of scope** (OSS-Fuzz)              |
+| Packaging           | -1    | Defer    | **out of scope**                         |
+| Signed-Releases     | -1    | Defer    | **out of scope**                         |
+| CII-Best-Practices  | 2     | Defer    | low priority                             |
+
+**Verdict:** **7+ not reachable** without upstream/collaborators and fork maturity. Fixable dependency gaps are closed; remaining caps are documented waivers.
+
+### MT-SCORECARD-FIX
+
+**Scope:** Merge safe Dependabot/OSV patches if trivial open PRs exist.
+
+**Result @ 2026-07-02:** Zero open Dependabot PRs on fork. No trivial patches to merge.
+
+**Disposition:** **defer** — re-check after new Dependabot alerts; no repo changes required for OSV at tip.
