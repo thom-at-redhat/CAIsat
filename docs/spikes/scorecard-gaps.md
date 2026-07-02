@@ -580,6 +580,20 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ---
 
+## Phase 27 — Signed releases (MT-SC27-SIGNED-RELEASES)
+
+**MT-ID:** MT-SC27-SIGNED-RELEASES | **Branch:** `feat/sc-signed-releases` | **Target:** Signed-Releases **-1 → ≥0**
+
+| Item        | Detail                                                                                                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Provenance  | `actions/attest-build-provenance` on packaged `.tgz` in [publish-chart.yml](../../.github/workflows/publish-chart.yml) |
+| Permissions | Job `id-token: write`, `contents: write`, `attestations: write`                                                        |
+| Operator    | **Required:** push a `v*` tag to trigger release + attestation (fork had **0** releases @ 2026-07-02)                  |
+
+**Score gate:** Signed-Releases ≥0 after tagged release + API lag (~7d). Merge alone is insufficient without operator tag.
+
+---
+
 ## Phase 30 — Maintained re-check (MT-SC30-MAINTAINED)
 
 **Status:** **deferred** (time-gated) | **Earliest gate:** **2026-09-27** (fork created `2026-06-29T15:20:04Z`)
