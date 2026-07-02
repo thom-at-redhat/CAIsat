@@ -79,7 +79,7 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 | baseline  | Phase 13 sign-off    | **pass**     | MT-R3a **pass** — 100%/150% layout + box overlay — `baseline-smoke.md` L157+; DRL-001 **accepted**                |
 | binary    | 12-binary / Phase 14 | **waiver**   | JSON pass / binary HTTP 500 @ 3.4.0; Phase 14 JSON fallback active; RHOAI ticket for Full — `binary-kserve-v2.md` |
 | crop      | Phase 16 sign-off    | **pass**     | CPU **pass** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                       |
-| gpu       | Phase 15 deferral    | **waiver**   | MT-3 skipped; T4/L40S/Hopper deferred; re-test 2026-07-31 or GPU clusters — `gpu-servingruntime.md`               |
+| gpu       | Phase 15 deferral    | **partial**  | T4 **pass** on cloud GPU cluster (helm rev 6); L40S/Hopper N/A; single-GPU contention — `gpu-servingruntime.md`   |
 | scorecard | Optional             | **triaged**  | **6.9** @ `d15eafe`; pin 10/10 (W14a); OSV triage done (W14b) — `scorecard-gaps.md`                               |
 | upstream  | Outbound PR          | **deferred** | PR back to `rh-ai-quickstart/CAIsat` deferred; gate MT-1b + MT-2 outcomes recorded (user decision)                |
 | ci-split  | MT-CP-3 job split    | **deferred** | p50 `pre-commit` ≈ 1.2 min; gate > ~12 min — `ci-timing.md`; revisit if CI grows or hooks add weight              |
@@ -91,12 +91,12 @@ All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operationa
 
 Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45) and spike docs. Summary:
 
-| Spike             | Verdict                                    | Artifact                                                   |
-| ----------------- | ------------------------------------------ | ---------------------------------------------------------- |
-| SwinIR ONNX       | **pass** — dynamic H/W; 256→1024 native 4× | [`swinir-onnx.md`](../spikes/swinir-onnx.md)               |
-| Binary KServe v2  | **fail** — JSON OK; binary HTTP 500        | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md)     |
-| RHOAI GPU runtime | **blocked** — CPU pass; GPU tiers deferred | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) |
-| YOLO11-OBB eval   | **skipped** — Phase 17 QA sufficient       | [`yolo11-obb-eval.md`](../spikes/yolo11-obb-eval.md)       |
+| Spike             | Verdict                                                       | Artifact                                                   |
+| ----------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| SwinIR ONNX       | **pass** — dynamic H/W; 256→1024 native 4×                    | [`swinir-onnx.md`](../spikes/swinir-onnx.md)               |
+| Binary KServe v2  | **fail** — JSON OK; binary HTTP 500                           | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md)     |
+| RHOAI GPU runtime | **partial** — CPU pass; T4 pass (sequential); L40S/Hopper N/A | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) |
+| YOLO11-OBB eval   | **skipped** — Phase 17 QA sufficient                          | [`yolo11-obb-eval.md`](../spikes/yolo11-obb-eval.md)       |
 
 ---
 
@@ -130,7 +130,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Binary spike fail | `12-binary` **fail** @ 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; Phase 14 waiver; RHOAI ticket — `binary-kserve-v2.md` |
 | Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); MT-R3a **pass** 2026-07-01 — `baseline-smoke.md` L157+                                 |
 | Crop sign-off     | **pass (CPU)** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                                 |
-| GPU deferral      | MT-3 **skipped**; T4/L40S/Hopper deferred — `gpu-servingruntime.md`                                                           |
+| GPU deferral      | T4 **pass** (cloud GPU cluster, helm rev 6); L40S/Hopper N/A; single-GPU UX contention — `gpu-servingruntime.md`              |
 | Cluster redeploy  | **pass** W5-P3 frontend + helm rev **3** (PR #82 chart); route **200** — `baseline-smoke.md`                                  |
 | MT-R3a layout     | **pass** — Playwright 100%/150%; DRL-001 **accepted** — PR #83; artifacts `mt-r3a-20260701/`                                  |
 | Detect RCA        | HTTP 500 on 1024 detect — missing `KSERVE_PREFER_BINARY=false`; fixed PR #82 @ `7eb9a76`                                      |
@@ -195,12 +195,14 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ### Wave 8 GPU validation (partial — 2026-07-01)
 
-| Field     | Value                                                                                                  |
-| --------- | ------------------------------------------------------------------------------------------------------ |
-| Cluster   | psi-21 CPU only — zero `nvidia.com/gpu` nodes; GPU cluster contexts expired                            |
-| CPU tier  | **pass** — swinir Ready HTTP 200; JSON infer 52.6 s; enhance + detect `/api/capabilities` max_crop=256 |
-| GPU tiers | **deferred** — T4/L40S/Hopper; local helm template + caps defer validated; MT-R4 not run               |
-| Doc       | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) updated on `feature/waves-8-9-10`           |
+| Field       | Value                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Cluster     | cloud GPU cluster — 1× Tesla T4 (`g4dn.xlarge`); RHOAI **3.5.0-ea.2**; CAIsat helm rev **6** (`t4`, `gpuAvailable=true`)              |
+| CPU tier    | **pass** — psi-21: swinir Ready HTTP 200; JSON infer 52.6 s; `/api/capabilities` max_crop=256                                         |
+| T4 tier     | **pass** — swinir + yolo Ready+infer on GPU node (sequential); caps `gpu_tier=t4`, `max_crop=512`; enhance 256→1024 + detect route OK |
+| L40S/Hopper | **N/A** — no nodes on test cluster                                                                                                    |
+| Ops         | sentinel2 at 0; GPU tolerations + CPU request patches applied (not in chart); single GPU — swinir prioritized for enhance UX          |
+| Doc         | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md) — PR `docs/wave8-gpu-cloudtest2`                                           |
 
 ### Wave 9 RHOAI ea.2 retry (blocked — 2026-07-01)
 
