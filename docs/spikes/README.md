@@ -50,6 +50,7 @@ Decision and follow-up.
 | SwinIR ONNX shapes       | [swinir-onnx.md](swinir-onnx.md)               | **pass** — dynamic H/W; 256→1024 native 4×                                                             |
 | Binary KServe v2         | [binary-kserve-v2.md](binary-kserve-v2.md)     | **fail** @ 3.4.0 + ea.2 — JSON pass / binary HTTP 500; ea.2 retest **done** on cloudtest2 (2026-07-01) |
 | RHOAI GPU ServingRuntime | [gpu-servingruntime.md](gpu-servingruntime.md) | **pass** (T4) @ helm rev 14; L40S/Hopper **N/A** deferred                                              |
+| CRA → Vite migration     | [vite-migration.md](vite-migration.md)         | **defer** @ 2026-07-02 — CRA 5 + overrides sufficient; cluster map/globe risk                          |
 | YOLO11-OBB eval          | [yolo11-obb-eval.md](yolo11-obb-eval.md)       | **skipped** — Phase 17 QA sufficient                                                                   |
 
 ---
