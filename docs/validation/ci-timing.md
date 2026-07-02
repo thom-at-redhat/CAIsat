@@ -31,15 +31,31 @@ Use **green runs only** for baseline tables; failed runs skew p95.
 | `smoke-binary` | 2026-06-30     | `3134052` | 0.62            | Optional parallel                                    |
 | `pre-commit`   | 2026-06-30     | `f933c82` | 2.43            | PR #57 GHA hardening merge                           |
 | `smoke-binary` | 2026-06-30     | `f933c82` | 0.82            | First required parallel job on main                  |
+| `pre-commit`   | 2026-07-01     | `6f0f7d4` | 1.05            | Green main @ run 28549776729                         |
+| `smoke-binary` | 2026-07-01     | `6f0f7d4` | 0.48            | Green main @ run 28549776729                         |
+| `pre-commit`   | 2026-07-01     | `f6b50cb` | 0.80            | Green main @ run 28551287950                         |
+| `smoke-binary` | 2026-07-01     | `f6b50cb` | 0.48            | Green main @ run 28551287950                         |
+| `pre-commit`   | 2026-07-01     | `52ee726` | 1.18            | Green main @ run 28553421674                         |
+| `smoke-binary` | 2026-07-01     | `52ee726` | 0.47            | Green main @ run 28553421674                         |
+| `pre-commit`   | 2026-07-02     | `4bcfb9a` | 0.98            | Green main @ run 28561555756                         |
+| `smoke-binary` | 2026-07-02     | `4bcfb9a` | 0.47            | Green main @ run 28561555756                         |
+| `pre-commit`   | 2026-07-02     | `032cefa` | 0.80            | Green main @ run 28591618940                         |
+| `smoke-binary` | 2026-07-02     | `032cefa` | 0.60            | Green main @ run 28591618940                         |
+| `pre-commit`   | 2026-07-02     | `dd90f20` | 1.17            | Green main @ run 28596639278                         |
+| `smoke-binary` | 2026-07-02     | `dd90f20` | 0.68            | Green main @ run 28596639278                         |
+| `pre-commit`   | 2026-07-02     | `9f66915` | 0.98            | Green main @ run 28598453587 (MT-CP-3 assess tip)    |
+| `smoke-binary` | 2026-07-02     | `9f66915` | 0.60            | Green main @ run 28598453587 (MT-CP-3 assess tip)    |
 
-**Status:** 3 of 3 target post–MT-CP-1 merge runs recorded (1 post-merge @ `b07bc93` + 2 pre-merge baselines). Add more rows after MT-CP-2 merge when both jobs are required on every push.
+**Status:** 10 green `main` runs recorded (7 post–MT-CP-4 @ `b48bb55`+). Sufficient for MT-CP-3 gate assessment.
 
 **Aggregates (last N green `main` runs, N ≥ 5 recommended):**
 
 | Job            | N   | p50 (min) | p95 (min) | Last updated |
 | -------------- | --- | --------- | --------- | ------------ |
-| `pre-commit`   | 3   | 1.17      | 2.43      | 2026-06-30   |
-| `smoke-binary` | 3   | 0.68      | 0.82      | 2026-06-30   |
+| `pre-commit`   | 7   | 0.98      | 1.18      | 2026-07-02   |
+| `smoke-binary` | 7   | 0.48      | 0.68      | 2026-07-02   |
+
+_Last-7 subset (2026-07-01–02 runs only; excludes 2026-06-30 baselines). Full table N=10: `pre-commit` p50 ≈ 0.98 min, p95 ≈ 1.18 min._
 
 ---
 
@@ -55,6 +71,10 @@ Use **green runs only** for baseline tables; failed runs skew p95.
 - p50 ≤ ~6 minutes sustained — monolithic `pre-commit` is fast enough; prefer MT-CP-4 perf tweaks or stop.
 
 **Current read (2026-06-30):** p50 `pre-commit` ≈ 1.2 min — **defer MT-CP-3**.
+
+**MT-CP-3-ASSESS refresh (2026-07-02):** Last 7 green `main` runs — `pre-commit` p50 **0.98 min**, p95 **1.18 min**; `smoke-binary` p50 **0.48 min**, p95 **0.68 min**. Both well below 12 min gate.
+
+**MT-CP-3-SPLIT verdict:** **defer** — monolithic `pre-commit` remains fast; split + ruleset `18274842` migration not justified. Re-assess if p50 or p95 exceeds ~12 min sustained over ≥5 runs.
 
 Update this section and [`scorecard-gaps.md`](../spikes/scorecard-gaps.md) when aggregates change a gate decision.
 
