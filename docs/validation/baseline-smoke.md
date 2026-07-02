@@ -85,8 +85,8 @@ Full **baseline** cluster validation is required from Phase 13. Phase 13 merged 
 
 Run on a deployed stack for post-merge cluster sign-off. Record branch SHA and namespace.
 
-1. `oc get pods -n <namespace>` — five pods Running (frontend, both backends, both predictors)
-2. `oc get inferenceservice -n <namespace>` — both Ready
+1. `oc get pods -n <namespace>` — five pods Running (frontend, both backends, both predictors); GPU clusters with a single T4 may need sequential predictor validation — see [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md)
+2. `oc get inferenceservice -n <namespace>` — both Ready (GPU: validate swinir and yolo sequentially on single-GPU nodes — [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md))
 3. Port-forward or Route: `curl -sf https://<backend-route>/health`
 4. Port-forward or Route: `curl -sf https://<detection-backend-route>/health`
 5. Full UI workflow: capture 256×256, enhance, detect — non-empty result and `detections` in API response
