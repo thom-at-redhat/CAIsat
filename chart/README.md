@@ -90,4 +90,35 @@ helm upgrade --install caisat ./chart -n <namespace> \
   --set computeProfile.gpuAvailable=true
 ```
 
+### T4 single-GPU recipe
+
+On clusters with one GPU, run SwinIR and YOLO sequentially by scaling `minReplicas` — only one GPU InferenceService at a time. Use `--reuse-values` on upgrades to preserve existing overrides (pull secrets, storage class, etc.).
+
+```bash
+# Step 1 — SwinIR on GPU; YOLO and Sentinel2 scaled to 0
+helm upgrade caisat ./chart -n <namespace> --reuse-values \
+  --set computeProfile.name=t4 \
+  --set computeProfile.gpuAvailable=true \
+  --set model.resources.requests.cpu=2 \
+  --set model.resources.limits.cpu=4 \
+  --set model.minReplicas=1 \
+  --set detection.minReplicas=0 \
+  --set sentinel2Model.minReplicas=0 \
+  --set pipelines.runAnalysis=false \
+  --set pipelines.enabled=false \
+  --set kserve.preferBinary=false
+
+# Step 2 — YOLO on GPU (after scaling SwinIR down or deleting swinir predictor pod)
+helm upgrade caisat ./chart -n <namespace> --reuse-values \
+  --set model.minReplicas=0 \
+  --set detection.minReplicas=1
+
+# Step 3 — Restore SwinIR for enhance UX
+helm upgrade caisat ./chart -n <namespace> --reuse-values \
+  --set model.minReplicas=1 \
+  --set detection.minReplicas=0
+```
+
+`computeProfile.gpuTolerations` (default: `nvidia.com/gpu` Exists NoSchedule) is applied to SwinIR and YOLO predictors when `gpuAvailable=true`. Tune CPU via `model.resources` / `detection.resources` without losing the conditional GPU request.
+
 See root [`README.md`](../README.md) for full deployment guide.

@@ -48,10 +48,35 @@ app.kubernetes.io/name: {{ include "caisat.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{- define "caisat.gpuResources" -}}
-{{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+{{/*
+Hybrid InferenceService model resources: cpu/memory from values; optional conditional nvidia.com/gpu.
+Pass dict with root, resources, and gpu (bool). Do not blind toYaml on full resources — drops GPU conditional.
+*/}}
+{{- define "caisat.inferenceModelResources" -}}
+{{- $root := index . "root" -}}
+{{- $resources := index . "resources" -}}
+{{- $gpu := index . "gpu" | default false -}}
 limits:
+  cpu: {{ $resources.limits.cpu | quote }}
+  memory: {{ $resources.limits.memory | quote }}
+  {{- if and $gpu (ne $root.Values.computeProfile.name "cpu") $root.Values.computeProfile.gpuAvailable }}
   nvidia.com/gpu: "1"
+  {{- end }}
+requests:
+  cpu: {{ $resources.requests.cpu | quote }}
+  memory: {{ $resources.requests.memory | quote }}
+  {{- if and $gpu (ne $root.Values.computeProfile.name "cpu") $root.Values.computeProfile.gpuAvailable }}
+  nvidia.com/gpu: "1"
+  {{- end }}
+{{- end }}
+
+{{/*
+GPU node tolerations for InferenceService predictors when gpuAvailable is true.
+*/}}
+{{- define "caisat.gpuTolerations" -}}
+{{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
+tolerations:
+{{- toYaml .Values.computeProfile.gpuTolerations | nindent 2 }}
 {{- end }}
 {{- end }}
 
