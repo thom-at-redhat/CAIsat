@@ -608,6 +608,22 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ---
 
+## Phase 29 — CII Best Practices (MT-SC29-CII-BADGE)
+
+**MT-ID:** MT-SC29-CII-BADGE | **Branch:** `feat/sc-cii-badge` | **Target:** CII-Best-Practices **2 → higher**
+
+| Item                                                           | Status         | Notes                                                                    |
+| -------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| [bestpractices.dev](https://www.bestpractices.dev/) enrollment | **InProgress** | README links self-certification; operator completes project registration |
+| SECURITY.md                                                    | **done**       | [`.github/SECURITY.md`](../../.github/SECURITY.md)                       |
+| License                                                        | **done**       | Apache-2.0                                                               |
+| Public CI                                                      | **done**       | pre-commit + smoke-binary + CodeQL + Scorecard workflows                 |
+| README consumer docs                                           | **done**       | Deploy + validation sections                                             |
+
+**Score gate:** CII check increase @ `api.scorecard.dev` after badge progress, or documented remaining gaps. Does not alone unlock aggregate **7+**.
+
+---
+
 ## Phase 30 — Maintained re-check (MT-SC30-MAINTAINED)
 
 **Status:** **deferred** (time-gated) | **Earliest gate:** **2026-09-27** (fork created `2026-06-29T15:20:04Z`)
