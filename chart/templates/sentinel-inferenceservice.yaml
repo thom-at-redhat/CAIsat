@@ -21,19 +21,14 @@ spec:
     deploymentStrategy:
       type: RollingUpdate
     maxReplicas: 1
-    minReplicas: 1
+    minReplicas: {{ .Values.sentinel2Model.minReplicas }}
     model:
       modelFormat:
         name: onnx
         version: '1'
       name: ''
       resources:
-        limits:
-          cpu: '3'
-          memory: 4Gi
-        requests:
-          cpu: '2'
-          memory: 4Gi
+        {{- include "caisat.inferenceModelResources" (dict "root" . "resources" .Values.sentinel2Model.resources "gpu" false) | nindent 8 }}
       runtime: sentinel2-model
       storageUri: 'oci://{{ .Values.sentinel2Model.image.repository }}:{{ .Values.sentinel2Model.image.tag }}'
     timeout: 300

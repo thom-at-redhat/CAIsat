@@ -21,25 +21,15 @@ spec:
     deploymentStrategy:
       type: RollingUpdate
     maxReplicas: 1
-    minReplicas: 1
+    minReplicas: {{ .Values.detection.minReplicas }}
+    {{- include "caisat.gpuTolerations" . | nindent 4 }}
     model:
       modelFormat:
         name: onnx
         version: '1'
       name: ''
       resources:
-        limits:
-          cpu: '4'
-          memory: 6Gi
-          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
-          nvidia.com/gpu: "1"
-          {{- end }}
-        requests:
-          cpu: '2'
-          memory: 4Gi
-          {{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable }}
-          nvidia.com/gpu: "1"
-          {{- end }}
+        {{- include "caisat.inferenceModelResources" (dict "root" . "resources" .Values.detection.resources "gpu" true) | nindent 8 }}
       runtime: yolov8m-satelite
       storageUri: 'oci://{{ .Values.detection.image.repository }}:{{ .Values.detection.image.tag }}'
     timeout: 300
