@@ -1,0 +1,56 @@
+# Package the CAIsat Helm chart and attach the .tgz to a GitHub Release on v* tags or manual dispatch.
+# Assisted by: cursor, claude
+---
+name: Publish Helm chart
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions: read-all
+
+jobs:
+  publish:
+    name: Package and release chart
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            codeload.github.com:443
+            get.helm.sh:443
+            github.com:443
+            uploads.github.com:443
+            *.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+            *.githubapp.com:443
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: v3.16.4
+
+      - name: Package chart
+        run: |
+          helm package chart/
+          ls -la ./*.tgz
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          files: ./*.tgz
+          generate_release_notes: true
