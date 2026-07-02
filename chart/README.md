@@ -121,4 +121,41 @@ helm upgrade caisat ./chart -n <namespace> --reuse-values \
 
 `computeProfile.gpuTolerations` (default: `nvidia.com/gpu` Exists NoSchedule) is applied to SwinIR and YOLO predictors when `gpuAvailable=true`. Tune CPU via `model.resources` / `detection.resources` without losing the conditional GPU request.
 
+#### Operator mitigations (single-GPU clusters)
+
+Validated on cloudtest2 @ helm rev 14 — see [`docs/validation/artifacts/mt-gpu-20260702/report.md`](../docs/validation/artifacts/mt-gpu-20260702/report.md).
+
+1. **`--reuse-values` drops `gpuTolerations`** — chart defaults are not merged on upgrade. Re-apply tolerations explicitly or use `--reset-values` when enabling GPU on an existing release:
+
+   ```bash
+   --set 'computeProfile.gpuTolerations[0].key=nvidia.com/gpu' \
+   --set 'computeProfile.gpuTolerations[0].operator=Exists' \
+   --set 'computeProfile.gpuTolerations[0].effect=NoSchedule'
+   ```
+
+2. **`--server-side=false`** — required when prior manual InferenceService patches caused server-side apply conflicts (helm revs 7–9 failed without it on patched clusters).
+
+3. **Route idle timeout** — enhance infer can exceed ~59 s default Route timeout while backend succeeds in-cluster (~61 s). Use in-cluster curl, port-forward, or increase Route annotation timeout for edge tests.
+
+4. **KServe replica lag** — `minReplicas` changes may lag on single-GPU clusters; brief `oc scale deploy` on the predictor Deployment can unblock GPU scheduling.
+
+Full T4 deploy example (includes mitigations 1–2):
+
+```bash
+helm upgrade caisat ./chart -n <namespace> --reuse-values --server-side=false \
+  --set computeProfile.name=t4 \
+  --set computeProfile.gpuAvailable=true \
+  --set 'computeProfile.gpuTolerations[0].key=nvidia.com/gpu' \
+  --set 'computeProfile.gpuTolerations[0].operator=Exists' \
+  --set 'computeProfile.gpuTolerations[0].effect=NoSchedule' \
+  --set model.resources.requests.cpu=2 \
+  --set model.resources.limits.cpu=4 \
+  --set model.minReplicas=1 \
+  --set detection.minReplicas=0 \
+  --set sentinel2Model.minReplicas=0 \
+  --set pipelines.runAnalysis=false \
+  --set pipelines.enabled=false \
+  --set kserve.preferBinary=false
+```
+
 See root [`README.md`](../README.md) for full deployment guide.
