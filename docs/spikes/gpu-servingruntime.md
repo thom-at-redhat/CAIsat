@@ -74,8 +74,8 @@ detect HTTP 200 time 1.76s — {"detections":[],"count":0,...}
 | ------ | ----- | --------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
 | CPU    | pass  | pass      | pass           | **pass** | psi-21: swinir `/ready` HTTP 200; JSON infer 52.6 s → `[1,3,1024,1024]`; max_crop=256                        |
 | T4     | pass  | pass      | pass           | **pass** | cloudtest2: 1× Tesla T4; chart tolerations + 2 CPU swinir; sequential GPU; caps `max_crop=512` @ helm rev 14 |
-| L40S   | —     | —         | —              | **N/A**  | no L40S nodes on test cluster                                                                                |
-| Hopper | —     | —         | —              | **N/A**  | no Hopper nodes on test cluster                                                                              |
+| L40S   | —     | —         | —              | **N/A**  | MT-R4-L40S defer @ 2026-07-02 — no L40S nodes; cap `max_crop=768` per `capabilities.py`                      |
+| Hopper | —     | —         | —              | **N/A**  | MT-R4-HOPPER defer @ 2026-07-02 — no Hopper nodes; cap `max_crop=1024` per `capabilities.py`                 |
 
 Chart ships `computeProfile.gpuTolerations`, hybrid `*.resources`, and per-IS `minReplicas`. Backends expose `GET /api/capabilities` with deferral caps per plan.
 Set `gpuAvailable=true` only after Ready + infer 200.
@@ -100,3 +100,36 @@ Set `gpuAvailable=true` only after Ready + infer 200.
 MT-R4 (512+ crop Playwright) not run — optional follow-up with swinir on GPU.
 
 **Prior:** Wave 8 pass @ helm rev 6 (2026-07-01, manual patches); psi-21 CPU pass.
+
+---
+
+## MT-R4 — L40S / Hopper tier deferral (2026-07-02)
+
+**MT-IDs:** MT-R4-L40S, MT-R4-HOPPER | **Operator:** hardware-gated | **Clusters:** psi-21, cloudtest2
+
+### Hardware survey
+
+| Cluster    | GPU workers | Products observed | L40S | Hopper |
+| ---------- | ----------- | ----------------- | ---- | ------ |
+| psi-21     | 0           | —                 | N/A  | N/A    |
+| cloudtest2 | 1           | `Tesla-T4` only   | N/A  | N/A    |
+
+No L40S or Hopper nodes available on current test clusters. Operator validation requires hardware access not scheduled for this wave.
+
+### Expected caps (`backend/capabilities.py`)
+
+| Tier   | `max_crop` | `max_tile` | `tiling_enabled` | Status  |
+| ------ | ---------- | ---------- | ---------------- | ------- |
+| l40s   | 768        | 512        | true             | **N/A** |
+| hopper | 1024       | 512        | true             | **N/A** |
+
+Caps are implemented in chart/backends; cluster infer + MT-4b Playwright at 512+ crop deferred until hardware available.
+
+### Verdict
+
+| MT-ID        | Verdict | Rationale                                         |
+| ------------ | ------- | ------------------------------------------------- |
+| MT-R4-L40S   | **N/A** | No L40S nodes; deferral counts as pass per plan   |
+| MT-R4-HOPPER | **N/A** | No Hopper nodes; deferral counts as pass per plan |
+
+**Follow-up:** Re-run when L40S/Hopper workers are provisioned; use `computeProfile.name=l40s|hopper` + `gpuAvailable=true` Helm pattern from T4 section above.
