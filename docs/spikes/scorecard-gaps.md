@@ -594,6 +594,20 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ---
 
+## Phase 28 — Branch protection (MT-SC28-BRANCH-PROT)
+
+**MT-ID:** MT-SC28-BRANCH-PROT | **Branch:** `feat/sc-branch-prot` | **Target:** Document Branch-Protection delta (not aggregate **7+**)
+
+| Item               | Detail                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| CODEOWNERS         | Rewritten to fork owner (see [`.github/CODEOWNERS`](../../.github/CODEOWNERS)); replaces upstream team entry                                   |
+| Ruleset `18274842` | **No PUT** on solo fork — `required_approving_review_count: 1` would block self-merge without raising Scorecard (see MT-CP-2 / L482 precedent) |
+| Second reviewer    | If collaborator added later: snapshot ruleset → `docs/validation/artifacts/ruleset-18274842-pre-sc28.json` before PUT                          |
+
+**Score gate:** Record API Branch-Protection score after merge; success = documented delta, not ≥6.
+
+---
+
 ## Phase 30 — Maintained re-check (MT-SC30-MAINTAINED)
 
 **Status:** **deferred** (time-gated) | **Earliest gate:** **2026-09-27** (fork created `2026-06-29T15:20:04Z`)

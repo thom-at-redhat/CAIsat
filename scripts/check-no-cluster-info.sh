@@ -64,7 +64,7 @@ check_pattern "Personal Quay org reference" \
 PERSONAL_FILTERED=()
 for FILE in "${FILTERED[@]}"; do
     case "${FILE}" in
-        chart/values.yaml|chart/README.md|chart/values-quay-local.yaml.example|docs/spikes/quay-tags.md|docs/project/PLAN.md)
+        .github/CODEOWNERS|chart/values.yaml|chart/README.md|chart/values-quay-local.yaml.example|docs/spikes/quay-tags.md|docs/project/PLAN.md)
             continue
             ;;
         *)
