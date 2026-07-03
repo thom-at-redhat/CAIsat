@@ -368,12 +368,20 @@ Draft manifests: [`manifests/rhoai-ea2-catalogsource.yaml`](manifests/rhoai-ea2-
    [MT-EA2](#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01), so this `CatalogSource` being present and `READY` there is consistent with (and
    plausibly how) that install happened — a mild positive signal that the FBC route is viable. It still must be created fresh on
    `ods-qe-psi-21` for Path A; presence on cloudtest2 does not carry over automatically.
-2. **Operator channel name.** No ea.2-specific channel is documented anywhere in this repo (the only channel on record is `stable-3.4`, per
-   `docs/project/PLAN.md`). The draft `Subscription` uses a `TODO-CONFIRM-CHANNEL` placeholder — check the CatalogSource's Operators tab or
-   `oc get packagemanifest rhods-operator -n openshift-marketplace -o yaml` for the channel that actually resolves `rhods-operator.3.5.0-ea.2`.
+2. **Operator channel name — still unresolved on psi-21.** No ea.2-specific channel is documented anywhere in this repo (the current
+   subscription channel on psi-21 is `beta`, not `stable-3.4` as previously assumed — see
+   [psi-21 apply attempt](#psi-21-apply-attempt-2026-07-03) below). The draft `Subscription` still carries the `TODO-CONFIRM-CHANNEL`
+   placeholder because the `rhoai-ea2-catalog` `CatalogSource` never reached `READY` on psi-21 (see item below) — `packagemanifest` data is
+   only populated from a catalog once its registry pod is serving, so the channel could not be inspected.
 3. **Digest accuracy.** The screenshot's image digest (`sha256:e702d07e...`) reads as likely OCR-corrupted (mixed case in a hex digest, stray
    characters). The draft manifest pins the **tag** (`rhoai-3.5-ea.2`) rather than the digest; re-derive and verify the digest with
-   `skopeo inspect docker://quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2` before treating any specific digest as authoritative.
+   `skopeo inspect docker://quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2` before treating any specific digest as authoritative. **Moot for
+   now** — the tag itself cannot be pulled at all (see below), independent of digest correctness.
+4. **`quay.io/rhoai` pull credential is broken, not absent.** psi-21's cluster-wide pull secret (`openshift-config/pull-secret`) already
+   contains a scoped auth entry for `quay.io/rhoai` (alongside a top-level `quay.io` entry), but Quay rejects it: the robot credential
+   was not found / password did not match. This differs from `chart/README.md`'s "two-secret pattern"
+   assumption that the `rhoai-quay-pull` secret is simply **not created** — on psi-21 an equivalent credential exists but is stale/invalid
+   and needs rotation by whoever owns that robot account, not first-time creation.
 
 ### Apply / verify steps (psi-21, once the above are confirmed)
 
@@ -407,12 +415,63 @@ oc get csv -n redhat-ods-operator | grep rhods
 # expect: rhods-operator.3.5.0-ea.2   3.5.0-ea.2   Succeeded
 ```
 
+### psi-21 apply attempt (2026-07-03)
+
+| Field           | Value                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| Date            | 2026-07-03                                                                                        |
+| Verdict         | **blocked** — `CatalogSource` applied but not `READY`; `Subscription` not attempted               |
+| Cluster/profile | `ods-qe-psi-21`; RHOAI operator unchanged at `rhods-operator.3.4.2` (Succeeded, replaces `3.4.0`) |
+| Blocks          | Wave 9 Path A — cannot resolve ea.2 channel or subscribe without a working catalog pull           |
+
+#### Pre-flight state
+
+| Check                   | Result                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RHOAI operator CSV      | `rhods-operator.3.4.2` — Succeeded (matches expected baseline)                                                                                   |
+| Existing CatalogSources | Only the three defaults (`certified-operators`, `community-operators`, `redhat-operators`); no `rhoai-ea2-catalog` present — safe to apply fresh |
+| Current subscription    | `rhods-operator` — package `rhods-operator`, source `redhat-operators`, channel `beta` (not `stable-3.4` as previously assumed in this repo)     |
+
+#### CatalogSource apply result
+
+```bash
+oc apply -f docs/spikes/manifests/rhoai-ea2-catalogsource.yaml
+# catalogsource.operators.coreos.com/rhoai-ea2-catalog created
+```
+
+Polled `oc get catalogsource rhoai-ea2-catalog -n openshift-marketplace` / pod status over ~65s; state was stable, not transient:
+
+```text
+connectionState.lastObservedState: TRANSIENT_FAILURE
+pod rhoai-ea2-catalog-<id>: 0/1 ErrImagePull / ImagePullBackOff
+
+Failed to pull image "quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2":
+unable to retrieve auth token: invalid username/password: unauthorized:
+Could not find robot with username: <redacted robot credential> and supplied password.
+```
+
+Root cause: the cluster's global pull secret (`openshift-config/pull-secret`) already has a scoped `quay.io/rhoai` auth entry, but Quay
+rejects the credential as invalid (robot not found / bad password). This is a **broken existing credential**, not a missing one — per
+the safety instructions for this task, no attempt was made to create, guess, or rotate credentials.
+
+**What's needed to unblock:** whoever owns the `quay.io/rhoai` robot account needs to verify it still exists and
+rotate/reissue its token, then update the `quay.io/rhoai` entry in `openshift-config/pull-secret` (cluster-wide) — or add a separate
+`rhoai-quay-pull` secret linked to the CatalogSource's service account per the `chart/README.md` "two-secret pattern", with a valid token.
+
+Because the `CatalogSource` never reached `READY`, **steps 4 and 5 (channel resolution and Subscription apply) were not attempted** —
+attempting either would have required guessing a channel name, which the task instructions explicitly prohibit. The `CatalogSource`
+object itself was left applied on the cluster (purely additive; does not affect the running `3.4.2` operator) for whoever picks up the
+credential fix to resume from without re-applying.
+
 ### Verdict
 
-**Not yet attempted.** This is a candidate alternative to the blocked `registry.redhat.io/rhoai/odh-operator-bundle:v3.5.0-ea.2` bundle
-tag, not a confirmed fix — Wave 9 Path A stays **blocked/deferred** (MT-RHOAI-RESUME) until someone (a) applies these manifests on
-`ods-qe-psi-21` (source cluster of the screenshot is now confirmed as `cloudtest2`, item 1 above), and (b) confirms the CSV installs and
-the RHOAI operator actually upgrades in place from 3.4.2. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
+**Blocked on a broken Quay credential, not a confirmed fix.** The `CatalogSource` was applied to `ods-qe-psi-21` on 2026-07-03 but did not
+reach `READY` — image pull for `quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2` fails with `unauthorized` against an existing-but-invalid
+`quay.io/rhoai` robot credential already in the cluster's global pull secret. No `Subscription` was created (channel could not be resolved
+without a working catalog), and **the RHOAI operator on psi-21 remains unchanged at `3.4.2`** — no upgrade was installed, approved, or
+triggered. Wave 9 Path A stays **blocked/deferred** (MT-RHOAI-RESUME) until (a) the `quay.io/rhoai` credential is fixed/rotated, (b) the
+`CatalogSource` reaches `READY` and the real ea.2 channel is confirmed via `packagemanifest`, and (c) a human explicitly approves the
+resulting `InstallPlan`. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
 
 ---
 
@@ -540,3 +599,8 @@ predictors — see [Re-test: cloudtest2 Wave 9 / MT-EA2](#re-test-cloudtest2-wav
 alternative to the blocked `registry.redhat.io` bundle tag for upgrading `ods-qe-psi-21` in place — see
 [Candidate: FBC CatalogSource for Wave 9 Path A](#candidate-fbc-catalogsource-for-wave-9-path-a-2026-07-02). **Unverified**: source cluster of the
 screenshot, operator channel name, and image digest all need confirmation; not yet applied. Path A remains **blocked/deferred**.
+
+**Apply attempt (2026-07-03, psi-21):** `CatalogSource` applied to `ods-qe-psi-21` — did **not** reach `READY`; `quay.io/rhoai/rhoai-fbc-fragment`
+pull fails `unauthorized` against an existing-but-invalid `quay.io/rhoai` robot credential in the cluster's global pull secret — see
+[psi-21 apply attempt](#psi-21-apply-attempt-2026-07-03). Channel not resolved; no `Subscription` applied; RHOAI operator on psi-21 unchanged at
+`3.4.2`. Path A remains **blocked** pending credential rotation.
