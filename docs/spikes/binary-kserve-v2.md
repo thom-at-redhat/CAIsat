@@ -531,6 +531,17 @@ The pending `InstallPlan` (`install-bkwxf`, targeting `rhods-operator.3.5.0-ea.2
 (`status.reason: InstallSucceeded`); InstallPlan phase **Complete**. Subscription `rhods-operator` reports `state: AtLatestKnown`,
 `currentCSV: rhods-operator.3.5.0-ea.2`.
 
+#### Post-upgrade console banner (2026-07-03)
+
+After the operator CSV reached **Succeeded**, the OpenShift console still showed a stale EA warning referencing **3.5 Early Access 1
+(`3.5.0-ea.1`)**. Root cause: cluster-scoped `ConsoleNotification` `rhoai-35-ea1-warning` was manually applied during the earlier ea.1
+install (`kubectl.kubernetes.io/last-applied-configuration` dated 2026-06-18); the ea.2 operator does not reconcile this CR (no
+`ConsoleNotification` in the ea.2 CSV bundle). No other cluster resources (`DSCInitialization`, `DataScienceCluster`, ConfigMaps) retained
+ea.1 text.
+
+Fix: patched `consolenotification.console.openshift.io/rhoai-35-ea1-warning` `spec.text` to reference **3.5 Early Access 2
+(`3.5.0-ea.2`)** (same warning template as ea.1). Console may cache the banner — hard refresh if the old text persists in the browser.
+
 ### Verdict
 
 **Wave 9 Path A operator upgrade complete on psi-21.** After the `quay.io/rhoai` pull secret entry was rotated on 2026-07-03, the
@@ -677,5 +688,6 @@ confirmed to resolve `rhods-operator.3.5.0-ea.2` — see
 [psi-21 credential rotation & retry](#psi-21-credential-rotation--retry-2026-07-03). `Subscription`/`InstallPlan` created (Manual).
 
 **InstallPlan approval & upgrade (2026-07-03, psi-21):** InstallPlan already approved at session start; CSV `rhods-operator.3.5.0-ea.2`
-reached **Succeeded** — see [psi-21 InstallPlan approval & upgrade](#psi-21-installplan-approval--upgrade-2026-07-03). Wave 9 Path A
-operator upgrade **complete**; MT-2 binary retest on psi-21 still pending.
+reached **Succeeded** — see [psi-21 InstallPlan approval & upgrade](#psi-21-installplan-approval--upgrade-2026-07-03). Stale ea.1 console
+banner corrected same day (`ConsoleNotification` `rhoai-35-ea1-warning` patched to ea.2 text). Wave 9 Path A operator upgrade
+**complete**; MT-2 binary retest on psi-21 still pending.

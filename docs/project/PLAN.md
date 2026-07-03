@@ -212,7 +212,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 | Field                   | Value                                                                                                                                                             |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Path A (psi-21 upgrade) | **pass** — FBC `CatalogSource` `rhoai-ea2-catalog`; channel `beta` → `rhods-operator.3.5.0-ea.2`; InstallPlan approved 2026-07-03; CSV **Succeeded**              |
+| Path A (psi-21 upgrade) | **pass** — FBC `rhoai-ea2-catalog`; `beta` → `rhods-operator.3.5.0-ea.2`; InstallPlan approved 2026-07-03; CSV **Succeeded**; console banner patched (ea.1→ea.2)  |
 | cloudtest2 validation   | **partial pass** — PR #92; RHOAI **3.5.0-ea.2**; CAIsat helm rev **2** (CPU profile; SwinIR + YOLO IS Ready)                                                      |
 | MT-2 @ ea.2             | JSON **pass** (SwinIR 22.9 s, YOLO 1.7 s); binary **fail** HTTP 500 — same `UnicodeDecodeError` as ea.1 / psi-21 (cloudtest2 only; psi-21 retest pending)         |
 | HTTP API                | `/health` **pass**; JSON enhance 256→1024 **pass** (~37 s); detect **pass** with `KSERVE_PREFER_BINARY=false`                                                     |
