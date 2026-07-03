@@ -218,7 +218,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | HTTP API                | `/health` **pass**; JSON enhance 256→1024 **pass** (~37 s); detect **pass** with `KSERVE_PREFER_BINARY=false`                                                     |
 | MLServer                | `1.7.1+rhaiv.8` digest `d76bea18…` — **no ea.2 fix** for binary path                                                                                              |
 | Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [cloudtest2 Wave 9 / MT-EA2](../spikes/binary-kserve-v2.md#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01) |
-| Path A candidate        | **blocked** — FBC catalog applied to psi-21 2026-07-03; not `READY` (invalid `quay.io/rhoai` credential); channel/Subscription not attempted                      |
+| Path A candidate        | **staged** — psi-21 catalog `READY` (2026-07-03); channel `beta` → ea.2 CSV; InstallPlan created, **not approved**; operator unchanged @ `3.4.2`                  |
 
 ### Wave 10 ecosystem (complete — 2026-07-02)
 
@@ -255,12 +255,12 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ## Open blockers
 
-| Blocker           | Detail                                                                                                                                                        |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MLServer binary   | **fail** @ 3.4.0 — blocks Wave 5 **Full**; RHOAI operator cases **deferred** (user choice 2026-07-02) — `binary-kserve-v2.md`                                 |
-| RHOAI ea.2 Path A | **blocked** — CatalogSource applied to psi-21 2026-07-03, not `READY`; invalid `quay.io/rhoai` credential; operator unchanged @ `3.4.2` — MT-RHOAI-RESUME     |
-| Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                               |
-| Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created**; psi-21's `quay.io/rhoai` credential **invalid** (2026-07-03) |
+| Blocker           | Detail                                                                                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MLServer binary   | **fail** @ 3.4.0 — blocks Wave 5 **Full**; RHOAI operator cases **deferred** (user choice 2026-07-02) — `binary-kserve-v2.md`                                           |
+| RHOAI ea.2 Path A | **staged** — credential rotated 2026-07-03; CatalogSource `READY`; channel `beta` → ea.2 CSV; InstallPlan **not approved**; unchanged @ `3.4.2` — MT-RHOAI-RESUME       |
+| Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                                         |
+| Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created**; psi-21's `quay.io/rhoai` credential **rotated & working** (2026-07-03) |
 
 ---
 

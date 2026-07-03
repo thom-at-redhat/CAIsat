@@ -463,15 +463,69 @@ attempting either would have required guessing a channel name, which the task in
 object itself was left applied on the cluster (purely additive; does not affect the running `3.4.2` operator) for whoever picks up the
 credential fix to resume from without re-applying.
 
+### psi-21 credential rotation & retry (2026-07-03)
+
+| Field           | Value                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Date            | 2026-07-03                                                                                                                 |
+| Verdict         | **pass (catalog)** — `CatalogSource` now `READY`; channel resolved; `Subscription`/`InstallPlan` created, **not approved** |
+| Cluster/profile | `ods-qe-psi-21`; RHOAI operator unchanged at `rhods-operator.3.4.2` (installed CSV — no upgrade applied)                   |
+| Blocks          | Wave 9 Path A now unblocked through InstallPlan creation; final upgrade decision is a manual, separate step                |
+
+The `quay.io/rhoai` pull secret entry was rotated by the credential owner and applied to the cluster's global pull secret
+(`openshift-config/pull-secret`) — only that one scoped auth entry was updated; every other registry entry in the secret was left
+byte-for-byte unchanged, verified before and after the edit. The raw credential value was never written to any file in this repository
+and only existed transiently in `/tmp` during the update, which was securely shredded immediately after `oc set data` applied it.
+
+After rotation, the two stuck `rhoai-ea2-catalog` pods (`ImagePullBackOff`) were deleted to force a fresh pull attempt. The replacement pod
+reached `1/1 Running` and the `CatalogSource` reached `connectionState.lastObservedState: READY` within about a minute.
+
+#### Channel resolution
+
+```bash
+oc get packagemanifest -n openshift-marketplace -o json | \
+  jq '.items[] | select(.metadata.name=="rhods-operator" and .status.catalogSource=="rhoai-ea2-catalog") | .status.channels[] | {name, currentCSV}'
+```
+
+Channel **`beta`** resolves to `currentCSV: rhods-operator.3.5.0-ea.2` on the `rhoai-ea2-catalog` source — an exact match for the
+`startingCSV` already pinned in the draft `Subscription` manifest. (This catalog's `defaultChannel` is `stable-3.x`, which stays on the
+3.4.x line — `beta` is the channel that carries ea.2, consistent with the existing on-cluster subscription already being on `beta`.)
+[`docs/spikes/manifests/rhoai-ea2-subscription.yaml`](manifests/rhoai-ea2-subscription.yaml) was updated to replace the
+`TODO-CONFIRM-CHANNEL` placeholder with `beta`.
+
+#### Subscription / InstallPlan apply result
+
+```bash
+oc apply -f docs/spikes/manifests/rhoai-ea2-subscription.yaml
+# subscription.operators.coreos.com/rhods-operator configured
+```
+
+**Important:** psi-21 already had a live `Subscription` named `rhods-operator` in `redhat-ods-operator` (previously `source:
+redhat-operators`, `channel: beta`, tracking the installed `3.4.2` CSV). Because the draft manifest uses that same name/namespace, this
+`apply` **reconfigured that existing Subscription in place** (changing `.spec.source` to `rhoai-ea2-catalog`) rather than creating an
+independent, additive object — there is exactly one `rhods-operator` Subscription on the cluster, now pointed at the ea.2 catalog.
+
+Resulting state:
+
+| Object       | Value                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| Subscription | `rhods-operator` — `source: rhoai-ea2-catalog`, `channel: beta`, `installPlanApproval: Manual`         |
+| Status       | `state: UpgradePending`; `installedCSV: rhods-operator.3.4.2`; `currentCSV: rhods-operator.3.5.0-ea.2` |
+| Condition    | `InstallPlanPending: True`, `reason: RequiresApproval`                                                 |
+| InstallPlan  | new plan for `rhods-operator.3.5.0-ea.2` — `APPROVAL: Manual`, `APPROVED: false`                       |
+
+No CSV install or upgrade was triggered — the operator's installed CSV remains `rhods-operator.3.4.2`, and the new InstallPlan sits
+unapproved pending an explicit human decision.
+
 ### Verdict
 
-**Blocked on a broken Quay credential, not a confirmed fix.** The `CatalogSource` was applied to `ods-qe-psi-21` on 2026-07-03 but did not
-reach `READY` — image pull for `quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2` fails with `unauthorized` against an existing-but-invalid
-`quay.io/rhoai` robot credential already in the cluster's global pull secret. No `Subscription` was created (channel could not be resolved
-without a working catalog), and **the RHOAI operator on psi-21 remains unchanged at `3.4.2`** — no upgrade was installed, approved, or
-triggered. Wave 9 Path A stays **blocked/deferred** (MT-RHOAI-RESUME) until (a) the `quay.io/rhoai` credential is fixed/rotated, (b) the
-`CatalogSource` reaches `READY` and the real ea.2 channel is confirmed via `packagemanifest`, and (c) a human explicitly approves the
-resulting `InstallPlan`. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
+**Catalog and channel resolution now confirmed; upgrade path is staged but not executed.** After the `quay.io/rhoai` pull secret entry
+was rotated on 2026-07-03, the `rhoai-ea2-catalog` `CatalogSource` reached `READY` on `ods-qe-psi-21`, and `packagemanifest` data confirmed
+channel `beta` resolves to `rhods-operator.3.5.0-ea.2`. The draft `Subscription` manifest (channel placeholder filled in) was applied,
+which reconfigured the existing `rhods-operator` Subscription to source from `rhoai-ea2-catalog` and produced an unapproved `InstallPlan`
+targeting `rhods-operator.3.5.0-ea.2`. **The RHOAI operator on psi-21 remains unchanged at `3.4.2`** — no upgrade was installed, approved,
+or triggered; that decision is left to a human. Wave 9 Path A is **staged/ready for a manual upgrade decision** (MT-RHOAI-RESUME).
+Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
 
 ---
 
@@ -604,3 +658,8 @@ screenshot, operator channel name, and image digest all need confirmation; not y
 pull fails `unauthorized` against an existing-but-invalid `quay.io/rhoai` robot credential in the cluster's global pull secret — see
 [psi-21 apply attempt](#psi-21-apply-attempt-2026-07-03). Channel not resolved; no `Subscription` applied; RHOAI operator on psi-21 unchanged at
 `3.4.2`. Path A remains **blocked** pending credential rotation.
+
+**Credential rotation & retry (2026-07-03, psi-21):** `quay.io/rhoai` pull secret entry rotated; `CatalogSource` reached `READY`; channel `beta`
+confirmed to resolve `rhods-operator.3.5.0-ea.2` — see
+[psi-21 credential rotation & retry](#psi-21-credential-rotation--retry-2026-07-03). `Subscription`/`InstallPlan` created (Manual, **not
+approved**); RHOAI operator on psi-21 still unchanged at `3.4.2`. Path A **staged**, awaiting a manual InstallPlan approval decision.
