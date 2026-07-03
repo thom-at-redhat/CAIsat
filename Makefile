@@ -1,7 +1,7 @@
 # CAIsat developer convenience targets
 # Assisted by: cursor, claude
 
-.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test
+.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test fuzz-kserve-binary
 
 pre-commit:
 	SKIP=no-commit-to-branch pre-commit run --all-files
@@ -39,3 +39,14 @@ test:
 
 scorecard-local:
 	bash scripts/scorecard-local.sh
+
+# Local Atheris spike for decode_kserve_binary (~45s default; override FUZZ_TIME / FUZZ_RUNS).
+fuzz-kserve-binary:
+	@PY="python3.12"; command -v "$${PY}" >/dev/null 2>&1 || PY="python3"; \
+	"$${PY}" -m pip install -q atheris numpy -r backend/requirements.txt; \
+	FUZZ_TIME="$${FUZZ_TIME:-45}"; FUZZ_RUNS="$${FUZZ_RUNS:-}"; \
+	if [ -n "$${FUZZ_RUNS}" ]; then \
+		"$${PY}" .clusterfuzzlite/fuzz_kserve_binary_fuzzer.py -runs="$${FUZZ_RUNS}"; \
+	else \
+		"$${PY}" .clusterfuzzlite/fuzz_kserve_binary_fuzzer.py -max_total_time="$${FUZZ_TIME}"; \
+	fi
