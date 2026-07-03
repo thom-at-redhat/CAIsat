@@ -279,8 +279,9 @@ CAIsat stack healthy on ods-qe-psi-21 (Helm rev 3). Binary failure is unchanged 
 
 **Path A upgrade candidate (2026-07-02):** A candidate FBC `CatalogSource` (`rhoai-ea2-catalog`) was identified as a possible alternative
 route to upgrade this cluster's RHOAI operator from 3.4.2 in place — see
-[Candidate: FBC CatalogSource for Wave 9 Path A](#candidate-fbc-catalogsource-for-wave-9-path-a-2026-07-02). Unconfirmed whether the
-screenshot it was sourced from is even from this cluster; not yet applied here.
+[Candidate: FBC CatalogSource for Wave 9 Path A](#candidate-fbc-catalogsource-for-wave-9-path-a-2026-07-02). The screenshot it was sourced
+from is confirmed to be from `cloudtest2` (2026-07-03), **not** this cluster — the `CatalogSource`/`Subscription` still need to be created
+fresh on `ods-qe-psi-21` before Path A can be attempted here.
 
 ---
 
@@ -363,9 +364,10 @@ Draft manifests: [`manifests/rhoai-ea2-catalogsource.yaml`](manifests/rhoai-ea2-
 
 ### Open questions (must confirm before relying on this path)
 
-1. **Which cluster was the screenshot taken on?** Not yet confirmed — could be `ods-qe-psi-21`, `cloudtest2`, or another cluster. If it's
-   `cloudtest2` (which already runs RHOAI 3.5.0-ea.2 per [MT-EA2](#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01)), this `CatalogSource` may
-   already exist there and would still need to be created fresh on `ods-qe-psi-21` for Path A.
+1. ~~**Which cluster was the screenshot taken on?**~~ **Confirmed 2026-07-03: `cloudtest2`.** That cluster already runs RHOAI 3.5.0-ea.2 per
+   [MT-EA2](#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01), so this `CatalogSource` being present and `READY` there is consistent with (and
+   plausibly how) that install happened — a mild positive signal that the FBC route is viable. It still must be created fresh on
+   `ods-qe-psi-21` for Path A; presence on cloudtest2 does not carry over automatically.
 2. **Operator channel name.** No ea.2-specific channel is documented anywhere in this repo (the only channel on record is `stable-3.4`, per
    `docs/project/PLAN.md`). The draft `Subscription` uses a `TODO-CONFIRM-CHANNEL` placeholder — check the CatalogSource's Operators tab or
    `oc get packagemanifest rhods-operator -n openshift-marketplace -o yaml` for the channel that actually resolves `rhods-operator.3.5.0-ea.2`.
@@ -408,9 +410,9 @@ oc get csv -n redhat-ods-operator | grep rhods
 ### Verdict
 
 **Not yet attempted.** This is a candidate alternative to the blocked `registry.redhat.io/rhoai/odh-operator-bundle:v3.5.0-ea.2` bundle
-tag, not a confirmed fix — Wave 9 Path A stays **blocked/deferred** (MT-RHOAI-RESUME) until someone (a) confirms which cluster the
-screenshot came from, (b) applies these manifests on `ods-qe-psi-21`, and (c) confirms the CSV installs and the RHOAI operator actually
-upgrades in place from 3.4.2. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
+tag, not a confirmed fix — Wave 9 Path A stays **blocked/deferred** (MT-RHOAI-RESUME) until someone (a) applies these manifests on
+`ods-qe-psi-21` (source cluster of the screenshot is now confirmed as `cloudtest2`, item 1 above), and (b) confirms the CSV installs and
+the RHOAI operator actually upgrades in place from 3.4.2. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
 
 ---
 
