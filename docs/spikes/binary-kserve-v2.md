@@ -343,7 +343,7 @@ blocked on bundle tag publish; **validation path** on cloudtest2 is **partial pa
 
 ## Candidate: FBC CatalogSource for Wave 9 Path A (2026-07-02)
 
-**Status: unverified candidate — do not treat as resolving Wave 9 Path A.**
+**Status: verified on psi-21 (2026-07-03) — operator upgrade complete; MT-2 binary retest pending.**
 
 An OpenShift console "CatalogSource details" screenshot surfaced a File-Based Catalog (FBC) fragment that may be a different
 distribution path from the previously-blocked `registry.redhat.io/rhoai/odh-operator-bundle:v3.5.0-ea.2` tag:
@@ -517,15 +517,28 @@ Resulting state:
 No CSV install or upgrade was triggered — the operator's installed CSV remains `rhods-operator.3.4.2`, and the new InstallPlan sits
 unapproved pending an explicit human decision.
 
+### psi-21 InstallPlan approval & upgrade (2026-07-03)
+
+| Field           | Value                                                                                                            |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Date            | 2026-07-03                                                                                                       |
+| Verdict         | **pass (operator upgrade)** — InstallPlan approved; CSV `rhods-operator.3.5.0-ea.2` **Succeeded**                |
+| Cluster/profile | `ods-qe-psi-21`; RHOAI operator upgraded from `3.4.2` → `3.5.0-ea.2` via FBC `CatalogSource` `rhoai-ea2-catalog` |
+| Blocks          | Wave 9 Path A operator upgrade **complete**; MT-2 binary retest on psi-21 still pending                          |
+
+The pending `InstallPlan` (`install-bkwxf`, targeting `rhods-operator.3.5.0-ea.2`) was already approved when checked on 2026-07-03
+(`spec.approved: true`; `APPROVAL: Manual`). No patch was required. After approval, OLM installed the ea.2 CSV to **Succeeded**
+(`status.reason: InstallSucceeded`); InstallPlan phase **Complete**. Subscription `rhods-operator` reports `state: AtLatestKnown`,
+`currentCSV: rhods-operator.3.5.0-ea.2`.
+
 ### Verdict
 
-**Catalog and channel resolution now confirmed; upgrade path is staged but not executed.** After the `quay.io/rhoai` pull secret entry
-was rotated on 2026-07-03, the `rhoai-ea2-catalog` `CatalogSource` reached `READY` on `ods-qe-psi-21`, and `packagemanifest` data confirmed
-channel `beta` resolves to `rhods-operator.3.5.0-ea.2`. The draft `Subscription` manifest (channel placeholder filled in) was applied,
-which reconfigured the existing `rhods-operator` Subscription to source from `rhoai-ea2-catalog` and produced an unapproved `InstallPlan`
-targeting `rhods-operator.3.5.0-ea.2`. **The RHOAI operator on psi-21 remains unchanged at `3.4.2`** — no upgrade was installed, approved,
-or triggered; that decision is left to a human. Wave 9 Path A is **staged/ready for a manual upgrade decision** (MT-RHOAI-RESUME).
-Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md) Wave 9 / Open blockers.
+**Wave 9 Path A operator upgrade complete on psi-21.** After the `quay.io/rhoai` pull secret entry was rotated on 2026-07-03, the
+`rhoai-ea2-catalog` `CatalogSource` reached `READY`, channel `beta` resolved to `rhods-operator.3.5.0-ea.2`, and the existing
+`rhods-operator` Subscription was reconfigured to source from `rhoai-ea2-catalog`. The resulting InstallPlan was approved (already
+approved at session start) and OLM installed `rhods-operator.3.5.0-ea.2` to **Succeeded**. Wave 9 Path A is **resolved** for the
+operator upgrade; MT-2 binary infer retest on psi-21 @ ea.2 remains the next step. Cross-ref: [`docs/project/PLAN.md`](../project/PLAN.md)
+Wave 9 / Open blockers.
 
 ---
 
@@ -651,8 +664,8 @@ predictors — see [Re-test: cloudtest2 Wave 9 / MT-EA2](#re-test-cloudtest2-wav
 
 **Candidate (2026-07-02, Wave 9 Path A):** FBC `CatalogSource` `rhoai-ea2-catalog` (`quay.io/rhoai/rhoai-fbc-fragment`) identified as a possible
 alternative to the blocked `registry.redhat.io` bundle tag for upgrading `ods-qe-psi-21` in place — see
-[Candidate: FBC CatalogSource for Wave 9 Path A](#candidate-fbc-catalogsource-for-wave-9-path-a-2026-07-02). **Unverified**: source cluster of the
-screenshot, operator channel name, and image digest all need confirmation; not yet applied. Path A remains **blocked/deferred**.
+[Candidate: FBC CatalogSource for Wave 9 Path A](#candidate-fbc-catalogsource-for-wave-9-path-a-2026-07-02). **Verified 2026-07-03:** operator
+upgrade to `3.5.0-ea.2` **complete** on psi-21; MT-2 binary retest pending.
 
 **Apply attempt (2026-07-03, psi-21):** `CatalogSource` applied to `ods-qe-psi-21` — did **not** reach `READY`; `quay.io/rhoai/rhoai-fbc-fragment`
 pull fails `unauthorized` against an existing-but-invalid `quay.io/rhoai` robot credential in the cluster's global pull secret — see
@@ -661,5 +674,8 @@ pull fails `unauthorized` against an existing-but-invalid `quay.io/rhoai` robot 
 
 **Credential rotation & retry (2026-07-03, psi-21):** `quay.io/rhoai` pull secret entry rotated; `CatalogSource` reached `READY`; channel `beta`
 confirmed to resolve `rhods-operator.3.5.0-ea.2` — see
-[psi-21 credential rotation & retry](#psi-21-credential-rotation--retry-2026-07-03). `Subscription`/`InstallPlan` created (Manual, **not
-approved**); RHOAI operator on psi-21 still unchanged at `3.4.2`. Path A **staged**, awaiting a manual InstallPlan approval decision.
+[psi-21 credential rotation & retry](#psi-21-credential-rotation--retry-2026-07-03). `Subscription`/`InstallPlan` created (Manual).
+
+**InstallPlan approval & upgrade (2026-07-03, psi-21):** InstallPlan already approved at session start; CSV `rhods-operator.3.5.0-ea.2`
+reached **Succeeded** — see [psi-21 InstallPlan approval & upgrade](#psi-21-installplan-approval--upgrade-2026-07-03). Wave 9 Path A
+operator upgrade **complete**; MT-2 binary retest on psi-21 still pending.

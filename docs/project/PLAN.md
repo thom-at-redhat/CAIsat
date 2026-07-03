@@ -6,10 +6,10 @@
 
 **Branch:** `main` @ `1294cc0` (2026-07-02). Phases 0–23 **complete**. Wave 5 **Partial** (canonical); **Full** + RHOAI operator cases **deferred** (MT-TICKET, MT-EA2-\*, MT-2-RETEST, MT-W5-FULL).
 Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; changedetection image + `/health` **pass**; Wave 7 pipeline runAnalysis E2E **pass** (2026-07-01).
-Wave 8 T4 GPU validation **pass** (PR #94 chart @ `032cefa`, PR #96 MT-GPU artifact); Wave 9 cloudtest2 ea.2 **partial pass** (PR #92).
+Wave 8 T4 GPU validation **pass** (PR #94 chart @ `032cefa`, PR #96 MT-GPU artifact); Wave 9 ea.2 **partial pass** (cloudtest2 PR #92; psi-21 Path A operator upgrade **pass** 2026-07-03).
 Wave 10 ecosystem tracks **complete** (PRs #97–#102); OpenSSF Phases **26–31** — see tables below.
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
-Open operational items below; use feature branches for follow-up; never push `main`.
+Open operational items below; use feature branches for follow-up; never push `main`. Wave 9 Path A (psi-21 → `3.5.0-ea.2`) **unblocked** — MT-2 binary retest on psi-21 still pending.
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -60,8 +60,8 @@ Open operational items below; use feature branches for follow-up; never push `ma
 | MT-GPU cloudtest2       | [`mt-gpu-20260702/report.md`](../validation/artifacts/mt-gpu-20260702/report.md) | MT-3A/3B/4b **pass** @ helm rev 14; PR #96  | ok                    |
 
 **Last verified:** fork `main` @ `1294cc0` (2026-07-02); Phase 25 **pass**; Wave 7 E2E **pass** (PR #89);
-Wave 8 T4 **pass** (PR #94 + #96); Wave 9 cloudtest2 **partial pass** (PR #92); Chart GPU **resolved** @ PR #94;
-Wave 10 **complete**; Scorecard **6.9** @ `1294cc0`; SAST **10/10**
+Wave 8 T4 **pass** (PR #94 + #96); Wave 9 cloudtest2 **partial pass** (PR #92); psi-21 Path A operator upgrade **pass** (2026-07-03);
+Chart GPU **resolved** @ PR #94; Wave 10 **complete**; Scorecard **6.9** @ `1294cc0`; SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
@@ -208,17 +208,17 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Ops         | Chart GPU tolerations + minReplicas @ PR #94; operator mitigations in [`chart/README.md`](../../chart/README.md); single-GPU sequential pattern              |
 | Doc         | [`gpu-servingruntime.md`](../spikes/gpu-servingruntime.md); artifact [`mt-gpu-20260702/report.md`](../validation/artifacts/mt-gpu-20260702/report.md) PR #96 |
 
-### Wave 9 RHOAI ea.2 retry (partial pass — 2026-07-01)
+### Wave 9 RHOAI ea.2 retry (partial pass — 2026-07-01; Path A complete 2026-07-03)
 
 | Field                   | Value                                                                                                                                                             |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Path A (psi-21 upgrade) | **blocked** — `registry.redhat.io/rhoai/odh-operator-bundle:v3.5.0-ea.2` tag **not published** (skopeo manifest unknown); psi-21 unchanged @ **3.4.2**            |
+| Path A (psi-21 upgrade) | **pass** — FBC `CatalogSource` `rhoai-ea2-catalog`; channel `beta` → `rhods-operator.3.5.0-ea.2`; InstallPlan approved 2026-07-03; CSV **Succeeded**              |
 | cloudtest2 validation   | **partial pass** — PR #92; RHOAI **3.5.0-ea.2**; CAIsat helm rev **2** (CPU profile; SwinIR + YOLO IS Ready)                                                      |
-| MT-2 @ ea.2             | JSON **pass** (SwinIR 22.9 s, YOLO 1.7 s); binary **fail** HTTP 500 — same `UnicodeDecodeError` as ea.1 / psi-21                                                  |
+| MT-2 @ ea.2             | JSON **pass** (SwinIR 22.9 s, YOLO 1.7 s); binary **fail** HTTP 500 — same `UnicodeDecodeError` as ea.1 / psi-21 (cloudtest2 only; psi-21 retest pending)         |
 | HTTP API                | `/health` **pass**; JSON enhance 256→1024 **pass** (~37 s); detect **pass** with `KSERVE_PREFER_BINARY=false`                                                     |
 | MLServer                | `1.7.1+rhaiv.8` digest `d76bea18…` — **no ea.2 fix** for binary path                                                                                              |
 | Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [cloudtest2 Wave 9 / MT-EA2](../spikes/binary-kserve-v2.md#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01) |
-| Path A candidate        | **staged** — psi-21 catalog `READY` (2026-07-03); channel `beta` → ea.2 CSV; InstallPlan created, **not approved**; operator unchanged @ `3.4.2`                  |
+| Path A candidate        | **complete** — psi-21 operator @ `3.5.0-ea.2` (2026-07-03); MT-2 binary retest on psi-21 still pending                                                            |
 
 ### Wave 10 ecosystem (complete — 2026-07-02)
 
@@ -258,7 +258,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Blocker           | Detail                                                                                                                                                                  |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | MLServer binary   | **fail** @ 3.4.0 — blocks Wave 5 **Full**; RHOAI operator cases **deferred** (user choice 2026-07-02) — `binary-kserve-v2.md`                                           |
-| RHOAI ea.2 Path A | **staged** — credential rotated 2026-07-03; CatalogSource `READY`; channel `beta` → ea.2 CSV; InstallPlan **not approved**; unchanged @ `3.4.2` — MT-RHOAI-RESUME       |
+| RHOAI ea.2 Path A | **resolved** — psi-21 operator @ `3.5.0-ea.2` (CSV Succeeded 2026-07-03); MT-2 binary retest on psi-21 still pending — `binary-kserve-v2.md`                            |
 | Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                                         |
 | Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created**; psi-21's `quay.io/rhoai` credential **rotated & working** (2026-07-03) |
 
