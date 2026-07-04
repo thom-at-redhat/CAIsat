@@ -5,16 +5,17 @@
 from __future__ import annotations
 
 import json
+import math
+import struct
 import sys
 
 import atheris
-import numpy as np
 
 
-def decode_kserve_binary(body: bytes, header_length: int) -> np.ndarray:
-    """Decode the first binary output tensor from an octet-stream response.
+def decode_kserve_binary(body: bytes, header_length: int) -> None:
+    """Validate decode of the first binary output tensor (logic mirrors backend/kserve_v2.py).
 
-    Keep in sync with backend/kserve_v2.py::decode_kserve_binary (PyInstaller cannot load that module at runtime).
+    Uses struct instead of numpy so PyInstaller bundles reliably in ClusterFuzzLite.
     """
     meta = json.loads(body[:header_length].decode("utf-8"))
     if not isinstance(meta, dict):
@@ -28,7 +29,15 @@ def decode_kserve_binary(body: bytes, header_length: int) -> np.ndarray:
     offset = int(output_meta.get("parameters", {}).get("binary_data_offset", header_length))
     size = int(output_meta["parameters"]["binary_data_size"])
     shape = output_meta["shape"]
-    return np.frombuffer(body[offset : offset + size], dtype=np.float32).reshape(shape)
+    chunk = body[offset : offset + size]
+    if len(chunk) != size:
+        raise ValueError("binary payload shorter than declared size")
+    if size % 4 != 0:
+        raise ValueError("binary payload size must be a multiple of four")
+    count = size // 4
+    struct.unpack(f"<{count}f", chunk)
+    if shape is not None and math.prod(shape) != count:
+        raise ValueError("tensor shape does not match payload size")
 
 
 def TestOneInput(data: bytes) -> None:
@@ -37,7 +46,7 @@ def TestOneInput(data: bytes) -> None:
     body = fdp.ConsumeBytes(fdp.remaining_bytes())
     try:
         decode_kserve_binary(body, header_length)
-    except (json.JSONDecodeError, KeyError, ValueError):
+    except (json.JSONDecodeError, KeyError, ValueError, struct.error, OverflowError, UnicodeDecodeError):
         pass
 
 
