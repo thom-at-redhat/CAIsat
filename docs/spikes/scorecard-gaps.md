@@ -34,19 +34,19 @@ Waived checks (Maintained, Contributors, CII-Best-Practices, Fuzzing, Packaging,
 
 ## Check inventory
 
-| Check               | Score | Actionable? | Target / waiver                                             | Addressed by          |
-| ------------------- | ----- | ----------- | ----------------------------------------------------------- | --------------------- |
-| SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)        |
-| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**           |
-| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10** (done)   |
-| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11** (done)   |
-| Packaging           | -1    | Maybe       | Release/publish workflow (lower priority)                   | Deferred              |
-| Signed-Releases     | -1    | Maybe       | GitHub releases with provenance (lower priority)            | Deferred              |
-| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (waiver) |
-| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                   | **Phase 8** (doc)     |
-| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                          | **Phase 8** (doc)     |
-| Fuzzing             | 0     | Defer       | OSS-Fuzz out of scope for now                               | —                     |
-| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                         | —                     |
+| Check               | Score | Actionable? | Target / waiver                                             | Addressed by           |
+| ------------------- | ----- | ----------- | ----------------------------------------------------------- | ---------------------- |
+| SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)         |
+| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**            |
+| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10** (done)    |
+| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11** (done)    |
+| Packaging           | -1    | Maybe       | Helm publish workflow + GitHub Release                      | **Phase 26** (MT-SC26) |
+| Signed-Releases     | -1    | Maybe       | Tagged release + build provenance                           | **Phase 27** (MT-SC27) |
+| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (waiver)  |
+| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                   | **Phase 8** (doc)      |
+| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                          | **Phase 8** (doc)      |
+| Fuzzing             | 0     | Defer       | OSS-Fuzz out of scope for now                               | —                      |
+| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                         | **Phase 29** (MT-SC29) |
 
 ---
 
@@ -515,3 +515,127 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 **Checks still capping 7+:** Maintained **0**, Code-Review **0**, Fuzzing **0**, Contributors **3**, Branch-Protection **4** — unchanged solo-fork waivers (MT-W14).
 
 **Verdict:** MT-W14a/b goals met — Pinned-Dependencies **10/10**, Vulnerabilities **10/10**, aggregate **+0.9** vs baseline. Informational (not R3a-gated).
+
+---
+
+## MT-SCORECARD-ASSESS — Wave 10 refresh
+
+**MT-ID:** MT-SCORECARD-ASSESS | **Date:** 2026-07-02 | **Tip SHA:** `1294cc0` (closed)
+
+**Question:** Can aggregate Scorecard reach **7+** on current fork tip after MT-W14a/b fixes?
+
+**Sources:** `api.scorecard.dev` @ 2026-07-02T14:37:55Z; zero open Dependabot PRs (`gh pr list --author app/dependabot`).
+
+### Current score @ `1294cc0` (closed)
+
+| Metric              | Score   | vs MT-W14 post-merge         |
+| ------------------- | ------- | ---------------------------- |
+| **Aggregate**       | **6.9** | unchanged                    |
+| Pinned-Dependencies | 10      | unchanged                    |
+| Vulnerabilities     | 10      | unchanged (0 OSV)            |
+| Branch-Protection   | 4       | unchanged                    |
+| Maintained          | 0       | unchanged (fork &lt;90 days) |
+| Code-Review         | 0       | unchanged (0 approvers)      |
+| Fuzzing             | 0       | unchanged                    |
+| Contributors        | 3       | unchanged                    |
+
+### Fixable vs waived gaps
+
+| Check               | Score | Fixable? | Disposition                              |
+| ------------------- | ----- | -------- | ---------------------------------------- |
+| Vulnerabilities     | 10    | —        | **done** (MT-W14b)                       |
+| Pinned-Dependencies | 10    | —        | **done** (MT-W14a)                       |
+| Branch-Protection   | 4     | Partial  | **waived** — approvers blocked solo fork |
+| Maintained          | 0     | No       | **waived** — time-based (&lt;90 days)    |
+| Code-Review         | 0     | No       | **waived** — solo fork                   |
+| Contributors        | 3     | No       | **waived** — single org                  |
+| Fuzzing             | 0     | Defer    | **out of scope** (OSS-Fuzz)              |
+| Packaging           | -1    | Yes      | **Phase 26** (MT-SC26-PACKAGING)         |
+| Signed-Releases     | -1    | Yes      | **Phase 27** (MT-SC27-SIGNED-RELEASES)   |
+| CII-Best-Practices  | 2     | Partial  | **Phase 29** (MT-SC29-CII-BADGE)         |
+
+**Verdict:** **7+ not reachable** without upstream/collaborators, fork maturity (Phase 30), and per-check Phases 26–29 hygiene. Fixable dependency gaps are closed; **MT-SCORECARD-ASSESS closed** @ `1294cc0`.
+
+### MT-SCORECARD-FIX
+
+**Scope:** Merge safe Dependabot/OSV patches if trivial open PRs exist.
+
+**Result @ 2026-07-02:** Zero open Dependabot PRs on fork. No trivial patches to merge.
+
+**Disposition:** **defer** — re-check after new Dependabot alerts; no repo changes required for OSV at tip.
+
+---
+
+## Phase 26 — Packaging (MT-SC26-PACKAGING)
+
+**MT-ID:** MT-SC26-PACKAGING | **Branch:** `feat/sc-packaging` | **Target:** Packaging **-1 → ≥0**
+
+| Item     | Detail                                                                                                                                                                           |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow | [`.github/workflows/publish-chart.yml`](../../.github/workflows/publish-chart.yml) — `workflow_dispatch` + `v*` tag push; `helm package chart/`; attach `.tgz` to GitHub Release |
+| Docs     | [`chart/README.md`](../../chart/README.md) chart releases section                                                                                                                |
+| Operator | Push first `v*` tag post-merge for Scorecard Packaging refresh                                                                                                                   |
+
+**Score gate:** Packaging ≥0 @ `api.scorecard.dev` within ~7d of first tagged release, or SARIF Packaging check pass. Per-check hygiene only — aggregate **7+** not expected from Phase 26 alone.
+
+---
+
+## Phase 27 — Signed releases (MT-SC27-SIGNED-RELEASES)
+
+**MT-ID:** MT-SC27-SIGNED-RELEASES | **Branch:** `feat/sc-signed-releases` | **Target:** Signed-Releases **-1 → ≥0**
+
+| Item        | Detail                                                                                                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Provenance  | `actions/attest-build-provenance` on packaged `.tgz` in [publish-chart.yml](../../.github/workflows/publish-chart.yml) |
+| Permissions | Job `id-token: write`, `contents: write`, `attestations: write`                                                        |
+| Operator    | **Required:** push a `v*` tag to trigger release + attestation (fork had **0** releases @ 2026-07-02)                  |
+
+**Score gate:** Signed-Releases ≥0 after tagged release + API lag (~7d). Merge alone is insufficient without operator tag.
+
+---
+
+## Phase 28 — Branch protection (MT-SC28-BRANCH-PROT)
+
+**MT-ID:** MT-SC28-BRANCH-PROT | **Branch:** `feat/sc-branch-prot` | **Target:** Document Branch-Protection delta (not aggregate **7+**)
+
+| Item               | Detail                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| CODEOWNERS         | Rewritten to fork owner (see [`.github/CODEOWNERS`](../../.github/CODEOWNERS)); replaces upstream team entry                                   |
+| Ruleset `18274842` | **No PUT** on solo fork — `required_approving_review_count: 1` would block self-merge without raising Scorecard (see MT-CP-2 / L482 precedent) |
+| Second reviewer    | If collaborator added later: snapshot ruleset → `docs/validation/artifacts/ruleset-18274842-pre-sc28.json` before PUT                          |
+
+**Score gate:** Record API Branch-Protection score after merge; success = documented delta, not ≥6.
+
+---
+
+## Phase 29 — CII Best Practices (MT-SC29-CII-BADGE)
+
+**MT-ID:** MT-SC29-CII-BADGE | **Branch:** `feat/sc-cii-badge` | **Target:** CII-Best-Practices **2 → higher**
+
+| Item                                                           | Status         | Notes                                                                    |
+| -------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| [bestpractices.dev](https://www.bestpractices.dev/) enrollment | **InProgress** | README links self-certification; operator completes project registration |
+| SECURITY.md                                                    | **done**       | [`.github/SECURITY.md`](../../.github/SECURITY.md)                       |
+| License                                                        | **done**       | Apache-2.0                                                               |
+| Public CI                                                      | **done**       | pre-commit + smoke-binary + CodeQL + Scorecard workflows                 |
+| README consumer docs                                           | **done**       | Deploy + validation sections                                             |
+
+**Score gate:** CII check increase @ `api.scorecard.dev` after badge progress, or documented remaining gaps. Does not alone unlock aggregate **7+**.
+
+---
+
+## Phase 30 — Maintained re-check (MT-SC30-MAINTAINED)
+
+**Status:** **deferred** (time-gated) | **Earliest gate:** **2026-09-27** (fork created `2026-06-29T15:20:04Z`)
+
+**Operator:** Re-query `api.scorecard.dev` after gate date; update this file and [`PLAN.md`](../project/PLAN.md).
+
+**Target:** Maintained **0 → 10** when fork age exceeds 90 days with sustained commits.
+
+---
+
+## Phase 31 — Fuzzing (MT-SC31-FUZZING)
+
+**Status:** **deferred** — OSS-Fuzz harness spike only if operator requests.
+
+**Note:** Fuzzing **0** blocks sustained aggregate **7+**; out of default scope for post-MT closure.
