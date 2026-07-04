@@ -4,35 +4,31 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
-from pathlib import Path
 
 import atheris
+import numpy as np
 
 
-def _repo_root() -> Path:
-    root = Path(__file__).resolve().parent.parent
-    if (root / "backend" / "kserve_v2.py").is_file():
-        return root
-    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-        return Path(sys._MEIPASS)
-    return root
+def decode_kserve_binary(body: bytes, header_length: int) -> np.ndarray:
+    """Decode the first binary output tensor from an octet-stream response.
 
-
-def _import_decode_kserve_binary():
-    """Load decode_kserve_binary from backend/kserve_v2.py (same path as tests/conftest.py)."""
-    path = _repo_root() / "backend" / "kserve_v2.py"
-    spec = importlib.util.spec_from_file_location("caisat_backend_kserve_v2_fuzz", path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Cannot load kserve_v2 from {path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.decode_kserve_binary
-
-
-decode_kserve_binary = _import_decode_kserve_binary()
+    Keep in sync with backend/kserve_v2.py::decode_kserve_binary (PyInstaller cannot load that module at runtime).
+    """
+    meta = json.loads(body[:header_length].decode("utf-8"))
+    if not isinstance(meta, dict):
+        raise ValueError("KServe binary header must be a JSON object")
+    outputs = meta.get("outputs")
+    if not isinstance(outputs, list) or not outputs:
+        raise ValueError("KServe binary header must contain a non-empty outputs array")
+    output_meta = outputs[0]
+    if not isinstance(output_meta, dict):
+        raise ValueError("KServe binary output metadata must be a JSON object")
+    offset = int(output_meta.get("parameters", {}).get("binary_data_offset", header_length))
+    size = int(output_meta["parameters"]["binary_data_size"])
+    shape = output_meta["shape"]
+    return np.frombuffer(body[offset : offset + size], dtype=np.float32).reshape(shape)
 
 
 def TestOneInput(data: bytes) -> None:
