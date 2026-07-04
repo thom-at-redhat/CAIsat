@@ -1,5 +1,5 @@
 #!/bin/bash
-# ClusterFuzzLite build stub for future Phase 31 CI (local spike uses Makefile target).
+# ClusterFuzzLite build for decode_kserve_binary (MT-SC31-CFL).
 # Assisted by: cursor, claude
 
 set -o errexit -o nounset -o pipefail

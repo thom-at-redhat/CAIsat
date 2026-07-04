@@ -636,6 +636,15 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ## Phase 31 — Fuzzing (MT-SC31-FUZZING)
 
-**Status:** **deferred** — OSS-Fuzz harness spike only if operator requests.
+**Status:** **partial** — local Atheris spike + hardening merged/stacked; ClusterFuzzLite CI in MT-SC31-CFL.
 
-**Note:** Fuzzing **0** blocks sustained aggregate **7+**; out of default scope for post-MT closure.
+| MT-ID           | Item                                                             | Status / PR                                                                      |
+| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| MT-SC31-FUZZING | Local Atheris harness (`make fuzz-kserve-binary`)                | **done** — spike @ `0619ad6`; see [`fuzzing-harnesses.md`](fuzzing-harnesses.md) |
+| MT-SC31-HARDEN  | `decode_kserve_binary` header validation                         | **done** — PR stacked base for CFL                                               |
+| MT-SC31-CFL     | `.github/workflows/clusterfuzzlite.yml`                          | **in flight** — PR mode `code-change` 180 s; batch 600 s                         |
+| MT-SC31-CFL     | `.clusterfuzzlite/` (project.yaml, Dockerfile, build.sh, fuzzer) | **done** @ tip + `project.yaml` in CFL PR                                        |
+
+**CI posture:** `step-security/harden-runner` with `egress-policy: audit` (not block) until ClusterFuzzLite egress is catalogued.
+
+**Note:** Fuzzing **0** blocks sustained aggregate **7+**; CFL workflow targets OpenSSF Scorecard Fuzzed check once green on `main`.
