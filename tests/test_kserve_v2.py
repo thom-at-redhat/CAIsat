@@ -54,6 +54,27 @@ def test_encode_kserve_binary_body_size(kserve_v2, sample_tensor: np.ndarray) ->
     assert int(headers["Content-Length"]) == len(body)
 
 
+@pytest.mark.parametrize(
+    "body,header_length",
+    [
+        (b"0", 1),
+        (b"[]", 2),
+        (b'{"outputs": 0}', 14),
+        (b'{"outputs": []}', 15),
+        (b'{"outputs": [0]}', 16),
+    ],
+    ids=["scalar", "array", "outputs-not-list", "outputs-empty", "output-not-object"],
+)
+def test_decode_kserve_binary_rejects_non_object_header(
+    kserve_v2,
+    body: bytes,
+    header_length: int,
+) -> None:
+    """Malformed binary headers raise ValueError (MT-SC31-HARDEN; fuzz spike Finding 1)."""
+    with pytest.raises(ValueError, match="KServe binary"):
+        kserve_v2.decode_kserve_binary(body, header_length)
+
+
 def test_decode_kserve_binary_roundtrip(kserve_v2, sample_tensor: np.ndarray) -> None:
     """Round-trip binary response body (baseline-smoke L66 overclaim fix — risk #12)."""
     tensor_bytes = sample_tensor.astype(np.float32).tobytes(order="C")
