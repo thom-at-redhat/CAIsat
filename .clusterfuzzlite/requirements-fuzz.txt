@@ -2,4 +2,4 @@
 # Assisted by: cursor, claude
 
 -r ../backend/requirements.txt
-atheris==3.1.0
+atheris==3.0.0
