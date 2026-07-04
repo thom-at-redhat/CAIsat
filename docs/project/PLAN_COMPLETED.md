@@ -31,6 +31,19 @@ Post–phase-23 operational follow-up (Wave 5 multitask). Detail in [`PLAN.md`](
 | W5-P5            | MT-R6b  | 2026-07-01 | PR #84 @ `b851c13`                           | **Partial** — Wave 5 CPU path closed; Phase 14 binary waiver; Full blocked on MT-2 binary             |
 | Phase 25         | —       | 2026-07-01 | PR #85 @ `79283f0`; pipeline E2E @ `6b281b7` | S4 → SeaweedFS **pass**; runAnalysis pipeline E2E **pass** (PR #88–#89); changedetection tag optional |
 
+## OpenSSF Phases 26–31 (score improvement)
+
+Post–Wave 10 per-check hygiene. Operational score gates (Batch 3a/3b) and Phase 30 time gate in [`PLAN.md`](PLAN.md).
+
+| Phase | MT-ID   | Date       | SHA / PR                       | Outcome                                                          |
+| ----- | ------- | ---------- | ------------------------------ | ---------------------------------------------------------------- |
+| 26    | MT-SC26 | 2026-07-03 | PR #104 @ `1544dde`            | Helm chart publish workflow (`publish-chart.yml`)                |
+| 27    | MT-SC27 | 2026-07-03 | PR #105 @ `89fc890`            | Build provenance on packaged chart release                       |
+| 28    | MT-SC28 | 2026-07-03 | PR #106 @ `f25490b`            | CODEOWNERS rewrite; solo-fork Branch-Protection delta documented |
+| 29    | MT-SC29 | 2026-07-03 | PR #107 @ `d4ada24`            | CII Best Practices — bestpractices.dev InProgress                |
+| 31    | MT-SC31 | 2026-07-04 | PRs #108, #114–116 @ `31606a8` | Atheris fuzz spike + header hardening + ClusterFuzzLite CI green |
+| 30    | MT-SC30 | —          | deferred @ **2026-09-27**      | Maintained re-check — fork age gate (created 2026-06-29)         |
+
 ## Phase one-liners (0, 8–11, 12–23)
 
 | Phase  | Goal                                                                                                 |

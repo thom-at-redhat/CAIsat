@@ -2,14 +2,13 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field           | Value                                                               |
-| --------------- | ------------------------------------------------------------------- |
-| Date            | 2026-07-03                                                          |
-| Verdict         | **pass** — local harness runs; Finding 1 hardened in MT-SC31-HARDEN |
-| Cluster/profile | N/A (local-only spike; ClusterFuzzLite CI in MT-SC31-CFL follow-up) |
-| Follow-up       | Wire ClusterFuzzLite GitHub Actions (MT-SC31-CFL)                   |
+| Field           | Value                                                                            |
+| --------------- | -------------------------------------------------------------------------------- |
+| Date            | 2026-07-04                                                                       |
+| Verdict         | **pass** — local harness + ClusterFuzzLite CI green @ `31606a8`                  |
+| Cluster/profile | N/A (local spike); CFL workflow PRs #115–116 merged — PR mode 180 s; batch 600 s |
 
-**MT-ID:** MT-SC31-FUZZING-spike | **Tip SHA:** `d4ada24`
+**MT-ID:** MT-SC31-FUZZING-spike | **Tip SHA:** `31606a8`
 
 ---
 
@@ -97,11 +96,11 @@ Test coverage: `test_decode_kserve_binary_rejects_non_object_header` in `tests/t
 | Atheris + `FuzzedDataProvider` runs locally      | **Yes**                                                 |
 | `decode_kserve_binary` imported via backend path | **Yes**                                                 |
 | Crashes / unexpected exceptions in 10 k runs     | **0** after MT-SC31-HARDEN (`TypeError` → `ValueError`) |
-| ClusterFuzzLite CI workflow added                | **No** (MT-SC31-CFL follow-up)                          |
+| ClusterFuzzLite CI workflow added                | **Yes** — PRs #115–116 @ `31606a8`; CFL CI green        |
 | `make check` on branch                           | **pass** (pre-commit + helm + pytest)                   |
 
 ---
 
 ## Recommendation
 
-**proceed_ci** — Harness is viable for ClusterFuzzLite: wire `.clusterfuzzlite/build.sh` + Dockerfile into GitHub Actions (MT-SC31-CFL). Hardening landed in MT-SC31-HARDEN.
+**complete** — ClusterFuzzLite wired via PRs #115–116; hardening in PR #114. Scorecard Fuzzing check re-query in Batch 3a.
