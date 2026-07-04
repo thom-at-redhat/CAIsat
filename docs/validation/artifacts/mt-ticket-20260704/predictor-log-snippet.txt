@@ -1,0 +1,17 @@
+# Reference predictor log snippets (from spike re-tests 2026-06-30 / 2026-07-01)
+# NOT a fresh capture — operator should attach current logs from a binary infer attempt.
+# Source: docs/spikes/binary-kserve-v2.md (SwinIR and YOLOv8-OBB sections)
+
+## SwinIR (swinir-predictor, kserve-container)
+
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 196: invalid start byte
+  (FastAPI validation handler while parsing application/octet-stream body)
+
+## YOLOv8-OBB (yolov8m-satelite-predictor, kserve-container)
+
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfb in position 128: invalid start byte
+  (FastAPI validation handler while parsing application/octet-stream body)
+
+## HTTP response (both predictors, binary infer)
+
+BINARY FAIL 500 b'Internal Server Error'
