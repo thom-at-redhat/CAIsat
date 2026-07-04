@@ -1,0 +1,5 @@
+# Fuzz harness dependencies (ClusterFuzzLite image stub).
+# Assisted by: cursor, claude
+
+-r ../backend/requirements.txt
+atheris==3.1.0
