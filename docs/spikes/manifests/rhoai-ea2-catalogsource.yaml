@@ -1,0 +1,29 @@
+# Assisted by: cursor, claude
+#
+# Candidate FBC (File-Based Catalog) CatalogSource for Wave 9 RHOAI ea.2 retry, Path A.
+# Draft only — NOT applied to any cluster by this commit. See docs/spikes/binary-kserve-v2.md
+# ("Candidate: FBC CatalogSource for Wave 9 Path A") for context, apply steps, and verification.
+#
+# Provenance: observed via OpenShift console "CatalogSource details" screenshot (2026-07-02),
+# confirmed 2026-07-03 to be from the `cloudtest2` cluster, NOT ods-qe-psi-21. Do not assume
+# this CatalogSource already exists on psi-21 — check
+# `oc get catalogsource rhoai-ea2-catalog -n openshift-marketplace` there before applying.
+#
+# Image reference uses the tag (not a pinned digest): the digest shown in the screenshot had
+# likely OCR artifacts (mixed-case/garbled hex, e.g. "e702d07e...l...aebd6f...a0Ie9a87c") and could
+# not be independently verified via skopeo/web lookup in this environment. Re-derive the digest
+# with `skopeo inspect docker://quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2` before pinning it.
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: rhoai-ea2-catalog
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  # TODO(confirm-digest): pin with @sha256:<digest> once verified via skopeo; tag used for now.
+  image: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5-ea.2
+  displayName: RHOAI 3.5 EA.2
+  publisher: Red Hat
+  updateStrategy:
+    registryPoll:
+      interval: 10m

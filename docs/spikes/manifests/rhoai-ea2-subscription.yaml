@@ -1,0 +1,32 @@
+# Assisted by: cursor, claude
+#
+# Candidate Subscription pairing with rhoai-ea2-catalogsource.yaml for Wave 9 RHOAI ea.2 retry,
+# Path A. Draft only — NOT applied to any cluster by this commit. See
+# docs/spikes/binary-kserve-v2.md ("Candidate: FBC CatalogSource for Wave 9 Path A") for context,
+# apply steps, and verification.
+#
+# Namespace `redhat-ods-operator` and package name `rhods-operator` are taken from the operator
+# CSV format already observed in this repo's ea.2 re-tests (see "Platform verification" under
+# "Re-test: RHOAI 3.5.ea.2" in binary-kserve-v2.md: `oc get csv -n redhat-ods-operator | grep rhods`
+# -> `rhods-operator.3.5.0-ea.2   3.5.0-ea.2   Succeeded`).
+#
+# Channel confirmed 2026-07-03 via `oc get packagemanifest -n openshift-marketplace -o json | jq`
+# filtered to `.status.catalogSource=="rhoai-ea2-catalog"`: channel `beta` resolves to
+# `currentCSV: rhods-operator.3.5.0-ea.2` (matches this catalog's `defaultChannel: stable-3.x`,
+# which stays on the 3.4.x line — `beta` is the correct ea.2 channel). This also matches the
+# existing on-cluster Subscription's channel (`beta`), confirmed during the psi-21 apply attempt.
+#
+# installPlanApproval is set to Manual (not Automatic) because this is a pre-GA/ea catalog —
+# review the resolved InstallPlan/CSV before it installs.
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhods-operator
+  namespace: redhat-ods-operator
+spec:
+  name: rhods-operator
+  source: rhoai-ea2-catalog
+  sourceNamespace: openshift-marketplace
+  channel: beta
+  startingCSV: rhods-operator.3.5.0-ea.2
+  installPlanApproval: Manual
