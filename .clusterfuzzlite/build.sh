@@ -11,4 +11,5 @@ cd "${REPO_ROOT}"
 python3 -m pip install --no-cache-dir atheris numpy -r backend/requirements.txt
 
 compile_python_fuzzer .clusterfuzzlite/fuzz_kserve_binary_fuzzer.py \
+  --hidden-import=numpy \
   --add-data "${REPO_ROOT}/backend/kserve_v2.py:backend"
