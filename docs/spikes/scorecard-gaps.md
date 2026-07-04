@@ -34,19 +34,19 @@ Waived checks (Maintained, Contributors, CII-Best-Practices, Fuzzing, Packaging,
 
 ## Check inventory
 
-| Check               | Score | Actionable? | Target / waiver                                             | Addressed by           |
-| ------------------- | ----- | ----------- | ----------------------------------------------------------- | ---------------------- |
-| SAST                | 10    | —           | Maintain                                                    | Phase 6 (done)         |
-| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count               | **Phase 9**            |
-| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push   | **Phase 10** (done)    |
-| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10              | **Phase 11** (done)    |
-| Packaging           | -1    | Maybe       | Helm publish workflow + GitHub Release                      | **Phase 26** (MT-SC26) |
-| Signed-Releases     | -1    | Maybe       | Tagged release + build provenance                           | **Phase 27** (MT-SC27) |
-| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0 | **Phase 10** (waiver)  |
-| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                   | **Phase 8** (doc)      |
-| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                          | **Phase 8** (doc)      |
-| Fuzzing             | 0     | Defer       | OSS-Fuzz out of scope for now                               | —                      |
-| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                         | **Phase 29** (MT-SC29) |
+| Check               | Score | Actionable? | Target / waiver                                                  | Addressed by                              |
+| ------------------- | ----- | ----------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| SAST                | 10    | —           | Maintain                                                         | Phase 6 (done)                            |
+| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count                    | **Phase 9**                               |
+| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push        | **Phase 10** (done)                       |
+| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10                   | **Phase 11** (done)                       |
+| Packaging           | -1    | Maybe       | Helm publish workflow + GitHub Release                           | **Phase 26** (complete; Batch 3b API lag) |
+| Signed-Releases     | -1    | Maybe       | Tagged release + build provenance                                | **Phase 27** (complete; Batch 3b API lag) |
+| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0      | **Phase 10** (waiver)                     |
+| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                        | **Phase 8** (doc)                         |
+| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                               | **Phase 8** (doc)                         |
+| Fuzzing             | 10    | —           | ClusterFuzzLite CI @ `31606a8` (PRs #115–116); Batch 3a **pass** | **Phase 31** (complete)                   |
+| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                              | **Phase 29** (MT-SC29)                    |
 
 ---
 
@@ -428,8 +428,8 @@ StepSecurity agent endpoints (`agent.api.stepsecurity.io`, `prod.app-api.stepsec
 | Branch-Protection      | 4     | Yes         | Partial  | **Yes**    | 4 CI contexts OK; approvers blocked solo fork                         |
 | CII-Best-Practices     | 2     | Defer       | Partial  | No         | InProgress badge                                                      |
 | Pinned-Dependencies    | 10    | —           | —        | No         | **Fixed** MT-W14a — hash-locked `.github/requirements-pre-commit.txt` |
-| Packaging              | -1    | Defer       | Partial  | No         | No publish workflow                                                   |
-| Signed-Releases        | -1    | Defer       | Partial  | No         | No GitHub releases                                                    |
+| Packaging              | -1    | Defer       | Partial  | No         | Publish workflow merged PR #104; operator tag Batch 2 for Scorecard   |
+| Signed-Releases        | -1    | Defer       | Partial  | No         | Provenance merged PR #105; first release via `v0.1.0` tag Batch 2     |
 | Dependency-Update-Tool | 10    | —           | —        | No         | Dependabot configured                                                 |
 | Dangerous-Workflow     | 10    | —           | —        | No         | Clean                                                                 |
 | Security-Policy        | 10    | —           | —        | No         | `.github/SECURITY.md`                                                 |
@@ -568,7 +568,7 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ## Phase 26 — Packaging (MT-SC26-PACKAGING)
 
-**MT-ID:** MT-SC26-PACKAGING | **Branch:** `feat/sc-packaging` | **Target:** Packaging **-1 → ≥0**
+**Status:** **complete** @ `31606a8` | **MT-ID:** MT-SC26-PACKAGING | **Branch:** `feat/sc-packaging` (merged PR #104) | **Target:** Packaging **-1 → ≥0**
 
 | Item     | Detail                                                                                                                                                                           |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -582,7 +582,7 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ## Phase 27 — Signed releases (MT-SC27-SIGNED-RELEASES)
 
-**MT-ID:** MT-SC27-SIGNED-RELEASES | **Branch:** `feat/sc-signed-releases` | **Target:** Signed-Releases **-1 → ≥0**
+**Status:** **complete** @ `31606a8` | **MT-ID:** MT-SC27-SIGNED-RELEASES | **Branch:** `feat/sc-signed-releases` (merged PR #105) | **Target:** Signed-Releases **-1 → ≥0**
 
 | Item        | Detail                                                                                                                 |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -590,13 +590,32 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 | Permissions | Job `id-token: write`, `contents: write`, `attestations: write`                                                        |
 | Operator    | **Required:** push a `v*` tag to trigger release + attestation (fork had **0** releases @ 2026-07-02)                  |
 
-**Score gate:** Signed-Releases ≥0 after tagged release + API lag (~7d). Merge alone is insufficient without operator tag.
+**Score gate:** Batch 3b — Packaging/Signed-Releases still **-1** @ `api.scorecard.dev` (2026-07-04, same-day tag).
+
+**Waiver:** GitHub Release `v0.1.0` with chart asset `caisat-0.1.0.tgz` + build provenance attestation
+(`sha256:bee33e59…`; publish-chart workflow run 28714006058). Re-check within 7d.
+
+---
+
+## Batch 3a/3b — Score gate refresh @ `31606a8` (2026-07-04)
+
+**Source:** `api.scorecard.dev` @ 2026-07-04 (post-#116 merge + `v0.1.0` tag same day).
+
+| Check              | Before (Wave 10) | After @ `31606a8` | Batch | Verdict                                      |
+| ------------------ | ---------------- | ----------------- | ----- | -------------------------------------------- |
+| **Aggregate**      | **6.9**          | **7.4**           | 3a    | **pass** — Fuzzing lift                      |
+| Fuzzing            | 0                | **10**            | 3a    | **pass**                                     |
+| Branch-Protection  | 4                | 4                 | 3a    | **pass** (documented solo-fork cap)          |
+| CII-Best-Practices | 2                | 2                 | 3a    | **pass** (InProgress badge; no regression)   |
+| Packaging          | -1               | -1                | 3b    | **waiver** — release exists; API lag ≤7d     |
+| Signed-Releases    | -1               | -1                | 3b    | **waiver** — attestation exists; API lag ≤7d |
+| Maintained         | 0                | 0                 | —     | Phase 30 @ **2026-09-27**                    |
 
 ---
 
 ## Phase 28 — Branch protection (MT-SC28-BRANCH-PROT)
 
-**MT-ID:** MT-SC28-BRANCH-PROT | **Branch:** `feat/sc-branch-prot` | **Target:** Document Branch-Protection delta (not aggregate **7+**)
+**Status:** **complete** @ `31606a8` | **MT-ID:** MT-SC28-BRANCH-PROT | **Branch:** `feat/sc-branch-prot` (merged PR #106) | **Target:** Document Branch-Protection delta (not aggregate **7+**)
 
 | Item               | Detail                                                                                                                                         |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -610,7 +629,7 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ## Phase 29 — CII Best Practices (MT-SC29-CII-BADGE)
 
-**MT-ID:** MT-SC29-CII-BADGE | **Branch:** `feat/sc-cii-badge` | **Target:** CII-Best-Practices **2 → higher**
+**Status:** **complete** @ `31606a8` | **MT-ID:** MT-SC29-CII-BADGE | **Branch:** `feat/sc-cii-badge` (merged PR #107) | **Target:** CII-Best-Practices **2 → higher**
 
 | Item                                                           | Status         | Notes                                                                    |
 | -------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------ |
@@ -636,15 +655,15 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 ## Phase 31 — Fuzzing (MT-SC31-FUZZING)
 
-**Status:** **partial** — local Atheris spike + hardening merged/stacked; ClusterFuzzLite CI in MT-SC31-CFL.
+**Status:** **complete** @ `31606a8` — local Atheris spike, hardening, and ClusterFuzzLite CI merged.
 
-| MT-ID           | Item                                                             | Status / PR                                                                      |
-| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| MT-SC31-FUZZING | Local Atheris harness (`make fuzz-kserve-binary`)                | **done** — spike @ `0619ad6`; see [`fuzzing-harnesses.md`](fuzzing-harnesses.md) |
-| MT-SC31-HARDEN  | `decode_kserve_binary` header validation                         | **done** — PR stacked base for CFL                                               |
-| MT-SC31-CFL     | `.github/workflows/clusterfuzzlite.yml`                          | **in flight** — PR mode `code-change` 180 s; batch 600 s                         |
-| MT-SC31-CFL     | `.clusterfuzzlite/` (project.yaml, Dockerfile, build.sh, fuzzer) | **done** @ tip + `project.yaml` in CFL PR                                        |
+| MT-ID           | Item                                                             | Status / PR                                                                        |
+| --------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| MT-SC31-FUZZING | Local Atheris harness (`make fuzz-kserve-binary`)                | **done** — PR #108 @ `750f028`; see [`fuzzing-harnesses.md`](fuzzing-harnesses.md) |
+| MT-SC31-HARDEN  | `decode_kserve_binary` header validation                         | **done** — PR #114 @ `d5470d4`                                                     |
+| MT-SC31-CFL     | `.github/workflows/clusterfuzzlite.yml`                          | **done** — PR #115 @ `a747f53`; PR #116 atheris pin @ `31606a8`; CFL CI green      |
+| MT-SC31-CFL     | `.clusterfuzzlite/` (project.yaml, Dockerfile, build.sh, fuzzer) | **done** @ `31606a8`                                                               |
 
-**CI posture:** `step-security/harden-runner` with `egress-policy: audit` (not block) until ClusterFuzzLite egress is catalogued.
+**CI posture:** `step-security/harden-runner` with `egress-policy: audit` (not block) until ClusterFuzzLite egress is catalogued (Batch 4 optional).
 
-**Note:** Fuzzing **0** blocks sustained aggregate **7+**; CFL workflow targets OpenSSF Scorecard Fuzzed check once green on `main`.
+**Score gate:** Batch 3a **pass** — Fuzzing **10** @ `api.scorecard.dev` @ `31606a8` (2026-07-04); CFL CI green evidence no longer needed.
