@@ -553,6 +553,44 @@ Wave 9 / Open blockers.
 
 ---
 
+## Re-test: ods-qe-psi-21 MT-2-RETEST @ ea.2 (2026-07-04)
+
+| Field           | Value                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Date            | 2026-07-04                                                                                       |
+| Verdict         | **blocked** — `oc` session expired (`Unauthorized`); infer matrix not executed                   |
+| Cluster/profile | `ods-qe-psi-21` (kube context set; credentials stale); RHOAI **3.5.0-ea.2** expected post Path A |
+| Blocks          | MT-2 psi-21 retest; Wave 5 **Full** closure still blocked on binary pass + RHOAI ticket          |
+
+### Preconditions (attempted)
+
+| Check               | Result                                                   |
+| ------------------- | -------------------------------------------------------- |
+| `oc whoami`         | **fail** — `Unauthorized` (server asked for credentials) |
+| RHOAI operator CSV  | **not verified** — blocked on auth                       |
+| CAIsat helm release | **not verified** — blocked on auth                       |
+| InferenceServices   | **not verified** — blocked on auth                       |
+
+### Per-predictor infer matrix (MT-2)
+
+| Predictor  | JSON infer | Binary round-trip | Notes                                       |
+| ---------- | ---------- | ----------------- | ------------------------------------------- |
+| SwinIR     | **N/A**    | **N/A**           | Blocked — re-run after `oc login` to psi-21 |
+| YOLOv8-OBB | **N/A**    | **N/A**           | Blocked — re-run after `oc login` to psi-21 |
+
+### Expected outcome (when unblocked)
+
+Prior cloudtest2 @ ea.2 (2026-07-01) and psi-21 @ ea.1 (2026-07-01) both showed JSON **pass** / binary **fail** (`UnicodeDecodeError` on
+`application/octet-stream`). No upstream fix documented — expect the same on psi-21 @ ea.2 unless MLServer image changes.
+
+### Resume
+
+1. `oc login` to `ods-qe-psi-21` (htpasswd cluster-admin context).
+2. Confirm CSV `rhods-operator.3.5.0-ea.2` **Succeeded**; CAIsat helm release + SwinIR/YOLO IS Ready in `caisat`.
+3. Run JSON + binary infer matrix per [encode pattern](#re-test-ods-qe-psi-21-2026-07-01) from `caisat-backend` pod.
+
+---
+
 ## RHOAI support ticket (operator prep)
 
 Use this section when filing a Red Hat support case for MLServer binary infer failure. **Do not** include cluster FQDNs or personal identifiers in committed docs —
@@ -691,3 +729,7 @@ confirmed to resolve `rhods-operator.3.5.0-ea.2` — see
 reached **Succeeded** — see [psi-21 InstallPlan approval & upgrade](#psi-21-installplan-approval--upgrade-2026-07-03). Stale ea.1 console
 banner corrected same day (`ConsoleNotification` `rhoai-35-ea1-warning` patched to ea.2 text). Wave 9 Path A operator upgrade
 **complete**; MT-2 binary retest on psi-21 still pending.
+
+**Re-test attempt (2026-07-04, MT-2-RETEST @ psi-21):** Kube context pointed at `ods-qe-psi-21` but `oc whoami` returned **Unauthorized**
+(stale session). CSV, helm, and infer matrix **not executed** — see [Re-test: ods-qe-psi-21 MT-2-RETEST @ ea.2](#re-test-ods-qe-psi-21-mt-2-retest--ea2-2026-07-04).
+Verdict **blocked**; resume after `oc login`.

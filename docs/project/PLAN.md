@@ -9,7 +9,7 @@ Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; changedete
 Wave 8 T4 GPU validation **pass** (PR #94 chart @ `032cefa`, PR #96 MT-GPU artifact); Wave 9 ea.2 **partial pass** (cloudtest2 PR #92; psi-21 Path A operator upgrade **pass** 2026-07-03).
 Wave 10 ecosystem tracks **complete** (PRs #97–#102). OpenSSF Phases **26–29 + 31 complete** @ `31606a8` (PRs #104–107, #108, #114–116); Phase 30 **deferred** @ **2026-09-27** — see tables below.
 CI parallelization MT-CP-0→5 **complete** (MT-CP-3 deferred).
-Open operational items below; use feature branches for follow-up; never push `main`. Wave 9 Path A (psi-21 → `3.5.0-ea.2`) **unblocked** — MT-2 binary retest on psi-21 still pending.
+Open operational items below; use feature branches for follow-up; never push `main`. Wave 9 Path A (psi-21 → `3.5.0-ea.2`) **unblocked** — MT-2 binary retest on psi-21 **blocked** (oc auth 2026-07-04).
 
 **Archive:** Completed phased work (phases **0–23**) → [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Spike results → [`../spikes/`](../spikes/).
 
@@ -210,15 +210,15 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ### Wave 9 RHOAI ea.2 retry (partial pass — 2026-07-01; Path A complete 2026-07-03)
 
-| Field                   | Value                                                                                                                                                             |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Path A (psi-21 upgrade) | **pass** — FBC `rhoai-ea2-catalog`; `beta` → `rhods-operator.3.5.0-ea.2`; InstallPlan approved 2026-07-03; CSV **Succeeded**; console banner patched (ea.1→ea.2)  |
-| cloudtest2 validation   | **partial pass** — PR #92; RHOAI **3.5.0-ea.2**; CAIsat helm rev **2** (CPU profile; SwinIR + YOLO IS Ready)                                                      |
-| MT-2 @ ea.2             | JSON **pass** (SwinIR 22.9 s, YOLO 1.7 s); binary **fail** HTTP 500 — same `UnicodeDecodeError` as ea.1 / psi-21 (cloudtest2 only; psi-21 retest pending)         |
-| HTTP API                | `/health` **pass**; JSON enhance 256→1024 **pass** (~37 s); detect **pass** with `KSERVE_PREFER_BINARY=false`                                                     |
-| MLServer                | `1.7.1+rhaiv.8` digest `d76bea18…` — **no ea.2 fix** for binary path                                                                                              |
-| Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [cloudtest2 Wave 9 / MT-EA2](../spikes/binary-kserve-v2.md#re-test-cloudtest2-wave-9--mt-ea2-2026-07-01) |
-| Path A candidate        | **complete** — psi-21 operator @ `3.5.0-ea.2` (2026-07-03); MT-2 binary retest on psi-21 still pending                                                            |
+| Field                   | Value                                                                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Path A (psi-21 upgrade) | **pass** — FBC `rhoai-ea2-catalog`; CSV `3.5.0-ea.2` Succeeded 2026-07-03                                                                                       |
+| cloudtest2 validation   | **partial pass** — PR #92; RHOAI ea.2; helm rev 2 CPU profile; IS Ready                                                                                         |
+| MT-2 @ ea.2             | cloudtest2: JSON **pass** / binary **fail** (2026-07-01); psi-21 retest **blocked** 2026-07-04 (oc auth)                                                        |
+| HTTP API                | `/health` **pass**; JSON enhance/detect **pass** with `KSERVE_PREFER_BINARY=false`                                                                              |
+| MLServer                | `1.7.1+rhaiv.8` — **no ea.2 fix** for binary path                                                                                                               |
+| Doc                     | [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) — [MT-2-RETEST blocked](../spikes/binary-kserve-v2.md#re-test-ods-qe-psi-21-mt-2-retest--ea2-2026-07-04) |
+| Path A candidate        | **complete** @ 2026-07-03; MT-2 psi-21 infer retest **blocked** on oc auth                                                                                      |
 
 ### Wave 10 ecosystem (complete — 2026-07-02)
 
@@ -258,7 +258,7 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 | Blocker           | Detail                                                                                                                                                                  |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | MLServer binary   | **fail** @ 3.4.0 — blocks Wave 5 **Full**; RHOAI operator cases **deferred** (user choice 2026-07-02) — `binary-kserve-v2.md`                                           |
-| RHOAI ea.2 Path A | **resolved** — psi-21 operator @ `3.5.0-ea.2` (CSV Succeeded 2026-07-03); MT-2 binary retest on psi-21 still pending — `binary-kserve-v2.md`                            |
+| RHOAI ea.2 Path A | **resolved** — psi-21 operator @ `3.5.0-ea.2` (CSV Succeeded 2026-07-03); MT-2 binary retest on psi-21 **blocked** 2026-07-04 (oc auth) — `binary-kserve-v2.md`         |
 | Chart GPU         | **resolved** @ PR #94 @ `032cefa`; operator mitigations — [`chart/README.md`](../../chart/README.md) T4 section                                                         |
 | Pull secrets      | `quay-pull-secret` chart default merged (PR #79 @ `2090e98`); `rhoai-quay-pull` **not created**; psi-21's `quay.io/rhoai` credential **rotated & working** (2026-07-03) |
 
