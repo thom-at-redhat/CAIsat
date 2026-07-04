@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import aiohttp
+
 import numpy as np
+
+if TYPE_CHECKING:
+    import aiohttp
 
 # MLServer 1.7.1+rhaiv.8 rejects application/octet-stream (Phase 12 spike fail).
 # Prefer binary when KSERVE_PREFER_BINARY=true; auto-fallback to JSON on failure.
@@ -95,6 +98,8 @@ async def kserve_infer(
 
     Returns (output_tensor, protocol_used) where protocol_used is 'binary' or 'json'.
     """
+    import aiohttp
+
     use_binary = KSERVE_PREFER_BINARY if prefer_binary is None else prefer_binary
     timeout = aiohttp.ClientTimeout(total=timeout_seconds)
 
