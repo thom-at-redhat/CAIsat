@@ -1,4 +1,4 @@
-# ClusterFuzzLite image stub for future Phase 31 CI (not wired in workflows yet).
+# ClusterFuzzLite image for decode_kserve_binary fuzz target (MT-SC31-CFL).
 # Assisted by: cursor, claude
 
 FROM gcr.io/oss-fuzz-base/base-builder-python:v1
