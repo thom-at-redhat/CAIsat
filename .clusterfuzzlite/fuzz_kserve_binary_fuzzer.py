@@ -11,12 +11,19 @@ from pathlib import Path
 
 import atheris
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+
+def _repo_root() -> Path:
+    root = Path(__file__).resolve().parent.parent
+    if (root / "backend" / "kserve_v2.py").is_file():
+        return root
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)
+    return root
 
 
 def _import_decode_kserve_binary():
     """Load decode_kserve_binary from backend/kserve_v2.py (same path as tests/conftest.py)."""
-    path = REPO_ROOT / "backend" / "kserve_v2.py"
+    path = _repo_root() / "backend" / "kserve_v2.py"
     spec = importlib.util.spec_from_file_location("caisat_backend_kserve_v2_fuzz", path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load kserve_v2 from {path}")
