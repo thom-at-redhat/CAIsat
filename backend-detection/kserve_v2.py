@@ -64,7 +64,14 @@ def encode_kserve_binary(
 def decode_kserve_binary(body: bytes, header_length: int) -> np.ndarray:
     """Decode the first binary output tensor from an octet-stream response."""
     meta = json.loads(body[:header_length].decode("utf-8"))
-    output_meta = meta["outputs"][0]
+    if not isinstance(meta, dict):
+        raise ValueError("KServe binary header must be a JSON object")
+    outputs = meta.get("outputs")
+    if not isinstance(outputs, list) or not outputs:
+        raise ValueError("KServe binary header must contain a non-empty outputs array")
+    output_meta = outputs[0]
+    if not isinstance(output_meta, dict):
+        raise ValueError("KServe binary output metadata must be a JSON object")
     offset = int(output_meta.get("parameters", {}).get("binary_data_offset", header_length))
     size = int(output_meta["parameters"]["binary_data_size"])
     shape = output_meta["shape"]
@@ -97,7 +104,7 @@ async def kserve_infer(
                         return decode_kserve_binary(raw, header_len), "binary"
                     result = json.loads(raw.decode("utf-8"))
                     return decode_kserve_json(result), "binary"
-        except (aiohttp.ClientError, json.JSONDecodeError, KeyError, ValueError):
+        except (aiohttp.ClientError, json.JSONDecodeError, KeyError, ValueError, TypeError, IndexError):
             pass
 
     payload = encode_kserve_json(input_name, tensor)

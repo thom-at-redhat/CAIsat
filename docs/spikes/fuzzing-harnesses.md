@@ -2,12 +2,12 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field           | Value                                                                 |
-| --------------- | --------------------------------------------------------------------- |
-| Date            | 2026-07-03                                                            |
-| Verdict         | **pass** — local harness runs; one uncaught `TypeError` found         |
-| Cluster/profile | N/A (local-only spike; no ClusterFuzzLite CI workflow)                |
-| Follow-up       | Harden `decode_kserve_binary` / `kserve_infer` for non-object headers |
+| Field           | Value                                                               |
+| --------------- | ------------------------------------------------------------------- |
+| Date            | 2026-07-03                                                          |
+| Verdict         | **pass** — local harness runs; Finding 1 hardened in MT-SC31-HARDEN |
+| Cluster/profile | N/A (local-only spike; ClusterFuzzLite CI in MT-SC31-CFL follow-up) |
+| Follow-up       | Wire ClusterFuzzLite GitHub Actions (MT-SC31-CFL)                   |
 
 **MT-ID:** MT-SC31-FUZZING-spike | **Tip SHA:** `d4ada24`
 
@@ -82,26 +82,26 @@ decode_kserve_binary(body=b"0", header_length=1)
 
 **Production impact:** `kserve_infer` catches `(json.JSONDecodeError, KeyError, ValueError)` but not `TypeError`, so a malformed binary response header could propagate instead of falling back to JSON.
 
-**Recommendation:** Follow-up PR — validate `isinstance(meta, dict)` and raise `ValueError`, or extend the `kserve_infer` except tuple to include `TypeError` / `IndexError`.
+**Resolution (MT-SC31-HARDEN):** `decode_kserve_binary` validates header shape (`isinstance(meta, dict)`, non-empty `outputs` list, object output metadata) and raises `ValueError`.
 
-Not fixed in this spike (document-only).
+`kserve_infer` also catches `TypeError` and `IndexError`.
+
+Test coverage: `test_decode_kserve_binary_rejects_non_object_header` in `tests/test_kserve_v2.py`.
 
 ---
 
 ## Verdict matrix
 
-| Criterion                                        | Result                                |
-| ------------------------------------------------ | ------------------------------------- |
-| Atheris + `FuzzedDataProvider` runs locally      | **Yes**                               |
-| `decode_kserve_binary` imported via backend path | **Yes**                               |
-| Crashes / unexpected exceptions in 10 k runs     | **1** (`TypeError`)                   |
-| ClusterFuzzLite CI workflow added                | **No** (deferred per scope)           |
-| `make check` on branch                           | **pass** (pre-commit + helm + pytest) |
+| Criterion                                        | Result                                                  |
+| ------------------------------------------------ | ------------------------------------------------------- |
+| Atheris + `FuzzedDataProvider` runs locally      | **Yes**                                                 |
+| `decode_kserve_binary` imported via backend path | **Yes**                                                 |
+| Crashes / unexpected exceptions in 10 k runs     | **0** after MT-SC31-HARDEN (`TypeError` → `ValueError`) |
+| ClusterFuzzLite CI workflow added                | **No** (MT-SC31-CFL follow-up)                          |
+| `make check` on branch                           | **pass** (pre-commit + helm + pytest)                   |
 
 ---
 
 ## Recommendation
 
-**proceed_ci** — Harness is viable for ClusterFuzzLite in a follow-up phase: wire `.clusterfuzzlite/build.sh` + Dockerfile into GitHub Actions, seed corpus from round-trip tests.
-
-Land `TypeError` hardening in a separate fix PR.
+**proceed_ci** — Harness is viable for ClusterFuzzLite: wire `.clusterfuzzlite/build.sh` + Dockerfile into GitHub Actions (MT-SC31-CFL). Hardening landed in MT-SC31-HARDEN.
