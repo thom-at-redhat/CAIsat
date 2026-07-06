@@ -174,9 +174,10 @@ async def detect_objects(image: UploadFile = File(...)):
 
         img = Image.open(io.BytesIO(contents))
         all_detections: list[dict] = []
+        slices = generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)
 
         try:
-            for ox, oy, slice_img in generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP):
+            for ox, oy, slice_img in slices:
                 slice_dets = await infer_slice(slice_img)
                 all_detections.extend(offset_detection(d, ox, oy) for d in slice_dets)
         except aiohttp.ClientResponseError as exc:
@@ -187,14 +188,14 @@ async def detect_objects(image: UploadFile = File(...)):
             ) from exc
 
         detections = merge_detections(all_detections, iou_threshold=IOU_THRESHOLD)
-        log_event(logger, "detect complete", count=len(detections), slices=len(generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)))
+        log_event(logger, "detect complete", count=len(detections), slices=len(slices))
         detection_counter += 1
         return JSONResponse(
             content={
                 "detections": detections,
                 "count": len(detections),
                 "image_size": {"width": img.size[0], "height": img.size[1]},
-                "sahi_slices": len(generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)),
+                "sahi_slices": len(slices),
             }
         )
 
