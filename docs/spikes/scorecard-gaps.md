@@ -694,3 +694,13 @@ close waiver with release URL + attestation — do not revert publish-chart work
 | **Aggregate**       | 6.8    | **~7.6** | API may lag ≤7d after tag                                                   |
 
 **Operator:** After merge, tag and push `v0.1.1` on `main` to trigger publish-chart workflow; then `workflow_dispatch` scorecard-analysis if badge lags.
+
+### Post-merge verification @ `7c9e2d6` + `v0.1.1`
+
+| Item                        | Result                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| PR #122 merge               | **done** @ `7c9e2d6`                                                           |
+| Scorecard CI (push `main`)  | **pass** @ 2026-07-06T14:21:28Z                                                |
+| `api.scorecard.dev` @ merge | **6.9**; Pinned-Dependencies **10**; Signed-Releases **0** (pre-`v0.1.1`)      |
+| Release `v0.1.1`            | `caisat-0.1.0.tgz` + `provenance.intoto.jsonl` (publish-chart run 28798857690) |
+| Signed-Releases refresh     | Push to `main` or `workflow_dispatch` after `v0.1.1` tag                       |
