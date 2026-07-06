@@ -1,0 +1,5 @@
+# ClusterFuzzLite fuzz image dependencies (pip-compile source).
+# Assisted by: cursor, claude
+
+-r ../backend/requirements.txt
+atheris==3.0.0

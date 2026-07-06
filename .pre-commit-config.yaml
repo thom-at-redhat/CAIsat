@@ -104,7 +104,7 @@ repos:
     rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a # v2.4.2
     hooks:
       - id: codespell
-        args: ["--skip=*.ipynb,.secrets.baseline,**/package-lock.json,*.backup", "--ignore-words-list=DOTA"]
+        args: ["--skip=*.ipynb,.secrets.baseline,**/package-lock.json,*.backup", "--ignore-words-list=DOTA,intoto"]
 
   # YAML (line-length 200 via .yamllint.yml)
   - repo: https://github.com/adrienverge/yamllint.git

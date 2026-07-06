@@ -166,13 +166,13 @@ Published `.tgz` artifacts are attached to [GitHub Releases](https://github.com/
 
 | Trigger | Action |
 | ------- | ------ |
-| Push tag `v*` (e.g. `v0.1.0`) | `helm package chart/` → upload `caisat-<version>.tgz` to the matching release |
-| `workflow_dispatch` | Same packaging path; use a `v*` tag push for Scorecard Packaging checks |
+| Push tag `v*` (e.g. `v0.1.1`) | `helm package chart/` → upload `caisat-<version>.tgz` and `provenance.intoto.jsonl` to the matching release |
+| `workflow_dispatch` | Same packaging path; use a `v*` tag push for Scorecard Signed-Releases refresh |
 
 Install from a release artifact:
 
 ```bash
-helm upgrade --install caisat ./caisat-0.1.0.tgz -n <namespace> -f values.yaml
+helm upgrade --install caisat ./caisat-0.1.1.tgz -n <namespace> -f values.yaml
 ```
 
-**Operator:** create the first `v*` tag after merge when ready to refresh OpenSSF Packaging score (API may lag up to ~7 days).
+**Operator:** push a new `v*` tag after merge (e.g. `v0.1.1`) to attach SLSA provenance (`provenance.intoto.jsonl`) for OpenSSF Signed-Releases; `v0.1.0` predates that asset. API may lag up to ~7 days.
