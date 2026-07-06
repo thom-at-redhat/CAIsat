@@ -6,6 +6,17 @@ from __future__ import annotations
 from PIL import Image
 
 
+def _axis_positions(length: int, window: int, stride: int) -> list[int]:
+    """Return top-left offsets along one axis, including a trailing edge tile."""
+    if length <= window:
+        return [0]
+    last = length - window
+    positions = list(range(0, last + 1, stride))
+    if positions[-1] != last:
+        positions.append(last)
+    return positions
+
+
 def generate_slices(image: Image.Image, window: int = 640, overlap: float = 0.2) -> list[tuple[int, int, Image.Image]]:
     """Yield (offset_x, offset_y, crop) tiles covering the image."""
     w, h = image.size
@@ -14,15 +25,13 @@ def generate_slices(image: Image.Image, window: int = 640, overlap: float = 0.2)
 
     stride = max(1, int(window * (1 - overlap)))
     slices: list[tuple[int, int, Image.Image]] = []
-    for y in range(0, max(h - window, 0) + 1, stride):
-        for x in range(0, max(w - window, 0) + 1, stride):
+    for y in _axis_positions(h, window, stride):
+        for x in _axis_positions(w, window, stride):
             x2 = min(x + window, w)
             y2 = min(y + window, h)
             x1 = max(0, x2 - window)
             y1 = max(0, y2 - window)
             slices.append((x1, y1, image.crop((x1, y1, x2, y2))))
-        if h <= window:
-            break
     if not slices:
         slices.append((0, 0, image))
     return slices
