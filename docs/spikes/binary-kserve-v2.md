@@ -591,6 +591,48 @@ Prior cloudtest2 @ ea.2 (2026-07-01) and psi-21 @ ea.1 (2026-07-01) both showed 
 
 ---
 
+## Re-test: ods-qe-psi-21 MT-2-RETEST @ ea.2 (2026-07-06)
+
+| Field           | Value                                                                               |
+| --------------- | ----------------------------------------------------------------------------------- |
+| Date            | 2026-07-06                                                                          |
+| Verdict         | **fail** (binary) — JSON infer OK; binary HTTP 500 unchanged from ea.1 / cloudtest2 |
+| Cluster/profile | `ods-qe-psi-21`; RHOAI **3.5.0-ea.2**; MLServer `1.7.1+rhaiv.8`; namespace `caisat` |
+| Blocks          | Phase 14 binary migration; Wave 5 **Full** closure pending RHOAI support ticket     |
+
+### Preconditions verified
+
+| Check               | Result                                           |
+| ------------------- | ------------------------------------------------ |
+| `oc whoami`         | **pass** — `htpasswd-cluster-admin-user`         |
+| RHOAI operator CSV  | **pass** — `rhods-operator.3.5.0-ea.2` Succeeded |
+| CAIsat helm release | **pass** — `caisat` rev 19, deployed             |
+| InferenceServices   | **pass** — SwinIR + YOLOv8-OBB Ready             |
+| MLServer version    | `1.7.1+rhaiv.8` (swinir-predictor pod)           |
+
+### Per-predictor infer matrix (MT-2)
+
+| Predictor  | JSON infer                                | Binary round-trip   | Predictor log (binary)                                       |
+| ---------- | ----------------------------------------- | ------------------- | ------------------------------------------------------------ |
+| SwinIR     | **pass** — 48.56 s; out `[1,3,1024,1024]` | **fail** — HTTP 500 | `UnicodeDecodeError` parsing `application/octet-stream` body |
+| YOLOv8-OBB | **pass** — 2.18 s; out `[1,20,8400]`      | **fail** — HTTP 500 | Same FastAPI validation-handler decode error                 |
+
+### vs ea.1 / cloudtest2 baseline
+
+| Predictor  | ea.1 psi-21 (2026-07-01) | ea.2 cloudtest2 (2026-07-01) | ea.2 psi-21 (2026-07-06) | Notes                      |
+| ---------- | ------------------------ | ---------------------------- | ------------------------ | -------------------------- |
+| SwinIR     | JSON pass; binary fail   | JSON pass; binary fail       | JSON pass; binary fail   | MLServer version unchanged |
+| YOLOv8-OBB | JSON pass; binary fail   | JSON pass; binary fail       | JSON pass; binary fail   | Same root cause on ea.2    |
+
+### Notes
+
+RHOAI **3.5.0-ea.2** on psi-21 confirms operator upgrade (Path A complete 2026-07-03) without fixing binary tensor support. MLServer
+**1.7.1+rhaiv.8** still rejects KServe v2 `application/octet-stream` infer bodies. **RHOAI support ticket** required before Wave 5 **Full**
+closure via ticket-based waiver — operator to file at Customer Portal using [`mt-ticket-20260704/`](../validation/artifacts/mt-ticket-20260704/)
+(artifact @ `3.5.0-ea.2`). Artifact: [`mt-2-retest-20260706/report.md`](../validation/artifacts/mt-2-retest-20260706/report.md).
+
+---
+
 ## RHOAI support ticket (operator prep)
 
 Use this section when filing a Red Hat support case for MLServer binary infer failure. **Do not** include cluster FQDNs or personal identifiers in committed docs —
@@ -604,7 +646,7 @@ paste redacted values into the ticket only.
 
 | Field         | Value                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------------- |
-| RHOAI version | **3.4.0** (stable-3.4 fallback; ea.2 deferred)                                            |
+| RHOAI version | **3.5.0-ea.2** (beta channel via `rhoai-ea2-catalog`)                                     |
 | MLServer      | `1.7.1+rhaiv.8` (swinir-predictor pod)                                                    |
 | KServe        | v2 JSON infer **pass**; binary `Content-Type: application/octet-stream` **fail** HTTP 500 |
 | Workload      | CAIsat SwinIR + YOLOv8-OBB InferenceServices in `<namespace>`                             |
@@ -669,7 +711,7 @@ Workaround: JSON infer only (KSERVE_PREFER_BINARY=false).
 Request: Fix MLServer binary tensor extension handling or document required runtime configuration for RHOAI 3.4.0.
 ```
 
-**Status:** Draft ready — operator to file and record ticket ID in PLAN Open blockers (no fake ID in repo).
+**Status:** Ticket body updated @ 3.5.0-ea.2 — operator to file at Customer Portal and record ticket ID in PLAN Open blockers (no fake ID in repo).
 
 ---
 
@@ -729,6 +771,10 @@ confirmed to resolve `rhods-operator.3.5.0-ea.2` — see
 reached **Succeeded** — see [psi-21 InstallPlan approval & upgrade](#psi-21-installplan-approval--upgrade-2026-07-03). Stale ea.1 console
 banner corrected same day (`ConsoleNotification` `rhoai-35-ea1-warning` patched to ea.2 text). Wave 9 Path A operator upgrade
 **complete**; MT-2 binary retest on psi-21 still pending.
+
+**Re-test (2026-07-06, MT-2-RETEST @ psi-21 ea.2):** RHOAI **3.5.0-ea.2**; CAIsat helm rev 19; JSON **pass** / binary **fail** on both
+predictors — see [Re-test: ods-qe-psi-21 MT-2-RETEST @ ea.2 (2026-07-06)](#re-test-ods-qe-psi-21-mt-2-retest--ea2-2026-07-06).
+Verdict **fail** (binary); RHOAI support ticket **pending operator filing**.
 
 **Re-test attempt (2026-07-04, MT-2-RETEST @ psi-21):** Kube context pointed at `ods-qe-psi-21` but `oc whoami` returned **Unauthorized**
 (stale session). CSV, helm, and infer matrix **not executed** — see [Re-test: ods-qe-psi-21 MT-2-RETEST @ ea.2](#re-test-ods-qe-psi-21-mt-2-retest--ea2-2026-07-04).

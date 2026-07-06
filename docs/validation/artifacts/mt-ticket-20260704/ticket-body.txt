@@ -1,7 +1,7 @@
 Summary: RHOAI MLServer 1.7.1+rhaiv.8 returns HTTP 500 on KServe v2 binary infer (Content-Type: application/octet-stream). JSON infer on the same predictors succeeds.
 
 Product: Red Hat OpenShift AI
-Version: 3.4.0 (stable-3.4 channel)
+Version: 3.5.0-ea.2 (beta channel via rhoai-ea2-catalog)
 MLServer: 1.7.1+rhaiv.8 (swinir-predictor pod, kserve-container)
 
 Symptoms:
@@ -24,4 +24,4 @@ Actual: HTTP 500 Internal Server Error on both SwinIR and YOLOv8-OBB predictors.
 Impact: Cannot enable KSERVE_PREFER_BINARY=true; large JSON payloads (~25 MB YOLO) remain required.
 Workaround: JSON infer only (KSERVE_PREFER_BINARY=false).
 
-Request: Fix MLServer binary tensor extension handling or document required runtime configuration for RHOAI 3.4.0.
+Request: Fix MLServer binary tensor extension handling or document required runtime configuration for RHOAI 3.5.0-ea.2.
