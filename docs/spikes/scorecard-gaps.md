@@ -669,3 +669,28 @@ close waiver with release URL + attestation — do not revert publish-chart work
 **CI posture:** `step-security/harden-runner` with `egress-policy: audit` (not block) until ClusterFuzzLite egress is catalogued (Batch 4 optional).
 
 **Score gate:** Batch 3a **pass** — Fuzzing **10** @ `api.scorecard.dev` @ `31606a8` (2026-07-04); CFL CI green evidence no longer needed.
+
+---
+
+## MT-SC-P0P1 — Pinned-Dependencies + Signed-Releases assets
+
+**MT-ID:** MT-SC-P0P1 | **Date:** 2026-07-06 | **Branch:** `feature/sc-scorecard-p0p1`
+
+**Scope:** Restore Pinned-Dependencies **10/10** (CFL hash pins) and attach `provenance.intoto.jsonl` to GitHub Releases for Signed-Releases **≥8**.
+
+| Change                 | Path                                             | Notes                                                                          |
+| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Pin CFL base image     | `.clusterfuzzlite/Dockerfile`                    | `base-builder-python:v1@sha256:6768b69b…`                                      |
+| Hash-lock fuzz deps    | `.clusterfuzzlite/requirements-fuzz.in` + `.txt` | `pip-compile --generate-hashes`; `--require-hashes` in Dockerfile + `build.sh` |
+| Stage provenance asset | `.github/workflows/publish-chart.yml`            | Copy `steps.attest.outputs.bundle-path` → `provenance.intoto.jsonl` on release |
+| codespell              | `.pre-commit-config.yaml`                        | Allow `intoto` (SLSA filename)                                                 |
+
+**Expected Scorecard impact (post-merge + operator tag):**
+
+| Check               | Before | Target   | Operator                                                                    |
+| ------------------- | ------ | -------- | --------------------------------------------------------------------------- |
+| Pinned-Dependencies | 8      | **10**   | Merge PR; re-run Scorecard on `main`                                        |
+| Signed-Releases     | 0      | **≥8**   | Push **`v0.1.1`** (or next `v*`) after merge — `v0.1.0` lacks release asset |
+| **Aggregate**       | 6.8    | **~7.6** | API may lag ≤7d after tag                                                   |
+
+**Operator:** After merge, tag and push `v0.1.1` on `main` to trigger publish-chart workflow; then `workflow_dispatch` scorecard-analysis if badge lags.

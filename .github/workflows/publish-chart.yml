@@ -55,12 +55,20 @@ jobs:
           ls -la ./*.tgz
 
       - name: Attest chart package provenance
+        id: attest
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: ./*.tgz
 
+      - name: Stage provenance bundle for release
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+        run: cp "${BUNDLE_PATH}" ./provenance.intoto.jsonl
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          files: ./*.tgz
+          files: |
+            ./*.tgz
+            ./provenance.intoto.jsonl
           generate_release_notes: true
