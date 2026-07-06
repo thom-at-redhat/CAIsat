@@ -23,7 +23,7 @@ RHOAI MLServer 1.7.1+rhaiv.8 rejects KServe v2 binary infer (application/octet-s
 ## Filing steps (operator)
 
 1. Sign in to [Red Hat Customer Portal](https://access.redhat.com/support/cases/) → **Open a new case**.
-2. **Product:** Red Hat OpenShift AI. **Version:** 3.4.0 (or current cluster version if upgraded to 3.5.0-ea.2).
+2. **Product:** Red Hat OpenShift AI. **Version:** 3.5.0-ea.2 (update if cluster differs).
 3. **Subject:** use suggested title above.
 4. **Description:** paste contents of [`ticket-body.txt`](ticket-body.txt); replace `<namespace>` with the CAIsat namespace (e.g. `caisat`).
 5. **Attachments:** predictor logs from a binary infer attempt (see evidence checklist below). Do **not** include cluster API FQDNs or credentials in attachments shared outside the portal.
@@ -57,11 +57,18 @@ oc logs -n <namespace> deploy/yolov8m-satelite-predictor -c kserve-container --t
 
 Redact any cluster-specific hostnames before committing logs to git; portal attachments may include internal names as required by support.
 
-## Log capture status (2026-07-04 prep session)
+## Log capture status (2026-07-06)
 
-**Fresh logs not captured** — `oc` session unauthorized on psi-21 and cloudtest2 contexts at prep time. Operator must run binary infer and attach
-current predictor logs manually. Reference snippets in [`predictor-log-snippet.txt`](predictor-log-snippet.txt) document the expected
-`UnicodeDecodeError` from prior re-tests.
+**Fresh logs captured** on psi-21 @ RHOAI 3.5.0-ea.2 during MT-2-RETEST. Both predictors show `UnicodeDecodeError` in FastAPI validation
+handler after binary infer attempt. Operator should attach current predictor logs when filing the portal case:
+
+```bash
+oc logs -n caisat deploy/swinir-predictor -c kserve-container --tail=50
+oc logs -n caisat deploy/yolov8m-satelite-predictor -c kserve-container --tail=50
+```
+
+Infer matrix results: [`mt-2-retest-20260706/report.md`](../mt-2-retest-20260706/report.md). Reference snippets in
+[`predictor-log-snippet.txt`](predictor-log-snippet.txt) document the expected error pattern from prior re-tests.
 
 ## Impact summary
 
