@@ -34,19 +34,19 @@ Waived checks (Maintained, Contributors, CII-Best-Practices, Fuzzing, Packaging,
 
 ## Check inventory
 
-| Check               | Score | Actionable? | Target / waiver                                                  | Addressed by                              |
-| ------------------- | ----- | ----------- | ---------------------------------------------------------------- | ----------------------------------------- |
-| SAST                | 10    | —           | Maintain                                                         | Phase 6 (done)                            |
-| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count                    | **Phase 9**                               |
-| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push        | **Phase 10** (done)                       |
-| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10                   | **Phase 11** (done)                       |
-| Packaging           | -1    | Maybe       | Helm publish workflow + GitHub Release                           | **Phase 26** (complete; Batch 3b API lag) |
-| Signed-Releases     | -1    | Maybe       | Tagged release + build provenance                                | **Phase 27** (complete; Batch 3b API lag) |
-| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0      | **Phase 10** (waiver)                     |
-| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                        | **Phase 8** (doc)                         |
-| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                               | **Phase 8** (doc)                         |
-| Fuzzing             | 10    | —           | ClusterFuzzLite CI @ `31606a8` (PRs #115–116); Batch 3a **pass** | **Phase 31** (complete)                   |
-| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                              | **Phase 29** (MT-SC29)                    |
+| Check               | Score | Actionable? | Target / waiver                                                  | Addressed by                                          |
+| ------------------- | ----- | ----------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| SAST                | 10    | —           | Maintain                                                         | Phase 6 (done)                                        |
+| Vulnerabilities     | 0     | Yes         | Triage/merge Dependabot PRs; reduce OSV count                    | **Phase 9**                                           |
+| Branch-Protection   | 4→TBD | Yes         | Ruleset `protect-main`: CodeQL required, block force push        | **Phase 10** (done)                                   |
+| Pinned-Dependencies | 10    | —           | Pin remaining workflow/pre-commit refs → 10/10                   | **Phase 11** (done)                                   |
+| Packaging           | -1    | Maybe       | Helm publish workflow + GitHub Release                           | **Phase 26** (complete; Batch 3b API lag ≤2026-07-11) |
+| Signed-Releases     | 0     | —           | Tagged release + build provenance                                | **Phase 27** (complete; Batch 3b **pass**)            |
+| Code-Review         | 0     | Partial     | Require 1 approving review on ruleset; solo fork may stay 0      | **Phase 10** (waiver)                                 |
+| Maintained          | 0     | No          | Repo &lt;90 days — **waiver** (see below)                        | **Phase 8** (doc)                                     |
+| Contributors        | 3     | No          | Solo fork — **waiver** (see below)                               | **Phase 8** (doc)                                     |
+| Fuzzing             | 10    | —           | ClusterFuzzLite CI @ `31606a8` (PRs #115–116); Batch 3a **pass** | **Phase 31** (complete)                               |
+| CII-Best-Practices  | 2     | Defer       | OpenSSF best practices badge effort                              | **Phase 29** (MT-SC29)                                |
 
 ---
 
@@ -590,26 +590,28 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 | Permissions | Job `id-token: write`, `contents: write`, `attestations: write`                                                        |
 | Operator    | **Required:** push a `v*` tag to trigger release + attestation (fork had **0** releases @ 2026-07-02)                  |
 
-**Score gate:** Batch 3b — Packaging/Signed-Releases still **-1** @ `api.scorecard.dev` (2026-07-04, same-day tag).
+**Score gate:** Batch 3b — Signed-Releases **0** @ `api.scorecard.dev` (2026-07-06, **pass**). Packaging still **-1** — waiver active; re-check ≤ **2026-07-11**.
 
-**Waiver:** GitHub Release `v0.1.0` with chart asset `caisat-0.1.0.tgz` + build provenance attestation
-(`sha256:bee33e59…`; publish-chart workflow run 28714006058). Re-check within 7d.
+**Waiver (Packaging):** GitHub Release `v0.1.0` with chart asset `caisat-0.1.0.tgz` + build provenance attestation
+(`sha256:bee33e59…`; publish-chart workflow run 28714006058).
+**Escalation if still -1 on 2026-07-11:** `workflow_dispatch` scorecard-analysis; verify release asset;
+close waiver with release URL + attestation — do not revert publish-chart workflow.
 
 ---
 
-## Batch 3a/3b — Score gate refresh @ `31606a8` (2026-07-04)
+## Batch 3a/3b — Score gate refresh @ `31606a8` / `9c0d76e`
 
-**Source:** `api.scorecard.dev` @ 2026-07-04 (post-#116 merge + `v0.1.0` tag same day).
+**Source:** `api.scorecard.dev` @ 2026-07-04 (post-#116 merge + `v0.1.0` tag same day); Batch 3b re-check @ 2026-07-06.
 
-| Check              | Before (Wave 10) | After @ `31606a8` | Batch | Verdict                                      |
-| ------------------ | ---------------- | ----------------- | ----- | -------------------------------------------- |
-| **Aggregate**      | **6.9**          | **7.4**           | 3a    | **pass** — Fuzzing lift                      |
-| Fuzzing            | 0                | **10**            | 3a    | **pass**                                     |
-| Branch-Protection  | 4                | 4                 | 3a    | **pass** (documented solo-fork cap)          |
-| CII-Best-Practices | 2                | 2                 | 3a    | **pass** (InProgress badge; no regression)   |
-| Packaging          | -1               | -1                | 3b    | **waiver** — release exists; API lag ≤7d     |
-| Signed-Releases    | -1               | -1                | 3b    | **waiver** — attestation exists; API lag ≤7d |
-| Maintained         | 0                | 0                 | —     | Phase 30 @ **2026-09-27**                    |
+| Check              | Before (Wave 10) | After @ `31606a8` | After @ `9c0d76e` (2026-07-06) | Batch | Verdict                                          |
+| ------------------ | ---------------- | ----------------- | ------------------------------ | ----- | ------------------------------------------------ |
+| **Aggregate**      | **6.9**          | **7.4**           | **6.8**                        | 3a/3b | **pass** — Fuzzing lift; aggregate drift noted   |
+| Fuzzing            | 0                | **10**            | **10**                         | 3a    | **pass**                                         |
+| Branch-Protection  | 4                | 4                 | 4                              | 3a    | **pass** (documented solo-fork cap)              |
+| CII-Best-Practices | 2                | 2                 | 2                              | 3a    | **pass** (InProgress badge; no regression)       |
+| Packaging          | -1               | -1                | **-1**                         | 3b    | **waiver** — release exists; API lag ≤2026-07-11 |
+| Signed-Releases    | -1               | -1                | **0**                          | 3b    | **pass**                                         |
+| Maintained         | 0                | 0                 | 0                              | —     | Phase 30 @ **2026-09-27**                        |
 
 ---
 
