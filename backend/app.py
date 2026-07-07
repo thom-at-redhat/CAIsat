@@ -8,6 +8,7 @@ OpenShift AI model endpoint, and returns the enhanced result.
 # Assisted by: cursor, claude
 
 from contextlib import asynccontextmanager
+import base64
 import io
 import os
 import traceback
@@ -16,10 +17,11 @@ import aiohttp
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse
 from PIL import Image
 
 from capabilities import get_capabilities
+from image_preview import make_jpeg_preview
 from kserve_v2 import sanitize_model_error
 from tiled_sr import enhance_image_tiled
 from logging_config import configure_logging, log_event
@@ -128,19 +130,22 @@ async def enhance_image(image: UploadFile = File(...)):
             print(f"Tiled enhancement aborted: {exc}")
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-        print(f"Enhanced output: {enhanced_img.size[0]}x{enhanced_img.size[1]} (native 4x)")
-        log_event(logger, "enhance complete", width=enhanced_img.size[0], height=enhanced_img.size[1])
+        full_w, full_h = enhanced_img.size
+        print(f"Enhanced output: {full_w}x{full_h} (native 4x)")
+        log_event(logger, "enhance complete", width=full_w, height=full_h)
 
-        img_byte_arr = io.BytesIO()
-        enhanced_img.save(img_byte_arr, format="PNG")
-        img_byte_arr.seek(0)
-
+        preview_bytes, preview_w, preview_h = make_jpeg_preview(enhanced_img)
         enhancement_counter += 1
 
-        return Response(
-            content=img_byte_arr.getvalue(),
-            media_type="image/png",
-            headers={"Content-Disposition": "inline; filename=enhanced.png"},
+        return JSONResponse(
+            {
+                "preview": base64.b64encode(preview_bytes).decode("ascii"),
+                "media_type": "image/jpeg",
+                "width": full_w,
+                "height": full_h,
+                "preview_width": preview_w,
+                "preview_height": preview_h,
+            }
         )
 
     except HTTPException:
