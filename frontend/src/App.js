@@ -338,8 +338,11 @@ function App() {
     if (!capturedImage) return;
 
     setProcessing(true);
+    setUserMessage(null);
     setCroppedImage(null);
     setEnhancedImage(null);
+
+    const inferTimeoutMs = ((capabilities?.infer_timeout_seconds ?? 300) + 60) * 1000;
 
     try {
       // Create a canvas to crop the image
@@ -364,11 +367,10 @@ function App() {
       );
 
       // Convert to blob
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-      // Save cropped image for display
-      const croppedUrl = URL.createObjectURL(blob);
-      setCroppedImage(croppedUrl);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) {
+        throw new Error('Failed to crop image');
+      }
 
       // Send to backend
       const formData = new FormData();
@@ -376,17 +378,32 @@ function App() {
 
       const response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
+        responseType: 'blob',
+        timeout: inferTimeoutMs,
       });
 
-      // Show enhanced result
+      if (!response.data?.type?.startsWith('image/')) {
+        const detail = await response.data.text();
+        throw new Error(detail.slice(0, 200) || 'Server returned a non-image response');
+      }
+
+      // Save cropped and enhanced images for display after a successful response
+      const croppedUrl = URL.createObjectURL(blob);
       const enhancedUrl = URL.createObjectURL(response.data);
+      setCroppedImage(croppedUrl);
       setEnhancedImage(enhancedUrl);
       setProcessing(false);
 
     } catch (error) {
       console.error('Enhancement failed:', error);
-      setUserMessage({ type: 'error', text: `Enhancement failed: ${error.message}` });
+      const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
+      const cropHint = cropSize > (capabilities?.default_crop ?? 256)
+        ? ` Try ${capabilities?.default_crop ?? 256}×${capabilities?.default_crop ?? 256} for faster, more reliable results.`
+        : '';
+      const message = isNetworkError
+        ? `Enhancement failed: connection dropped while receiving the enhanced image (large ${cropSize}×${cropSize} crops can exceed browser limits).${cropHint}`
+        : `Enhancement failed: ${error.message}`;
+      setUserMessage({ type: 'error', text: message });
       setProcessing(false);
     }
   };
@@ -664,7 +681,7 @@ function App() {
                 </div>
 
                 {/* Step 1: Select area to enhance */}
-                {!croppedImage && !enhancedImage && (
+                {!processing && !enhancedImage && (
                   <div className="crop-section">
                     <h3>Select {cropSize}×{cropSize} Area to Enhance</h3>
                     <div className="crop-size-controls">
