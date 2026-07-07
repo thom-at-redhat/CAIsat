@@ -15,6 +15,8 @@ def test_cpu_profile_defaults(capabilities, backend_dir: str, clear_profile_env)
     assert caps["tiling_enabled"] is False
     assert caps["scale_factor"] == 4
     assert caps["gpu_deferred"] is False
+    assert caps["default_crop"] == 256
+    assert caps["inference_accelerator"] == "cpu"
     assert caps["kserve_prefer_binary"] is True
     if backend_dir == "backend":
         assert caps["infer_timeout_seconds"] == 300
@@ -37,6 +39,7 @@ def test_gpu_deferred_caps_to_cpu(capabilities, clear_profile_env, monkeypatch: 
 def test_gpu_available_uses_tier_limits(capabilities, clear_profile_env, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("COMPUTE_PROFILE", "hopper")
     monkeypatch.setenv("GPU_AVAILABLE", "true")
+    monkeypatch.setenv("INFERENCE_ACCELERATOR", "gpu")
     caps = capabilities.get_capabilities()
     assert caps["profile"] == "hopper"
     assert caps["gpu_tier"] == "hopper"
@@ -44,6 +47,19 @@ def test_gpu_available_uses_tier_limits(capabilities, clear_profile_env, monkeyp
     assert caps["max_crop"] == 1024
     assert caps["max_tile"] == 512
     assert caps["tiling_enabled"] is True
+    assert caps["inference_accelerator"] == "gpu"
+
+
+def test_cpu_inference_caps_gpu_tier(capabilities, clear_profile_env, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COMPUTE_PROFILE", "l40s")
+    monkeypatch.setenv("GPU_AVAILABLE", "true")
+    monkeypatch.setenv("INFERENCE_ACCELERATOR", "cpu")
+    caps = capabilities.get_capabilities()
+    assert caps["profile"] == "l40s"
+    assert caps["gpu_deferred"] is False
+    assert caps["max_crop"] == 512
+    assert caps["default_crop"] == 256
+    assert caps["inference_accelerator"] == "cpu"
 
 
 @pytest.mark.parametrize(

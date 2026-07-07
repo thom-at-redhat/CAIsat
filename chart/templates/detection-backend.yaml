@@ -46,6 +46,8 @@ spec:
           value: {{ .Values.computeProfile.name | quote }}
         - name: GPU_AVAILABLE
           value: {{ .Values.computeProfile.gpuAvailable | quote }}
+        - name: INFERENCE_ACCELERATOR
+          value: {{ include "caisat.inferenceAccelerator" . | quote }}
         - name: KSERVE_PREFER_BINARY
           value: {{ .Values.kserve.preferBinary | quote }}
         - name: SAHI_WINDOW

@@ -33,6 +33,9 @@ function App() {
 
   const cropSize = cropArea.size;
   const enhancedSize = cropSize * (capabilities?.scale_factor ?? 4);
+  const cropSizeOptions = capabilities
+    ? [...new Set([capabilities.default_crop || 256, 256, 512, capabilities.max_crop].filter(Boolean))].sort((a, b) => a - b)
+    : [256];
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -137,13 +140,25 @@ function App() {
       try {
         const response = await axios.get(`${BACKEND_BASE}/api/capabilities`, { timeout: 5000 });
         setCapabilities(response.data);
-        setCropArea((prev) => ({ ...prev, size: response.data.max_crop || 256 }));
+        const defaultCrop = response.data.default_crop || 256;
+        setCropArea((prev) => ({ ...prev, size: defaultCrop }));
       } catch (error) {
         console.log('Capabilities not available, using defaults');
       }
     };
     fetchCapabilities();
   }, [BACKEND_BASE]);
+
+  const handleCropSizeChange = (newSize) => {
+    if (!capturedImage) {
+      setCropArea((prev) => ({ ...prev, size: newSize }));
+      return;
+    }
+    setCropArea((prev) => ({
+      ...clampCropArea(prev.x, prev.y, captureDimensions.width, captureDimensions.height, newSize),
+      size: newSize,
+    }));
+  };
 
   useEffect(() => {
     if (!detectedImage) {
@@ -652,6 +667,22 @@ function App() {
                 {!croppedImage && !enhancedImage && (
                   <div className="crop-section">
                     <h3>Select {cropSize}×{cropSize} Area to Enhance</h3>
+                    <div className="crop-size-controls">
+                      <span className="crop-size-label">Crop size:</span>
+                      {cropSizeOptions.map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          className={`crop-size-btn${cropSize === size ? ' active' : ''}`}
+                          onClick={() => handleCropSizeChange(size)}
+                        >
+                          {size}×{size}
+                        </button>
+                      ))}
+                      {capabilities?.inference_accelerator === 'cpu' && capabilities?.profile !== 'cpu' && (
+                        <span className="crop-size-hint">CPU inference — use 256×256 for fastest results</span>
+                      )}
+                    </div>
                     <p className="instruction">
                       Scroll to zoom • Drag red box to select area
                     </p>

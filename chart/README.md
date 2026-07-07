@@ -10,6 +10,8 @@ Deploys frontend, enhancement/detection backends, SwinIR/YOLO/Sentinel2 Inferenc
 | ----- | ------- | ----------- |
 | `computeProfile.name` | `cpu` | `cpu`, `t4`, `l40s`, or `hopper` |
 | `computeProfile.gpuAvailable` | `false` | Set `true` when GPU nodes are scheduled |
+| `model.accelerator` | `mlserver-cpu` | `mlserver-cpu` or `triton-gpu` (CUDA via Triton; requires `gpuAvailable`) |
+| `model.resources.limits.memory` | `16Gi` | Raise on GPU nodes when using CPU MLServer; 6Gi OOMs on 512px tiles |
 | `kserve.preferBinary` | `false` | `KSERVE_PREFER_BINARY` on both backends; keep `false` until MLServer binary infer passes |
 | `networkPolicy.enabled` | `false` | Enable backend NetworkPolicy (Phase 19) |
 | `model.deploy` | `true` | SwinIR InferenceService |
@@ -118,6 +120,22 @@ helm upgrade caisat ./chart -n <namespace> --reuse-values \
   --set model.minReplicas=1 \
   --set detection.minReplicas=0
 ```
+
+### Triton GPU accelerator (ONNX CUDA)
+
+RHOAI ships CPU-only MLServer. To use the GPU for SwinIR, set `model.accelerator=triton-gpu` (requires `computeProfile.gpuAvailable=true` and a non-CPU profile). Mirror `model.triton.image` (`nvcr.io/nvidia/tritonserver:24.05-py3`) if the cluster lacks nvcr.io access.
+
+```bash
+helm upgrade caisat ./chart -n <namespace> --reuse-values --server-side=false \
+  --set computeProfile.name=l40s \
+  --set computeProfile.gpuAvailable=true \
+  --set model.accelerator=triton-gpu \
+  --set model.minReplicas=1 \
+  --set detection.minReplicas=0 \
+  --set sentinel2Model.minReplicas=0
+```
+
+Backends expose `inference_accelerator` (`cpu` | `gpu`) and `default_crop` (256) via `/api/capabilities`. When `inference_accelerator=cpu` on a GPU tier, `max_crop` is capped at 512 to avoid MLServer OOM.
 
 `computeProfile.gpuTolerations` (default: `nvidia.com/gpu` Exists NoSchedule) is applied to SwinIR and YOLO predictors when `gpuAvailable=true`. Tune CPU via `model.resources` / `detection.resources` without losing the conditional GPU request.
 

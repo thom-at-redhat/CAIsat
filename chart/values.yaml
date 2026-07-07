@@ -45,6 +45,13 @@ model:
   # Model runtime
   runtime: mlserver
 
+  # Inference accelerator: mlserver-cpu (default) or triton-gpu (CUDA via Triton; requires gpuAvailable)
+  accelerator: mlserver-cpu
+
+  # Triton GPU runtime image — mirror to Quay if cluster lacks nvcr.io access.
+  triton:
+    image: nvcr.io/nvidia/tritonserver:24.05-py3
+
   # Minimum InferenceService replicas (scale to 0 for single-GPU sequential serving)
   minReplicas: 1
 
@@ -52,10 +59,10 @@ model:
   resources:
     requests:
       cpu: "4"
-      memory: "6Gi"
+      memory: "8Gi"
     limits:
       cpu: "4"
-      memory: "8Gi"
+      memory: "16Gi"
 
 # Sentinel2 SatlasPretrain Model configuration
 sentinel2Model:
@@ -151,10 +158,10 @@ backend:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 2Gi
 
   service:
     type: ClusterIP
