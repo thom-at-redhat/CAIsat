@@ -1,7 +1,7 @@
 # CAIsat developer convenience targets
 # Assisted by: cursor, claude
 
-.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test fuzz-kserve-binary mirror-image mirror-all
+.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test fuzz-kserve-binary image push-image image-frontend push-frontend mirror-image mirror-all
 
 pre-commit:
 	SKIP=no-commit-to-branch pre-commit run --all-files
@@ -28,6 +28,20 @@ push-check: check
 
 push: push-check
 	git push -u origin HEAD
+
+# Build a workload image (COMPONENT=frontend|backend|detection-backend; chart tag matches).
+# Override registry with CAISAT_IMAGE_REPO=quay.io/<your-quay-user>/caisat (else chart/values.yaml)
+image:
+	bash scripts/build-image.sh
+
+push-image:
+	PUSH=1 bash scripts/build-image.sh
+
+image-frontend:
+	COMPONENT=frontend $(MAKE) image
+
+push-frontend:
+	COMPONENT=frontend $(MAKE) push-image
 
 # Pull/retag/push pre-built OCI images (model, yoloobb, sentinel2, backend-changedetection).
 # CAISAT_UPSTREAM_REPO defaults to quay.io/rh-ai-quickstart/caisat; destination from chart/values.yaml.
