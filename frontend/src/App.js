@@ -7,6 +7,36 @@ import 'leaflet/dist/leaflet.css';
 import './App.css';
 import MonitoredAreas from './MonitoredAreas';
 
+const ENHANCE_STAGE_LABELS = {
+  preparing: 'Preparing crop…',
+  uploading: 'Uploading to server…',
+  inferring: 'Running AI super-resolution…',
+  finalizing: 'Building preview…',
+};
+
+function formatElapsed(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${minutes}:${String(secs).padStart(2, '0')}`;
+}
+
+function getEnhanceTileCount(cropSize, caps) {
+  const maxTile = caps?.max_tile ?? 256;
+  const tilingEnabled = caps?.tiling_enabled ?? false;
+  if (!tilingEnabled || cropSize <= maxTile) {
+    return 1;
+  }
+  const tilesPerSide = Math.ceil(cropSize / maxTile);
+  return tilesPerSide * tilesPerSide;
+}
+
+function getEnhanceEtaHint(tileCount) {
+  if (tileCount > 1) {
+    return `Processing ${tileCount} tiles sequentially · may take 1–2 minutes`;
+  }
+  return 'Usually ~10–60 seconds';
+}
+
 function App() {
   const [view, setView] = useState('globe'); // 'globe', 'map', 'processing', or 'monitored'
   const [enhancementCount, setEnhancementCount] = useState(0);
@@ -20,6 +50,10 @@ function App() {
   const [croppedImage, setCroppedImage] = useState(null);
   const [enhancedImage, setEnhancedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [enhanceStage, setEnhanceStage] = useState(null);
+  const [enhanceElapsedSec, setEnhanceElapsedSec] = useState(0);
+  const [processingPreviewUrl, setProcessingPreviewUrl] = useState(null);
+  const [uploadPercent, setUploadPercent] = useState(null);
   const [detecting, setDetecting] = useState(false);
   const [detections, setDetections] = useState(null);
   const [detectedImage, setDetectedImage] = useState(null);
@@ -50,6 +84,19 @@ function App() {
     }));
   })();
   const isLargeCrop = cropSize > defaultCrop;
+  const enhanceTileCount = getEnhanceTileCount(cropSize, capabilities);
+  const enhanceEtaHint = getEnhanceEtaHint(enhanceTileCount);
+
+  useEffect(() => {
+    if (!processing) {
+      return undefined;
+    }
+    setEnhanceElapsedSec(0);
+    const timerId = setInterval(() => {
+      setEnhanceElapsedSec((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [processing]);
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -352,14 +399,17 @@ function App() {
     if (!capturedImage) return;
 
     setProcessing(true);
+    setEnhanceStage('preparing');
+    setUploadPercent(null);
     setUserMessage(null);
     setCroppedImage(null);
     setEnhancedImage(null);
+    setProcessingPreviewUrl(null);
 
     const inferTimeoutMs = ((capabilities?.infer_timeout_seconds ?? 300) + 60) * 1000;
+    let cropPreviewUrl = null;
 
     try {
-      // Create a canvas to crop the image
       const img = new Image();
       img.src = capturedImage;
 
@@ -380,20 +430,45 @@ function App() {
         0, 0, cropSize, cropSize
       );
 
-      // Convert to blob
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) {
         throw new Error('Failed to crop image');
       }
 
-      // Send to backend
+      cropPreviewUrl = URL.createObjectURL(blob);
+      setProcessingPreviewUrl(cropPreviewUrl);
+      setEnhanceStage('uploading');
+
       const formData = new FormData();
       formData.append('image', blob, 'crop.png');
 
-      const response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: inferTimeoutMs,
-      });
+      let response;
+      let inferringWatchdog;
+      try {
+        inferringWatchdog = setTimeout(() => {
+          setEnhanceStage((stage) => (stage === 'uploading' ? 'inferring' : stage));
+        }, 800);
+
+        response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: inferTimeoutMs,
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setUploadPercent(percent);
+              if (progressEvent.loaded >= progressEvent.total) {
+                setEnhanceStage('inferring');
+              }
+            } else {
+              setEnhanceStage('inferring');
+            }
+          },
+        });
+      } finally {
+        clearTimeout(inferringWatchdog);
+      }
+
+      setEnhanceStage('finalizing');
 
       const payload = response.data;
       if (!payload?.preview || !payload?.media_type) {
@@ -407,15 +482,20 @@ function App() {
       }
       const previewBlob = new Blob([bytes], { type: payload.media_type });
 
-      // Save cropped and enhanced images for display after a successful response
-      const croppedUrl = URL.createObjectURL(blob);
       const enhancedUrl = URL.createObjectURL(previewBlob);
-      setCroppedImage(croppedUrl);
+      setCroppedImage(cropPreviewUrl);
+      setProcessingPreviewUrl(null);
       setEnhancedImage(enhancedUrl);
+      setEnhanceStage(null);
+      setUploadPercent(null);
       setProcessing(false);
 
     } catch (error) {
       console.error('Enhancement failed:', error);
+      if (cropPreviewUrl) {
+        URL.revokeObjectURL(cropPreviewUrl);
+      }
+      setProcessingPreviewUrl(null);
       const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
       const cropHint = cropSize > defaultCrop
         ? ` Try ${defaultCrop}×${defaultCrop} for faster, more reliable results.`
@@ -424,6 +504,8 @@ function App() {
         ? `Enhancement failed: connection dropped while receiving the enhanced image (large ${cropSize}×${cropSize} crops can exceed browser limits).${cropHint}`
         : `Enhancement failed: ${error.message}`;
       setUserMessage({ type: 'error', text: message });
+      setEnhanceStage(null);
+      setUploadPercent(null);
       setProcessing(false);
     }
   };
@@ -819,9 +901,33 @@ function App() {
                 {/* Step 2: Processing */}
                 {processing && (
                   <div className="processing-section">
-                    <div className="spinner-container">
-                      <div className="satellite-spinner">🛰️</div>
-                      <p className="processing-text">Processing...</p>
+                    <div className="enhance-progress-panel">
+                      {processingPreviewUrl && (
+                        <div className="enhance-progress-preview">
+                          <img
+                            src={processingPreviewUrl}
+                            alt={`Selected ${cropSize}×${cropSize} crop`}
+                          />
+                          <div className="enhance-progress-preview-dim" aria-hidden="true" />
+                        </div>
+                      )}
+                      <div
+                        className="enhance-progress-bar"
+                        role="progressbar"
+                        aria-label="Enhancement progress"
+                        aria-valuetext={ENHANCE_STAGE_LABELS[enhanceStage] || 'Processing'}
+                      >
+                        <div className="enhance-progress-bar-indeterminate" />
+                      </div>
+                      <p className="processing-text">
+                        {ENHANCE_STAGE_LABELS[enhanceStage] || 'Processing…'}
+                      </p>
+                      {enhanceStage === 'uploading' && uploadPercent != null && (
+                        <p className="enhance-progress-meta">Upload {uploadPercent}%</p>
+                      )}
+                      <p className="enhance-progress-meta">
+                        Elapsed {formatElapsed(enhanceElapsedSec)} · {enhanceEtaHint}
+                      </p>
                     </div>
                   </div>
                 )}
