@@ -29,8 +29,8 @@ spec:
         version: '1'
       name: ''
       resources:
-        {{- include "caisat.inferenceModelResources" (dict "root" . "resources" .Values.model.resources "gpu" true) | nindent 8 }}
-      runtime: swinir-model
+        {{- include "caisat.swinirModelResources" . | nindent 8 }}
+      runtime: {{ include "caisat.swinirRuntimeName" . }}
       storageUri: 'oci://{{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}'
     timeout: 300
 ---
@@ -48,6 +48,7 @@ stringData:
   URI: oci://{{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}
 type: Opaque
 ---
+{{- if not (include "caisat.swinirUseTritonGpu" .) }}
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
@@ -78,25 +79,25 @@ spec:
           value: /mnt/models
       image: 'registry.redhat.io/rhoai/odh-mlserver-rhel9@sha256:d76bea18afe7b361847babb7a8ebc51fdbcd8164435f1bcb971e1701ba1bc595'
       livenessProbe:
-        failureThreshold: 6
+        failureThreshold: 10
         httpGet:
           path: '/v2/models/{{ "{{" }}.Name{{ "}}" }}/ready'
           port: 8080
-        initialDelaySeconds: 20
-        periodSeconds: 10
-        timeoutSeconds: 5
+        initialDelaySeconds: 60
+        periodSeconds: 30
+        timeoutSeconds: 30
       name: kserve-container
       ports:
         - containerPort: 8080
           protocol: TCP
       readinessProbe:
-        failureThreshold: 3
+        failureThreshold: 6
         httpGet:
           path: '/v2/models/{{ "{{" }}.Name{{ "}}" }}/ready'
           port: 8080
-        initialDelaySeconds: 5
-        periodSeconds: 5
-        timeoutSeconds: 5
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 30
       securityContext:
         allowPrivilegeEscalation: false
         capabilities:
@@ -132,3 +133,83 @@ spec:
       version: '4'
     - name: onnx
       version: '1'
+{{- end }}
+---
+{{- if (include "caisat.swinirUseTritonGpu" .) }}
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  annotations:
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/serving-runtime-scope: global
+    openshift.io/display-name: Triton GPU ServingRuntime for SwinIR
+    serving.kserve.io/server-type: triton
+  name: swinir-triton
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  annotations:
+    prometheus.kserve.io/path: /metrics
+    prometheus.kserve.io/port: '8002'
+  volumes:
+    - name: shm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 2Gi
+    - name: triton-models
+      emptyDir: {}
+  containers:
+    - name: kserve-container
+      image: {{ (.Values.model.triton.image | default "nvcr.io/nvidia/tritonserver:24.05-py3") | quote }}
+      command:
+        - /bin/sh
+        - '-c'
+      args:
+        - |
+          set -e
+          mkdir -p /triton-models/{{ .Values.model.name }}/1
+          cp /mnt/models/model.onnx /triton-models/{{ .Values.model.name }}/1/model.onnx
+          exec tritonserver \
+            --model-store=/triton-models \
+            --http-port=8080 \
+            --grpc-port=9000 \
+            --allow-http=true \
+            --allow-grpc=true \
+            --strict-model-config=false
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+      volumeMounts:
+        - name: shm
+          mountPath: /dev/shm
+        - name: triton-models
+          mountPath: /triton-models
+      livenessProbe:
+        failureThreshold: 6
+        httpGet:
+          path: /v2/health/live
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 30
+        timeoutSeconds: 10
+      readinessProbe:
+        failureThreshold: 6
+        httpGet:
+          path: '/v2/models/{{ .Values.model.name }}/ready'
+          port: 8080
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        timeoutSeconds: 10
+  multiModel: false
+  protocolVersions:
+    - v2
+    - grpc-v2
+  supportedModelFormats:
+    - name: onnx
+      version: '1'
+      autoSelect: true
+    - name: triton
+      version: '2'
+      autoSelect: true
+{{- end }}

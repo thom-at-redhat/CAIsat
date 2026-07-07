@@ -358,6 +358,46 @@ body {
     text-align: center;
 }
 
+.crop-size-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.crop-size-label {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.crop-size-btn {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.crop-size-btn:hover,
+.crop-size-btn.active {
+    background: rgba(255, 68, 68, 0.25);
+    border-color: #ff4444;
+}
+
+.crop-size-hint {
+    flex-basis: 100%;
+    text-align: center;
+    color: rgba(255, 200, 100, 0.9);
+    font-size: 12px;
+}
+
 .crop-container {
     display: flex;
     justify-content: center;

@@ -88,3 +88,46 @@ Model endpoint URL
 {{- $serviceName := .Values.model.serviceName | default (printf "%s-predictor" .Values.model.name) -}}
 http://{{ $serviceName }}.{{ $namespace }}.svc.cluster.local:{{ .Values.model.port }}/v2/models/{{ .Values.model.name }}/infer
 {{- end }}
+
+{{/*
+True when SwinIR should use the Triton GPU ServingRuntime (requires GPU profile + gpuAvailable).
+*/}}
+{{- define "caisat.swinirUseTritonGpu" -}}
+{{- and (eq .Values.model.accelerator "triton-gpu") (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable -}}
+{{- end }}
+
+{{/*
+SwinIR ServingRuntime name selected by model.accelerator.
+*/}}
+{{- define "caisat.swinirRuntimeName" -}}
+{{- if include "caisat.swinirUseTritonGpu" . -}}
+swinir-triton
+{{- else -}}
+swinir-model
+{{- end -}}
+{{- end }}
+
+{{/*
+INFERENCE_ACCELERATOR env for backends: gpu when Triton GPU runtime is active, else cpu.
+*/}}
+{{- define "caisat.inferenceAccelerator" -}}
+{{- if include "caisat.swinirUseTritonGpu" . -}}
+gpu
+{{- else -}}
+cpu
+{{- end -}}
+{{- end }}
+
+{{/*
+SwinIR model resources with profile-aware memory floor for CPU MLServer on GPU nodes.
+*/}}
+{{- define "caisat.swinirModelResources" -}}
+{{- $resources := deepCopy .Values.model.resources -}}
+{{- if and (ne .Values.computeProfile.name "cpu") .Values.computeProfile.gpuAvailable (not (include "caisat.swinirUseTritonGpu" .)) -}}
+{{- $reqMem := $resources.requests.memory | default "8Gi" -}}
+{{- $limMem := $resources.limits.memory | default "16Gi" -}}
+{{- $_ := set $resources.requests "memory" $reqMem -}}
+{{- $_ := set $resources.limits "memory" $limMem -}}
+{{- end -}}
+{{- include "caisat.inferenceModelResources" (dict "root" . "resources" $resources "gpu" true) -}}
+{{- end }}
