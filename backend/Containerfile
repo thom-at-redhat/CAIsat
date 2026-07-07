@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/python-311
+FROM registry.access.redhat.com/ubi9/python-312
 
 # Update packages for CVE fixes
 USER 0
@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade "pip==26.1.2" && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY *.py .
