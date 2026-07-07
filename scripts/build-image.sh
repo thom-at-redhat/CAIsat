@@ -6,6 +6,8 @@
 set -o errexit -o nounset -o pipefail
 
 REPO_ROOT="$(cd "$(dirname "${0}")/.." && pwd)"
+# shellcheck source=scripts/resolve-image-repo.sh
+source "${REPO_ROOT}/scripts/resolve-image-repo.sh"
 COMPONENT="${1:-${COMPONENT:-frontend}}"
 PUSH="${PUSH:-0}"
 CONTAINER_CMD="${CONTAINER_CMD:-podman}"
@@ -15,20 +17,7 @@ if ! command -v "${CONTAINER_CMD}" >/dev/null 2>&1; then
     exit 1
 fi
 
-resolve_image_repo() {
-    if [[ -n "${CAISAT_IMAGE_REPO:-}" ]]; then
-        printf '%s' "${CAISAT_IMAGE_REPO}"
-        return 0
-    fi
-    local VALUES_FILE="${REPO_ROOT}/chart/values.yaml"
-    if ! command -v python3 >/dev/null 2>&1; then
-        printf 'build-image: set CAISAT_IMAGE_REPO or install python3 to read %s\n' "${VALUES_FILE}" >&2
-        return 1
-    fi
-    python3 -c "import yaml; print(yaml.safe_load(open('${VALUES_FILE}'))['frontend']['image']['repository'])"
-}
-
-IMAGE_REPO="$(resolve_image_repo)"
+IMAGE_REPO="$(caisat_resolve_image_repo build-image "${REPO_ROOT}/chart/values.yaml")"
 
 case "${COMPONENT}" in
     frontend)
