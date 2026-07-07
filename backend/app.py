@@ -16,7 +16,7 @@ import aiohttp
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 from PIL import Image
 
 from capabilities import get_capabilities
@@ -137,8 +137,8 @@ async def enhance_image(image: UploadFile = File(...)):
 
         enhancement_counter += 1
 
-        return StreamingResponse(
-            img_byte_arr,
+        return Response(
+            content=img_byte_arr.getvalue(),
             media_type="image/png",
             headers={"Content-Disposition": "inline; filename=enhanced.png"},
         )
