@@ -32,10 +32,24 @@ function App() {
   const [capabilities, setCapabilities] = useState(null);
 
   const cropSize = cropArea.size;
+  const defaultCrop = capabilities?.default_crop ?? 256;
   const enhancedSize = cropSize * (capabilities?.scale_factor ?? 4);
-  const cropSizeOptions = capabilities
-    ? [...new Set([capabilities.default_crop || 256, 256, 512, capabilities.max_crop].filter(Boolean))].sort((a, b) => a - b)
-    : [256];
+  const cropSizeOptions = (() => {
+    if (!capabilities) {
+      return [{ size: 256, isDefault: true, isAdvanced: false }];
+    }
+    const maxCrop = capabilities.max_crop ?? defaultCrop;
+    const standardSizes = [256, 512, 768, 1024].filter((size) => size <= maxCrop);
+    const sizes = [...new Set([defaultCrop, ...standardSizes, maxCrop])]
+      .filter((size) => size <= maxCrop)
+      .sort((a, b) => a - b);
+    return sizes.map((size) => ({
+      size,
+      isDefault: size === defaultCrop,
+      isAdvanced: size > defaultCrop,
+    }));
+  })();
+  const isLargeCrop = cropSize > defaultCrop;
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -378,18 +392,24 @@ function App() {
 
       const response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob',
         timeout: inferTimeoutMs,
       });
 
-      if (!response.data?.type?.startsWith('image/')) {
-        const detail = await response.data.text();
-        throw new Error(detail.slice(0, 200) || 'Server returned a non-image response');
+      const payload = response.data;
+      if (!payload?.preview || !payload?.media_type) {
+        throw new Error('Server returned an invalid enhance response');
       }
+
+      const binary = atob(payload.preview);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const previewBlob = new Blob([bytes], { type: payload.media_type });
 
       // Save cropped and enhanced images for display after a successful response
       const croppedUrl = URL.createObjectURL(blob);
-      const enhancedUrl = URL.createObjectURL(response.data);
+      const enhancedUrl = URL.createObjectURL(previewBlob);
       setCroppedImage(croppedUrl);
       setEnhancedImage(enhancedUrl);
       setProcessing(false);
@@ -397,8 +417,8 @@ function App() {
     } catch (error) {
       console.error('Enhancement failed:', error);
       const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
-      const cropHint = cropSize > (capabilities?.default_crop ?? 256)
-        ? ` Try ${capabilities?.default_crop ?? 256}×${capabilities?.default_crop ?? 256} for faster, more reliable results.`
+      const cropHint = cropSize > defaultCrop
+        ? ` Try ${defaultCrop}×${defaultCrop} for faster, more reliable results.`
         : '';
       const message = isNetworkError
         ? `Enhancement failed: connection dropped while receiving the enhanced image (large ${cropSize}×${cropSize} crops can exceed browser limits).${cropHint}`
@@ -422,7 +442,7 @@ function App() {
 
       // Send to detection backend
       const formData = new FormData();
-      formData.append('image', blob, 'enhanced.png');
+      formData.append('image', blob, 'enhanced.jpg');
 
       const detectResponse = await axios.post(`${DETECTION_BASE}/api/detect`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -686,18 +706,35 @@ function App() {
                     <h3>Select {cropSize}×{cropSize} Area to Enhance</h3>
                     <div className="crop-size-controls">
                       <span className="crop-size-label">Crop size:</span>
-                      {cropSizeOptions.map((size) => (
+                      {cropSizeOptions.map(({ size, isDefault, isAdvanced }) => (
                         <button
                           key={size}
                           type="button"
-                          className={`crop-size-btn${cropSize === size ? ' active' : ''}`}
+                          className={`crop-size-btn${cropSize === size ? ' active' : ''}${isDefault ? ' recommended' : ''}${isAdvanced ? ' advanced' : ''}`}
                           onClick={() => handleCropSizeChange(size)}
+                          title={
+                            isAdvanced
+                              ? `Large crop — slower on slow links; output ${size * (capabilities?.scale_factor ?? 4)}×${size * (capabilities?.scale_factor ?? 4)}`
+                              : undefined
+                          }
                         >
                           {size}×{size}
+                          {isDefault && <span className="crop-size-badge">Recommended</span>}
+                          {isAdvanced && size >= 512 && (
+                            <span className="crop-size-badge warn">{size >= 768 ? 'Advanced' : 'Large'}</span>
+                          )}
                         </button>
                       ))}
+                      {isLargeCrop && (
+                        <p className="crop-size-warning">
+                          Large {cropSize}×{cropSize} crops produce {enhancedSize}×{enhancedSize} results and may be slow on limited bandwidth.
+                          {capabilities?.gpu_tier && capabilities.gpu_tier !== 'cpu' && (
+                            <> Tier: {capabilities.gpu_tier} (max {capabilities.max_crop}×{capabilities.max_crop}).</>
+                          )}
+                        </p>
+                      )}
                       {capabilities?.inference_accelerator === 'cpu' && capabilities?.profile !== 'cpu' && (
-                        <span className="crop-size-hint">CPU inference — use 256×256 for fastest results</span>
+                        <span className="crop-size-hint">CPU inference — use {defaultCrop}×{defaultCrop} for fastest results</span>
                       )}
                     </div>
                     <p className="instruction">
@@ -940,7 +977,7 @@ function App() {
                           Download Detected Image
                         </a>
                       ) : (
-                        <a href={enhancedImage} download="enhanced.png" className="download-btn">
+                        <a href={enhancedImage} download="enhanced.jpg" className="download-btn">
                           Download Enhanced Image
                         </a>
                       )}
