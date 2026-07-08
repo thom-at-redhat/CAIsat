@@ -11,22 +11,24 @@ Operational follow-up and merge gates: [`PLAN.md`](../project/PLAN.md).
 
 Every feature spec includes a metadata table:
 
-| Field          | Description                                                            |
-| -------------- | ---------------------------------------------------------------------- |
-| **Status**     | `draft` or `accepted` — see each spec; UI specs need operator sign-off |
-| **Spec ID**    | Stable prefix (`CAP-`, `KSRV-`, `DRL-`) for traceability               |
-| **Tests**      | pytest module and function names (MT-W12)                              |
-| **Validation** | `baseline-smoke.md` line references for operator checks                |
+| Field          | Description                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| **Status**     | `draft` or `accepted` — see each spec; UI specs need operator sign-off  |
+| **Spec ID**    | Stable prefix (`CAP-`, `ENH-`, `UX-`, `KSRV-`, `DRL-`) for traceability |
+| **Tests**      | pytest module and function names (MT-W12)                               |
+| **Validation** | `baseline-smoke.md` line references for operator checks                 |
 
 Requirements use `### <SPEC-ID>-R<n>:` headings. Acceptance criteria are checkboxes for PR and operator review.
 
 ## Traceability
 
-| Spec ID  | Spec file                                                    | Tests                          | Validation                                                                            |
-| -------- | ------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------- |
-| CAP-001  | [`capabilities-api.md`](capabilities-api.md)                 | `tests/test_capabilities.py`   | `baseline-smoke.md` L188, L203                                                        |
-| KSRV-001 | [`kserve-v2-tensors.md`](kserve-v2-tensors.md)               | `tests/test_kserve_v2.py`      | `baseline-smoke.md` L66; spike [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) |
-| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | _(manual / Playwright MT-R3a)_ | `baseline-smoke.md` L145–157 — **accepted** MT-R3a 2026-07-01                         |
+| Spec ID  | Spec file                                                    | Tests                                                       | Validation                                                  |
+| -------- | ------------------------------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| CAP-001  | [`capabilities-api.md`](capabilities-api.md)                 | `tests/test_capabilities.py`                                | `baseline-smoke.md` L188, L203                              |
+| ENH-001  | [`async-jobs-api.md`](async-jobs-api.md)                     | `test_enhance_jobs`, `test_detect_jobs`, `test_async_*_api` | `baseline-smoke.md` MT-E2E async 768                        |
+| UX-001   | [`progress-ux.md`](progress-ux.md)                           | `workflowUtils.test.js`, `mt-e2e-workflow.mjs`              | `baseline-smoke.md` MT-E2E stages                           |
+| KSRV-001 | [`kserve-v2-tensors.md`](kserve-v2-tensors.md)               | `tests/test_kserve_v2.py`                                   | L66; [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) |
+| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | _(Playwright MT-R3a)_                                       | L145–157 **accepted** 2026-07-01                            |
 
 ## Backend module parity
 

@@ -244,6 +244,36 @@ Manual checklist when `max_crop` > 256 or tiling is enabled:
 
 ---
 
+## MT-E2E workflow (Playwright, cluster)
+
+Cluster-only Playwright script for async enhance, detect progress stages, and gpu_exclusive idle header.
+Not CI-blocking (GPU + up to 3m 768 enhance timeout).
+
+**Command:**
+
+```bash
+export CAISAT_FRONTEND_URL=https://caisat-caisat.apps.<cluster-domain>
+export CAISAT_GPU_EXCLUSIVE=1   # optional — require Detection: idle on gpu_exclusive stacks
+node scripts/mt-e2e-workflow.mjs
+```
+
+**Artifacts:** `docs/validation/artifacts/mt-e2e-20260708/` (report, screenshots, summary JSON).
+
+| Check              | Assertion                                              | Cluster result | Notes              |
+| ------------------ | ------------------------------------------------------ | -------------- | ------------------ |
+| Enhance 256        | Default crop; enhanced img naturalWidth > 0            | _(pending)_    |                    |
+| Enhance 768        | 768 crop; complete within 3m; preview naturalWidth > 0 | _(pending)_    | Async job          |
+| Detect progress    | Stage labels before Detected panel                     | _(pending)_    | `workflowUtils.js` |
+| gpu_exclusive idle | Header `Detection: idle` when YOLO scaled down         | _(pending)_    | l40s profile       |
+
+| Field      | Value       |
+| ---------- | ----------- |
+| Branch SHA | _(pending)_ |
+| Date       | 2026-07-08  |
+| Signed off | _(pending)_ |
+
+---
+
 ## Per-phase re-run rule
 
 Re-run **health** via `make smoke` after backend/chart changes. For baseline/binary/crop profiles, follow the manual checklist at the phase’s merge gate until `smoke-local.sh` implements them.

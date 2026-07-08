@@ -3,10 +3,14 @@
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
+import io
+import sys
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -48,3 +52,45 @@ def capabilities(backend_dir: str):
 def clear_profile_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for key in _ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
+
+
+def _drop_backend_modules(backend_path: Path) -> None:
+    resolved = backend_path.resolve()
+    to_drop = [name for name, mod in list(sys.modules.items()) if (mod_file := getattr(mod, "__file__", None)) is not None and resolved in Path(mod_file).resolve().parents]
+    for name in to_drop:
+        sys.modules.pop(name, None)
+
+
+def import_app_module(monkeypatch: pytest.MonkeyPatch, backend_dir: str):
+    """Import backend ``app`` after MODEL_ENDPOINT is set (required at import time)."""
+    monkeypatch.setenv(
+        "MODEL_ENDPOINT",
+        "http://test-predictor.example:8080/v2/models/test/infer",
+    )
+    backend_path = REPO_ROOT / backend_dir
+    path_str = str(backend_path.resolve())
+    for dir_name in ("backend", "backend-detection"):
+        _drop_backend_modules(REPO_ROOT / dir_name)
+    sys.modules.pop("app", None)
+    if path_str not in sys.path:
+        sys.path.insert(0, path_str)
+    elif sys.path[0] != path_str:
+        sys.path.remove(path_str)
+        sys.path.insert(0, path_str)
+    return importlib.import_module("app")
+
+
+@pytest.fixture
+def enhance_app(monkeypatch: pytest.MonkeyPatch):
+    return import_app_module(monkeypatch, "backend")
+
+
+@pytest.fixture
+def detection_app(monkeypatch: pytest.MonkeyPatch):
+    return import_app_module(monkeypatch, "backend-detection")
+
+
+def tiny_png_bytes(size: tuple[int, int] = (64, 64)) -> bytes:
+    buf = io.BytesIO()
+    Image.new("RGB", size, color=(100, 150, 200)).save(buf, format="PNG")
+    return buf.getvalue()

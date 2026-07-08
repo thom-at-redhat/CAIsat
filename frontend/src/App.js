@@ -6,21 +6,15 @@ import leafletImage from 'leaflet-image';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
 import MonitoredAreas from './MonitoredAreas';
-
-const ENHANCE_STAGE_LABELS = {
-  preparing: 'Preparing crop…',
-  uploading: 'Uploading to server…',
-  inferring: 'Running AI super-resolution…',
-  finalizing: 'Building preview…',
-};
-
-const DETECT_STAGE_LABELS = {
-  preparing: 'Preparing enhanced image…',
-  uploading: 'Uploading to detection server…',
-  activating: 'Activating detection model on GPU…',
-  detecting: 'Running object detection…',
-  drawing: 'Drawing bounding boxes…',
-};
+import {
+  ENHANCE_STAGE_LABELS,
+  DETECT_STAGE_LABELS,
+  getEnhanceTileCount,
+  shouldUseAsyncEnhance,
+  getDetectEtaHint,
+  previewPayloadToObjectUrl,
+  getDetectionStatusLabel,
+} from './workflowUtils';
 
 function formatElapsed(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -28,58 +22,11 @@ function formatElapsed(seconds) {
   return `${minutes}:${String(secs).padStart(2, '0')}`;
 }
 
-function getEnhanceTileCount(cropSize, caps) {
-  const maxTile = caps?.max_tile ?? 256;
-  const tilingEnabled = caps?.tiling_enabled ?? cropSize > maxTile;
-  if (!tilingEnabled || cropSize <= maxTile) {
-    return 1;
-  }
-  const tilesPerSide = Math.ceil(cropSize / maxTile);
-  return tilesPerSide * tilesPerSide;
-}
-
-function shouldUseAsyncEnhance(cropSize, caps, tileCount) {
-  const defaultCrop = caps?.default_crop ?? 256;
-  if (tileCount > 1) {
-    return true;
-  }
-  if (!caps && cropSize > defaultCrop) {
-    return true;
-  }
-  return cropSize > defaultCrop;
-}
-
 function getEnhanceEtaHint(tileCount) {
   if (tileCount > 1) {
     return `Processing ${tileCount} tiles sequentially · may take 1–2 minutes`;
   }
   return 'Usually ~10–60 seconds';
-}
-
-function getDetectEtaHint(gpuExclusive, predictorReady) {
-  if (gpuExclusive && predictorReady === false) {
-    return 'First run may take 30–90s while the model starts';
-  }
-  if (gpuExclusive) {
-    return 'Model swap after enhance · usually ~30–90s';
-  }
-  return 'Usually ~10–45 seconds';
-}
-
-async function previewPayloadToObjectUrl(payload) {
-  if (!payload?.preview || !payload?.media_type) {
-    throw new Error('Server returned an invalid enhance response');
-  }
-  const response = await fetch(`data:${payload.media_type};base64,${payload.preview}`);
-  const previewBlob = await response.blob();
-  const objectUrl = URL.createObjectURL(previewBlob);
-  await new Promise((resolve, reject) => {
-    const probe = new Image();
-    probe.onload = resolve;
-    probe.onerror = () => reject(new Error('Enhanced preview failed to load in browser'));
-    probe.src = objectUrl;
-  });
-  return objectUrl;
 }
 
 function sleep(ms) {
@@ -101,16 +48,6 @@ async function pollAsyncJob(baseUrl, resource, jobId, timeoutMs, onTick) {
     await sleep(2000);
   }
   throw new Error('Timed out while waiting for results');
-}
-
-function getDetectionStatusLabel(detectionOnline, gpuExclusive, predictorReady) {
-  if (!detectionOnline) {
-    return 'down';
-  }
-  if (gpuExclusive && predictorReady === false) {
-    return 'idle';
-  }
-  return 'up';
 }
 
 function App() {

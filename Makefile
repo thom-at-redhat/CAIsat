@@ -1,12 +1,12 @@
 # CAIsat developer convenience targets
 # Assisted by: cursor, claude
 
-.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test fuzz-kserve-binary image push-image image-frontend push-frontend mirror-image mirror-all
+.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test test-frontend fuzz-kserve-binary image push-image image-frontend push-frontend mirror-image mirror-all
 
 pre-commit:
 	SKIP=no-commit-to-branch pre-commit run --all-files
 
-check: pre-commit helm-template test
+check: pre-commit helm-template test test-frontend
 
 install-hooks:
 	pre-commit install
@@ -58,6 +58,9 @@ test:
 	@PY="python3.12"; command -v "$${PY}" >/dev/null 2>&1 || PY="python3"; \
 	"$${PY}" -m pip install -q -r requirements-dev.txt -r backend/requirements.txt; \
 	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "$${PY}" -m pytest
+
+test-frontend:
+	cd frontend && CI=true npm test -- --watchAll=false
 
 scorecard-local:
 	bash scripts/scorecard-local.sh
