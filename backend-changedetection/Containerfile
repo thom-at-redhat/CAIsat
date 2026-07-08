@@ -1,0 +1,23 @@
+FROM registry.access.redhat.com/ubi9/python-312
+
+# Assisted by: cursor, claude
+
+# Update packages for CVE fixes
+USER 0
+RUN dnf update -y && dnf clean all
+USER 1001
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade "pip==26.1.2" && pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY *.py .
+
+USER 1001
+
+EXPOSE 8080
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]

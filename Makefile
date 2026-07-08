@@ -29,7 +29,7 @@ push-check: check
 push: push-check
 	git push -u origin HEAD
 
-# Build a workload image (COMPONENT=frontend|backend|detection-backend; chart tag matches).
+# Build a workload image (COMPONENT=frontend|backend|detection-backend|backend-changedetection; chart tag matches).
 # Override registry with CAISAT_IMAGE_REPO=quay.io/<your-quay-user>/caisat (else chart/values.yaml)
 image:
 	bash scripts/build-image.sh
