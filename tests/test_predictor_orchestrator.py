@@ -33,6 +33,12 @@ def test_ensure_predictor_active_noop_when_disabled(monkeypatch: pytest.MonkeyPa
     asyncio.run(orchestrator.ensure_predictor_active("swinir"))
 
 
+def test_ready_timeout_defaults_when_env_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    orchestrator = _load_orchestrator()
+    monkeypatch.setenv("PREDICTOR_READY_TIMEOUT_SECONDS", "")
+    assert orchestrator._ready_timeout() == 300.0
+
+
 def test_gpu_exclusive_enabled_parses_truthy(monkeypatch: pytest.MonkeyPatch) -> None:
     orchestrator = _load_orchestrator()
     monkeypatch.setenv("GPU_EXCLUSIVE_MODE", "true")

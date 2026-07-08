@@ -25,7 +25,10 @@ def _namespace() -> str:
 
 
 def _ready_timeout() -> float:
-    return float(os.getenv("PREDICTOR_READY_TIMEOUT_SECONDS", "300"))
+    raw = os.getenv("PREDICTOR_READY_TIMEOUT_SECONDS", "300").strip()
+    if not raw:
+        return 300.0
+    return float(raw)
 
 
 def _predictor_config() -> dict[str, dict[str, str]]:
