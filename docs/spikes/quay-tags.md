@@ -2,6 +2,46 @@
 
 <!-- Assisted by: cursor, claude -->
 
+## Fork operator workflow (canonical)
+
+Two separate image paths — do not confuse `make mirror-all` with a full image set.
+
+**Workload images** (`frontend`, `backend`, `detection-backend`; optional `backend-changedetection` rebuild):
+
+- Build/push with `scripts/build-image.sh` / `make image` to personal Quay
+- Destination: `CAISAT_IMAGE_REPO` or chart default
+- Auth: your Quay push credentials
+
+**ONNX / aux mirror** (`model`, `yoloobb`, `sentinel2`, `backend-changedetection` only):
+
+- `make mirror-all` → `scripts/mirror-image.sh`
+- Auth: upstream org pull **or** fork override below
+- Does **not** build or mirror workload tags
+
+Without `rh-ai-quickstart` org access, the default upstream pull fails with `unauthorized`
+(see [Upstream gate](#upstream-gate-rh-ai-quickstart)).
+
+**Fork-only ONNX mirror** (no upstream org access — preferred for this fork):
+
+```bash
+export CAISAT_UPSTREAM_REPO=quay.io/thom_at_redhat/caisat
+make mirror-all
+```
+
+**Workload build** (canonical for contributors):
+
+```bash
+# one component, or set COMPONENT=...
+scripts/build-image.sh frontend
+PUSH=1 scripts/build-image.sh backend
+```
+
+Do not pursue upstream org access for day-to-day fork work; use personal Quay builds and the
+fork upstream override above. `mirror-image.sh` prints a fail-fast hint on `podman pull` failure
+pointing here.
+
+---
+
 ## Fork gate (contributor fork)
 
 | Field           | Value                                                     |
@@ -60,6 +100,8 @@ Error: ... reading manifest model in quay.io/rh-ai-quickstart/caisat: unauthoriz
 ### Notes
 
 Requires org access or public repo policy change on `quay.io/rh-ai-quickstart/caisat`. Upstream PR deferred.
+Do not pursue org access for fork day-to-day work — use the
+[fork operator workflow](#fork-operator-workflow-canonical) instead.
 
 ---
 
