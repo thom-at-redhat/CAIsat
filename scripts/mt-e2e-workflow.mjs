@@ -4,7 +4,6 @@
 
 import { chromium } from 'playwright';
 import { execSync } from 'node:child_process';
-import https from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,37 +34,12 @@ function detectionHealthUrl() {
   return `${parsed.origin}/health`;
 }
 
-function fetchDetectionHealth() {
-  const healthUrl = new URL(detectionHealthUrl());
-  return new Promise((resolve, reject) => {
-    const request = https.get(
-      {
-        hostname: healthUrl.hostname,
-        port: healthUrl.port || 443,
-        path: `${healthUrl.pathname}${healthUrl.search}`,
-        rejectUnauthorized: false,
-        timeout: 10_000,
-      },
-      (response) => {
-        let body = '';
-        response.on('data', (chunk) => {
-          body += chunk;
-        });
-        response.on('end', () => {
-          try {
-            resolve(JSON.parse(body));
-          } catch (error) {
-            reject(error);
-          }
-        });
-      },
-    );
-    request.on('error', reject);
-    request.on('timeout', () => {
-      request.destroy();
-      reject(new Error('detection health request timed out'));
-    });
-  });
+async function fetchDetectionHealth() {
+  const response = await fetch(detectionHealthUrl(), { signal: AbortSignal.timeout(10_000) });
+  if (!response.ok) {
+    throw new Error(`detection health HTTP ${response.status}`);
+  }
+  return response.json();
 }
 
 async function ensureYoloScaledDown() {
