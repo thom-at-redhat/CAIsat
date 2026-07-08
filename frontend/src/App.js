@@ -14,6 +14,14 @@ const ENHANCE_STAGE_LABELS = {
   finalizing: 'Building preview…',
 };
 
+const DETECT_STAGE_LABELS = {
+  preparing: 'Preparing enhanced image…',
+  uploading: 'Uploading to detection server…',
+  activating: 'Activating detection model on GPU…',
+  detecting: 'Running object detection…',
+  drawing: 'Drawing bounding boxes…',
+};
+
 function formatElapsed(seconds) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -22,7 +30,7 @@ function formatElapsed(seconds) {
 
 function getEnhanceTileCount(cropSize, caps) {
   const maxTile = caps?.max_tile ?? 256;
-  const tilingEnabled = caps?.tiling_enabled ?? false;
+  const tilingEnabled = caps?.tiling_enabled ?? cropSize > maxTile;
   if (!tilingEnabled || cropSize <= maxTile) {
     return 1;
   }
@@ -30,11 +38,48 @@ function getEnhanceTileCount(cropSize, caps) {
   return tilesPerSide * tilesPerSide;
 }
 
+function shouldUseAsyncEnhance(cropSize, caps, tileCount) {
+  const defaultCrop = caps?.default_crop ?? 256;
+  if (tileCount > 1) {
+    return true;
+  }
+  if (!caps && cropSize > defaultCrop) {
+    return true;
+  }
+  return cropSize > defaultCrop;
+}
+
 function getEnhanceEtaHint(tileCount) {
   if (tileCount > 1) {
     return `Processing ${tileCount} tiles sequentially · may take 1–2 minutes`;
   }
   return 'Usually ~10–60 seconds';
+}
+
+function getDetectEtaHint(gpuExclusive, predictorReady) {
+  if (gpuExclusive && predictorReady === false) {
+    return 'First run may take 30–90s while the model starts';
+  }
+  if (gpuExclusive) {
+    return 'Model swap after enhance · usually ~30–90s';
+  }
+  return 'Usually ~10–45 seconds';
+}
+
+async function previewPayloadToObjectUrl(payload) {
+  if (!payload?.preview || !payload?.media_type) {
+    throw new Error('Server returned an invalid enhance response');
+  }
+  const response = await fetch(`data:${payload.media_type};base64,${payload.preview}`);
+  const previewBlob = await response.blob();
+  const objectUrl = URL.createObjectURL(previewBlob);
+  await new Promise((resolve, reject) => {
+    const probe = new Image();
+    probe.onload = resolve;
+    probe.onerror = () => reject(new Error('Enhanced preview failed to load in browser'));
+    probe.src = objectUrl;
+  });
+  return objectUrl;
 }
 
 function sleep(ms) {
@@ -97,6 +142,7 @@ function App() {
   const [detectionPredictorReady, setDetectionPredictorReady] = useState(null);
   const [detectStage, setDetectStage] = useState(null);
   const [detectElapsedSec, setDetectElapsedSec] = useState(0);
+  const [detectUploadPercent, setDetectUploadPercent] = useState(null);
   const [capabilities, setCapabilities] = useState(null);
 
   const cropSize = cropArea.size;
@@ -120,6 +166,7 @@ function App() {
   const isLargeCrop = cropSize > defaultCrop;
   const enhanceTileCount = getEnhanceTileCount(cropSize, capabilities);
   const enhanceEtaHint = getEnhanceEtaHint(enhanceTileCount);
+  const detectEtaHint = getDetectEtaHint(capabilities?.gpu_exclusive, detectionPredictorReady);
 
   useEffect(() => {
     if (!processing) {
@@ -501,7 +548,7 @@ function App() {
 
       let response;
       let inferringWatchdog;
-      const useAsyncEnhance = enhanceTileCount > 1;
+      const useAsyncEnhance = shouldUseAsyncEnhance(cropSize, capabilities, enhanceTileCount);
       try {
         inferringWatchdog = setTimeout(() => {
           setEnhanceStage((stage) => (stage === 'uploading' ? 'inferring' : stage));
@@ -558,19 +605,7 @@ function App() {
 
       setEnhanceStage('finalizing');
 
-      const payload = response.data;
-      if (!payload?.preview || !payload?.media_type) {
-        throw new Error('Server returned an invalid enhance response');
-      }
-
-      const binary = atob(payload.preview);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i += 1) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      const previewBlob = new Blob([bytes], { type: payload.media_type });
-
-      const enhancedUrl = URL.createObjectURL(previewBlob);
+      const enhancedUrl = await previewPayloadToObjectUrl(response.data);
       setCroppedImage(cropPreviewUrl);
       setProcessingPreviewUrl(null);
       setEnhancedImage(enhancedUrl);
@@ -603,6 +638,7 @@ function App() {
 
     setDetecting(true);
     setDetectStage('preparing');
+    setDetectUploadPercent(null);
     setDetections(null);
     setDetectedImage(null);
 
@@ -610,19 +646,33 @@ function App() {
     const useAsyncDetect = Boolean(capabilities?.gpu_exclusive);
 
     try {
-      // Convert enhanced image URL to blob
+      setDetectStage('preparing');
       const response = await fetch(enhancedImage);
       const blob = await response.blob();
 
-      // Send to detection backend
       const formData = new FormData();
       formData.append('image', blob, 'enhanced.jpg');
+      setDetectStage('uploading');
 
       let detectionData;
+      const uploadConfig = {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setDetectUploadPercent(percent);
+            if (progressEvent.loaded >= progressEvent.total) {
+              setDetectStage(useAsyncDetect ? 'activating' : 'detecting');
+            }
+          } else {
+            setDetectStage(useAsyncDetect ? 'activating' : 'detecting');
+          }
+        },
+      };
+
       if (useAsyncDetect) {
-        setDetectStage('activating');
         const jobResponse = await axios.post(`${DETECTION_BASE}/api/detect/jobs`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          ...uploadConfig,
           timeout: 60000,
         });
         const jobId = jobResponse.data.job_id;
@@ -638,14 +688,14 @@ function App() {
         );
         setDetectionPredictorReady(true);
       } else {
-        setDetectStage('detecting');
         const detectResponse = await axios.post(`${DETECTION_BASE}/api/detect`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          ...uploadConfig,
           timeout: detectTimeoutMs,
         });
         detectionData = detectResponse.data;
       }
       setDetections(detectionData);
+      setDetectStage('drawing');
 
       // Draw bounding boxes on the enhanced image
       const img = new Image();
@@ -701,12 +751,14 @@ function App() {
       const detectedUrl = canvas.toDataURL('image/png');
       setDetectedImage(detectedUrl);
       setDetectStage(null);
+      setDetectUploadPercent(null);
       setDetecting(false);
 
     } catch (error) {
       console.error('Detection failed:', error);
       setUserMessage({ type: 'error', text: `Detection failed: ${error.message}` });
       setDetectStage(null);
+      setDetectUploadPercent(null);
       setDetecting(false);
     }
   };
@@ -1129,16 +1181,32 @@ function App() {
                     {detecting && (
                       <div className="processing-section">
                         <div className="enhance-progress-panel">
+                          {enhancedImage && (
+                            <div className="enhance-progress-preview">
+                              <img
+                                src={enhancedImage}
+                                alt="Enhanced preview during detection"
+                              />
+                              <div className="enhance-progress-preview-dim" aria-hidden="true" />
+                            </div>
+                          )}
+                          <div
+                            className="enhance-progress-bar"
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuetext={DETECT_STAGE_LABELS[detectStage] || 'Detecting'}
+                          >
+                            <div className="enhance-progress-bar-indeterminate" />
+                          </div>
                           <p className="processing-text">
-                            {detectStage === 'activating'
-                              ? 'Activating detection model on GPU…'
-                              : 'Detecting objects…'}
+                            {DETECT_STAGE_LABELS[detectStage] || 'Detecting…'}
                           </p>
+                          {detectStage === 'uploading' && detectUploadPercent != null && (
+                            <p className="enhance-progress-meta">Upload {detectUploadPercent}%</p>
+                          )}
                           <p className="enhance-progress-meta">
-                            Elapsed {formatElapsed(detectElapsedSec)}
-                            {capabilities?.gpu_exclusive && detectStage === 'activating' && (
-                              <> · model swap may take up to 90s</>
-                            )}
+                            Elapsed {formatElapsed(detectElapsedSec)} · {detectEtaHint}
                           </p>
                         </div>
                       </div>
