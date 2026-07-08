@@ -56,7 +56,7 @@ smoke:
 
 test:
 	@PY="python3.12"; command -v "$${PY}" >/dev/null 2>&1 || PY="python3"; \
-	"$${PY}" -m pip install -q -r requirements-dev.txt -r backend/requirements.txt; \
+	"$${PY}" -m pip install -q -r requirements-dev.txt -r backend/requirements.txt -r backend-detection/requirements.txt; \
 	PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "$${PY}" -m pytest
 
 test-frontend:
