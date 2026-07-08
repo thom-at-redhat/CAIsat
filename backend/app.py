@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 
 from capabilities import get_capabilities
+from enhance_jobs import create_job, get_job
 from image_preview import make_jpeg_preview
 from kserve_v2 import sanitize_model_error
 from predictor_orchestrator import ensure_predictor_active
@@ -86,8 +87,7 @@ async def get_stats():
     return {"total_enhancements": enhancement_counter, "status": "operational"}
 
 
-@app.post("/api/enhance")
-async def enhance_image(image: UploadFile = File(...)):
+async def _enhance_upload(contents: bytes) -> dict:
     global enhancement_counter
 
     if http_session is None:
@@ -96,72 +96,112 @@ async def enhance_image(image: UploadFile = File(...)):
     caps = get_capabilities()
     max_crop = int(caps["max_crop"])
 
-    try:
-        contents = await image.read()
-        if len(contents) > MAX_UPLOAD_BYTES:
-            raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
 
-        img = Image.open(io.BytesIO(contents))
-        side = min(img.size)
-        if side > max_crop:
-            raise HTTPException(
-                status_code=413,
-                detail=f"Crop {side}px exceeds profile max_crop {max_crop}px",
-            )
-
-        try:
-            await ensure_predictor_active("swinir", http_session=http_session)
-            enhanced_img = await enhance_image_tiled(
-                http_session,
-                MODEL_ENDPOINT,
-                img,
-                input_name=KSERVE_INPUT_NAME,
-                output_name=KSERVE_OUTPUT_NAME,
-                max_tile=int(caps["max_tile"]),
-                scale_factor=int(caps["scale_factor"]),
-                tiling_enabled=bool(caps["tiling_enabled"]),
-                timeout_seconds=float(caps["infer_timeout_seconds"]),
-            )
-        except RuntimeError as exc:
-            print(f"Predictor orchestration failed: {exc}")
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
-        except TimeoutError as exc:
-            print(f"Predictor readiness timeout: {exc}")
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
-        except aiohttp.ClientResponseError as exc:
-            print(f"Model endpoint error ({exc.status}): {exc.message}")
-            raise HTTPException(
-                status_code=502,
-                detail=sanitize_model_error(exc.status, exc.message or ""),
-            ) from exc
-        except RuntimeError as exc:
-            print(f"Tiled enhancement aborted: {exc}")
-            raise HTTPException(status_code=502, detail=str(exc)) from exc
-
-        full_w, full_h = enhanced_img.size
-        print(f"Enhanced output: {full_w}x{full_h} (native 4x)")
-        log_event(logger, "enhance complete", width=full_w, height=full_h)
-
-        preview_bytes, preview_w, preview_h = make_jpeg_preview(enhanced_img)
-        enhancement_counter += 1
-
-        return JSONResponse(
-            {
-                "preview": base64.b64encode(preview_bytes).decode("ascii"),
-                "media_type": "image/jpeg",
-                "width": full_w,
-                "height": full_h,
-                "preview_width": preview_w,
-                "preview_height": preview_h,
-            }
+    img = Image.open(io.BytesIO(contents))
+    side = min(img.size)
+    if side > max_crop:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Crop {side}px exceeds profile max_crop {max_crop}px",
         )
 
+    try:
+        await ensure_predictor_active("swinir", http_session=http_session)
+        enhanced_img = await enhance_image_tiled(
+            http_session,
+            MODEL_ENDPOINT,
+            img,
+            input_name=KSERVE_INPUT_NAME,
+            output_name=KSERVE_OUTPUT_NAME,
+            max_tile=int(caps["max_tile"]),
+            scale_factor=int(caps["scale_factor"]),
+            tiling_enabled=bool(caps["tiling_enabled"]),
+            timeout_seconds=float(caps["infer_timeout_seconds"]),
+        )
+    except RuntimeError as exc:
+        print(f"Predictor orchestration failed: {exc}")
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except TimeoutError as exc:
+        print(f"Predictor readiness timeout: {exc}")
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except aiohttp.ClientResponseError as exc:
+        print(f"Model endpoint error ({exc.status}): {exc.message}")
+        raise HTTPException(
+            status_code=502,
+            detail=sanitize_model_error(exc.status, exc.message or ""),
+        ) from exc
+    except RuntimeError as exc:
+        print(f"Tiled enhancement aborted: {exc}")
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    full_w, full_h = enhanced_img.size
+    print(f"Enhanced output: {full_w}x{full_h} (native 4x)")
+    log_event(logger, "enhance complete", width=full_w, height=full_h)
+
+    preview_bytes, preview_w, preview_h = make_jpeg_preview(enhanced_img)
+    enhancement_counter += 1
+
+    return {
+        "preview": base64.b64encode(preview_bytes).decode("ascii"),
+        "media_type": "image/jpeg",
+        "width": full_w,
+        "height": full_h,
+        "preview_width": preview_w,
+        "preview_height": preview_h,
+    }
+
+
+@app.post("/api/enhance")
+async def enhance_image(image: UploadFile = File(...)):
+    try:
+        contents = await image.read()
+        payload = await _enhance_upload(contents)
+        return JSONResponse(payload)
     except HTTPException:
         raise
     except Exception as exc:
         print(f"Error processing image: {type(exc).__name__}: {exc}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Image enhancement failed") from exc
+
+
+@app.post("/api/enhance/jobs")
+async def create_enhance_job(image: UploadFile = File(...)):
+    """Start enhancement asynchronously; poll GET /api/enhance/jobs/{job_id} for the result."""
+    try:
+        contents = await image.read()
+
+        async def work() -> dict:
+            try:
+                return await _enhance_upload(contents)
+            except HTTPException as exc:
+                detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+                raise RuntimeError(detail) from exc
+
+        job_id = await create_job(work)
+        return JSONResponse({"job_id": job_id, "status": "pending"}, status_code=202)
+    except HTTPException as exc:
+        raise exc
+    except Exception as exc:
+        print(f"Error queueing enhance job: {type(exc).__name__}: {exc}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Image enhancement failed") from exc
+
+
+@app.get("/api/enhance/jobs/{job_id}")
+async def get_enhance_job(job_id: str):
+    job = get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Enhance job not found")
+
+    payload = {"job_id": job.job_id, "status": job.status}
+    if job.status == "complete" and job.result is not None:
+        payload.update(job.result)
+    elif job.status == "error":
+        payload["error"] = job.error or "Image enhancement failed"
+    return JSONResponse(payload)
 
 
 if __name__ == "__main__":

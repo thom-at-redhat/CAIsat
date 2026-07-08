@@ -79,4 +79,5 @@ def get_capabilities() -> dict[str, Any]:
                     base[key] = value
 
     base["kserve_prefer_binary"] = os.getenv("KSERVE_PREFER_BINARY", "true").lower() in ("1", "true", "yes")
+    base["gpu_exclusive"] = os.getenv("GPU_EXCLUSIVE_MODE", "false").lower() in ("1", "true", "yes")
     return base

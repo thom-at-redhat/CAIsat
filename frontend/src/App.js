@@ -37,6 +37,37 @@ function getEnhanceEtaHint(tileCount) {
   return 'Usually ~10–60 seconds';
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pollAsyncJob(baseUrl, resource, jobId, timeoutMs, onTick) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const response = await axios.get(`${baseUrl}/api/${resource}/jobs/${jobId}`, { timeout: 10000 });
+    const payload = response.data;
+    if (payload.status === 'complete') {
+      return payload;
+    }
+    if (payload.status === 'error') {
+      throw new Error(payload.error || 'Request failed');
+    }
+    onTick?.(payload.status);
+    await sleep(2000);
+  }
+  throw new Error('Timed out while waiting for results');
+}
+
+function getDetectionStatusLabel(detectionOnline, gpuExclusive, predictorReady) {
+  if (!detectionOnline) {
+    return 'down';
+  }
+  if (gpuExclusive && predictorReady === false) {
+    return 'idle';
+  }
+  return 'up';
+}
+
 function App() {
   const [view, setView] = useState('globe'); // 'globe', 'map', 'processing', or 'monitored'
   const [enhancementCount, setEnhancementCount] = useState(0);
@@ -63,6 +94,9 @@ function App() {
   const [popup, setPopup] = useState(null); // 'purpose', 'guide', 'disclaimer', or null
   const [userMessage, setUserMessage] = useState(null); // { type: 'error'|'info', text: string }
   const [detectionOnline, setDetectionOnline] = useState(false);
+  const [detectionPredictorReady, setDetectionPredictorReady] = useState(null);
+  const [detectStage, setDetectStage] = useState(null);
+  const [detectElapsedSec, setDetectElapsedSec] = useState(0);
   const [capabilities, setCapabilities] = useState(null);
 
   const cropSize = cropArea.size;
@@ -97,6 +131,23 @@ function App() {
     }, 1000);
     return () => clearInterval(timerId);
   }, [processing]);
+
+  useEffect(() => {
+    if (!detecting) {
+      return undefined;
+    }
+    setDetectElapsedSec(0);
+    const timerId = setInterval(() => {
+      setDetectElapsedSec((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [detecting]);
+
+  const detectionStatusLabel = getDetectionStatusLabel(
+    detectionOnline,
+    capabilities?.gpu_exclusive,
+    detectionPredictorReady,
+  );
 
   // Detection classes
   const DETECTION_CLASSES = [
@@ -185,10 +236,16 @@ function App() {
   useEffect(() => {
     const pollDetection = async () => {
       try {
-        await axios.get(`${DETECTION_BASE}/health`, { timeout: 5000 });
+        const response = await axios.get(`${DETECTION_BASE}/health`, { timeout: 5000 });
         setDetectionOnline(true);
+        if (typeof response.data.predictor_ready === 'boolean') {
+          setDetectionPredictorReady(response.data.predictor_ready);
+        } else {
+          setDetectionPredictorReady(null);
+        }
       } catch {
         setDetectionOnline(false);
+        setDetectionPredictorReady(null);
       }
     };
     pollDetection();
@@ -444,26 +501,57 @@ function App() {
 
       let response;
       let inferringWatchdog;
+      const useAsyncEnhance = enhanceTileCount > 1;
       try {
         inferringWatchdog = setTimeout(() => {
           setEnhanceStage((stage) => (stage === 'uploading' ? 'inferring' : stage));
         }, 800);
 
-        response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          timeout: inferTimeoutMs,
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-              setUploadPercent(percent);
-              if (progressEvent.loaded >= progressEvent.total) {
+        if (useAsyncEnhance) {
+          const jobResponse = await axios.post(`${BACKEND_BASE}/api/enhance/jobs`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadPercent(percent);
+                if (progressEvent.loaded >= progressEvent.total) {
+                  setEnhanceStage('inferring');
+                }
+              } else {
                 setEnhanceStage('inferring');
               }
-            } else {
-              setEnhanceStage('inferring');
-            }
-          },
-        });
+            },
+          });
+          const jobId = jobResponse.data.job_id;
+          if (!jobId) {
+            throw new Error('Server did not return an enhance job id');
+          }
+          const payload = await pollAsyncJob(
+            BACKEND_BASE,
+            'enhance',
+            jobId,
+            inferTimeoutMs,
+            () => setEnhanceStage('inferring'),
+          );
+          response = { data: payload };
+        } else {
+          response = await axios.post(`${BACKEND_BASE}/api/enhance`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: inferTimeoutMs,
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadPercent(percent);
+                if (progressEvent.loaded >= progressEvent.total) {
+                  setEnhanceStage('inferring');
+                }
+              } else {
+                setEnhanceStage('inferring');
+              }
+            },
+          });
+        }
       } finally {
         clearTimeout(inferringWatchdog);
       }
@@ -514,8 +602,12 @@ function App() {
     if (!enhancedImage) return;
 
     setDetecting(true);
+    setDetectStage('preparing');
     setDetections(null);
     setDetectedImage(null);
+
+    const detectTimeoutMs = ((capabilities?.infer_timeout_seconds ?? 60) + 300) * 1000;
+    const useAsyncDetect = Boolean(capabilities?.gpu_exclusive);
 
     try {
       // Convert enhanced image URL to blob
@@ -526,11 +618,33 @@ function App() {
       const formData = new FormData();
       formData.append('image', blob, 'enhanced.jpg');
 
-      const detectResponse = await axios.post(`${DETECTION_BASE}/api/detect`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      const detectionData = detectResponse.data;
+      let detectionData;
+      if (useAsyncDetect) {
+        setDetectStage('activating');
+        const jobResponse = await axios.post(`${DETECTION_BASE}/api/detect/jobs`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 60000,
+        });
+        const jobId = jobResponse.data.job_id;
+        if (!jobId) {
+          throw new Error('Server did not return a detect job id');
+        }
+        detectionData = await pollAsyncJob(
+          DETECTION_BASE,
+          'detect',
+          jobId,
+          detectTimeoutMs,
+          (status) => setDetectStage(status === 'processing' ? 'detecting' : 'activating'),
+        );
+        setDetectionPredictorReady(true);
+      } else {
+        setDetectStage('detecting');
+        const detectResponse = await axios.post(`${DETECTION_BASE}/api/detect`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: detectTimeoutMs,
+        });
+        detectionData = detectResponse.data;
+      }
       setDetections(detectionData);
 
       // Draw bounding boxes on the enhanced image
@@ -586,11 +700,13 @@ function App() {
       // Convert canvas to blob URL
       const detectedUrl = canvas.toDataURL('image/png');
       setDetectedImage(detectedUrl);
+      setDetectStage(null);
       setDetecting(false);
 
     } catch (error) {
       console.error('Detection failed:', error);
       setUserMessage({ type: 'error', text: `Detection failed: ${error.message}` });
+      setDetectStage(null);
       setDetecting(false);
     }
   };
@@ -635,7 +751,7 @@ function App() {
           <div className={`status-dot ${systemOnline ? 'online' : ''}`}></div>
           {systemOnline ? 'LIVE' : 'OFFLINE'}
           <span style={{ marginLeft: '12px', opacity: 0.85 }}>
-            Detection: {detectionOnline ? 'up' : 'down'}
+            Detection: {detectionStatusLabel}
           </span>
         </div>
       </div>
@@ -1001,15 +1117,29 @@ function App() {
                         <button className="detect-btn" onClick={handleDetect}>
                           Detect Objects
                         </button>
-                        <p className="detection-hint">Analyze enhanced image for planes, ships, vehicles, and more</p>
+                        <p className="detection-hint">
+                          Analyze enhanced image for planes, ships, vehicles, and more
+                          {capabilities?.gpu_exclusive && detectionPredictorReady === false && (
+                            <> · first run may take 30–90s while the detection model starts</>
+                          )}
+                        </p>
                       </div>
                     )}
 
                     {detecting && (
                       <div className="processing-section">
-                        <div className="spinner-container">
-                          <div className="satellite-spinner">🛰️</div>
-                          <p className="processing-text">Detecting objects...</p>
+                        <div className="enhance-progress-panel">
+                          <p className="processing-text">
+                            {detectStage === 'activating'
+                              ? 'Activating detection model on GPU…'
+                              : 'Detecting objects…'}
+                          </p>
+                          <p className="enhance-progress-meta">
+                            Elapsed {formatElapsed(detectElapsedSec)}
+                            {capabilities?.gpu_exclusive && detectStage === 'activating' && (
+                              <> · model swap may take up to 90s</>
+                            )}
+                          </p>
                         </div>
                       </div>
                     )}
