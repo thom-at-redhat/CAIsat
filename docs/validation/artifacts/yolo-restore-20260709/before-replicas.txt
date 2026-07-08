@@ -1,0 +1,15 @@
+# Gate 0 — before scale (2026-07-09)
+# Assisted by: cursor, claude
+
+cluster: qualitycustomer
+namespace: caisat
+deployment: yolov8m-satelite-predictor
+
+oc get deploy/yolov8m-satelite-predictor -n caisat -o jsonpath='{.spec.replicas}{"\n"}'
+→ BLOCKED: oc token expired (Unauthorized); replica count not captured via API
+
+Functional probe (public route, no oc):
+curl -sS https://caisat-detection-backend-caisat.apps.qualitycustomer-pool-tv8j5.aws.rh-ods.com/health
+→ {"status":"healthy","gpu_exclusive":true,"predictor_ready":true}
+
+Interpretation: detection backend reports predictor_ready=true; scale-to-0 from MT-E2E appears already restored or predictor is reachable without oc verification.

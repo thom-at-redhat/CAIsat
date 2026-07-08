@@ -1,0 +1,16 @@
+# Gate 0 — after scale (2026-07-09)
+# Assisted by: cursor, claude
+
+cluster: qualitycustomer
+namespace: caisat
+deployment: yolov8m-satelite-predictor
+
+oc scale deploy/yolov8m-satelite-predictor --replicas=1 -n caisat
+→ SKIPPED: oc Unauthorized; scale not attempted
+
+Post-probe health (same session):
+curl -sS https://caisat-detection-backend-caisat.apps.qualitycustomer-pool-tv8j5.aws.rh-ods.com/health
+→ {"status":"healthy","gpu_exclusive":true,"predictor_ready":true}
+
+Gate 0 verdict: FUNCTIONAL PASS (predictor_ready=true); FORMAL oc replica check BLOCKED (expired session).
+Unblock for full oc artifact: oc login https://api.qualitycustomer-pool-tv8j5.aws.rh-ods.com:6443

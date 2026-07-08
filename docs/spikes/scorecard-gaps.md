@@ -590,28 +590,30 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 | Permissions | Job `id-token: write`, `contents: write`, `attestations: write`                                                        |
 | Operator    | **Required:** push a `v*` tag to trigger release + attestation (fork had **0** releases @ 2026-07-02)                  |
 
-**Score gate:** Batch 3b — Signed-Releases **0** @ `api.scorecard.dev` (2026-07-06, **pass**). Packaging still **-1** — waiver active; re-check ≤ **2026-07-11**.
+**Score gate:** Batch 3b — Signed-Releases **5** @ `api.scorecard.dev` (2026-07-09 re-check, **pass** — was **0** @ 2026-07-06). Packaging still **-1** — waiver active; re-check ≤ **2026-07-11**.
 
-**Waiver (Packaging):** GitHub Release `v0.1.0` with chart asset `caisat-0.1.0.tgz` + build provenance attestation
-(`sha256:bee33e59…`; publish-chart workflow run 28714006058).
-**Escalation if still -1 on 2026-07-11:** `workflow_dispatch` scorecard-analysis; verify release asset;
-close waiver with release URL + attestation — do not revert publish-chart workflow.
+**Waiver (Packaging):** GitHub Release `v0.1.1` with chart asset `caisat-0.1.0.tgz` + `provenance.intoto.jsonl`
+(publish-chart workflow; see [`packaging-escalation-20260709.md`](../validation/artifacts/packaging-escalation-20260709/packaging-escalation-20260709.md)).
+**Escalation if still -1 on 2026-07-11:** human browser `workflow_dispatch` scorecard-analysis (PAT 403 on actions scope);
+verify release asset; close waiver with release URL + attestation — do not revert publish-chart workflow.
 
 ---
 
-## Batch 3a/3b — Score gate refresh @ `31606a8` / `9c0d76e`
+## Batch 3a/3b — Score gate refresh @ `31606a8` / `9c0d76e` / `b625b56`
 
-**Source:** `api.scorecard.dev` @ 2026-07-04 (post-#116 merge + `v0.1.0` tag same day); Batch 3b re-check @ 2026-07-06.
+**Source:** `api.scorecard.dev` @ 2026-07-04 (post-#116 merge + `v0.1.0` tag same day); Batch 3b re-check @ 2026-07-06; Track A escalation @ 2026-07-09.
 
-| Check              | Before (Wave 10) | After @ `31606a8` | After @ `9c0d76e` (2026-07-06) | Batch | Verdict                                          |
-| ------------------ | ---------------- | ----------------- | ------------------------------ | ----- | ------------------------------------------------ |
-| **Aggregate**      | **6.9**          | **7.4**           | **6.8**                        | 3a/3b | **pass** — Fuzzing lift; aggregate drift noted   |
-| Fuzzing            | 0                | **10**            | **10**                         | 3a    | **pass**                                         |
-| Branch-Protection  | 4                | 4                 | 4                              | 3a    | **pass** (documented solo-fork cap)              |
-| CII-Best-Practices | 2                | 2                 | 2                              | 3a    | **pass** (InProgress badge; no regression)       |
-| Packaging          | -1               | -1                | **-1**                         | 3b    | **waiver** — release exists; API lag ≤2026-07-11 |
-| Signed-Releases    | -1               | -1                | **0**                          | 3b    | **pass**                                         |
-| Maintained         | 0                | 0                 | 0                              | —     | Phase 30 @ **2026-09-27**                        |
+| Check              | Before (Wave 10) | After @ `31606a8` | After @ `9c0d76e` (2026-07-06) | After @ API 2026-07-09 | Batch | Verdict                                         |
+| ------------------ | ---------------- | ----------------- | ------------------------------ | ---------------------- | ----- | ----------------------------------------------- |
+| **Aggregate**      | **6.9**          | **7.4**           | **6.8**                        | **7.3**                | 3a/3b | **pass** — Fuzzing lift; aggregate drift noted  |
+| Fuzzing            | 0                | **10**            | **10**                         | **10**                 | 3a    | **pass**                                        |
+| Branch-Protection  | 4                | 4                 | 4                              | 4                      | 3a    | **pass** (documented solo-fork cap)             |
+| CII-Best-Practices | 2                | 2                 | 2                              | 2                      | 3a    | **pass** (InProgress badge; no regression)      |
+| Packaging          | -1               | -1                | **-1**                         | **-1**                 | 3b    | **waiver** — `v0.1.1` release; dispatch blocked |
+| Signed-Releases    | -1               | -1                | **0**                          | **5**                  | 3b    | **pass**                                        |
+| Maintained         | 0                | 0                 | 0                              | 0                      | —     | Phase 30 @ **2026-09-27**                       |
+
+**Track A (2026-07-09):** Packaging **-1** persists (_packaging workflow not detected_); PAT cannot `workflow_dispatch` scorecard-analysis (HTTP 403). Human browser dispatch required; artifact [`packaging-escalation-20260709.md`](../validation/artifacts/packaging-escalation-20260709/packaging-escalation-20260709.md).
 
 ---
 
