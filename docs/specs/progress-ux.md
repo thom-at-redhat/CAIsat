@@ -2,13 +2,13 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field      | Value                                                                          |
-| ---------- | ------------------------------------------------------------------------------ |
-| Status     | accepted                                                                       |
-| Spec ID    | UX-001                                                                         |
-| Tests      | `frontend/src/workflowUtils.test.js`; Playwright `scripts/mt-e2e-workflow.mjs` |
-| Validation | `baseline-smoke.md` — 768 enhance, detect stages, idle header                  |
-| Source     | `frontend/src/workflowUtils.js`, `frontend/src/App.js`                         |
+| Field      | Value                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Status     | accepted                                                                                                                  |
+| Spec ID    | UX-001                                                                                                                    |
+| Tests      | `frontend/src/workflowUtils.test.js`; Playwright `scripts/mt-e2e-workflow.mjs`                                            |
+| Validation | `baseline-smoke.md` MT-E2E — 768 enhance, detect stages, idle header; Playwright GHA deferred (enablement criteria there) |
+| Source     | `frontend/src/workflowUtils.js`, `frontend/src/App.js`                                                                    |
 
 ## Overview
 

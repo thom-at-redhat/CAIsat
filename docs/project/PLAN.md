@@ -108,21 +108,22 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 ## Decisions
 
-| Topic       | Decision                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Priority    | Larger context (512+ crop, tiled SR) — shipped Phase 16                                                                        |
-| GPU         | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override; tiers **deferred**                                      |
-| Detection   | Demo quality OK; YOLO11 eval **skipped**; OBB + SAHI shipped Phase 17                                                          |
-| Git         | Push-as-you-go on feature branches; CI before push (`make push`)                                                               |
-| PLAN source | This file after Phase 3 merge; phased work archived post-23                                                                    |
-| Quay        | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail**                         |
-| OpenSSF     | Phases 4–6 on fork first; badge uses fork slug                                                                                 |
-| Upstream    | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred                            |
-| Scorecard   | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                                        |
-| 12-binary   | **fail** @ RHOAI 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; Phase 14 **waiver** (Partial closure); RHOAI ticket for Full |
-| Wave 5      | **Partial complete** @ 2026-07-01 — W5-P0–P5; R3a pass + MT-2 evidence; Full blocked on binary                                 |
-| Detect RCA  | Missing `KSERVE_PREFER_BINARY=false` on detection backend — chart fix PR #82 @ `7eb9a76`; same class as enhance MT-R3c         |
-| Spike docs  | Cluster names **never** in spike docs — use `<namespace>` placeholders                                                         |
+| Topic         | Decision                                                                                                                                              |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Priority      | Larger context (512+ crop, tiled SR) — shipped Phase 16                                                                                               |
+| GPU           | 3 clusters (T4, L40S, Hopper) + CPU; auto-detect with manual override; tiers **deferred**                                                             |
+| Detection     | Demo quality OK; YOLO11 eval **skipped**; OBB + SAHI shipped Phase 17                                                                                 |
+| Git           | Push-as-you-go on feature branches; CI before push (`make push`)                                                                                      |
+| PLAN source   | This file after Phase 3 merge; phased work archived post-23                                                                                           |
+| Quay          | Phase 0 **pass** on fork (`thom_at_redhat/caisat` public mirror); upstream `rh-ai-quickstart` **fail**                                                |
+| OpenSSF       | Phases 4–6 on fork first; badge uses fork slug                                                                                                        |
+| Upstream      | Fork synced from upstream @ `0e4281e` (PR #43); PR back to `rh-ai-quickstart/CAIsat` still deferred                                                   |
+| Scorecard     | **6.0** @ `acb9a79`; gap plan Phases 9–11 done; see `scorecard-gaps.md`                                                                               |
+| 12-binary     | **fail** @ RHOAI 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; Phase 14 **waiver** (Partial closure); RHOAI ticket for Full                        |
+| Wave 5        | **Partial complete** @ 2026-07-01 — W5-P0–P5; R3a pass + MT-2 evidence; Full blocked on binary                                                        |
+| Detect RCA    | Missing `KSERVE_PREFER_BINARY=false` on detection backend — chart fix PR #82 @ `7eb9a76`; same class as enhance MT-R3c                                |
+| Spike docs    | Cluster names **never** in spike docs — use `<namespace>` placeholders                                                                                |
+| Playwright CI | MT-E2E **deferred** from GHA — GPU + ≥15 min budget; enable when self-hosted GPU runner or mock + `CAISAT_GPU_EXCLUSIVE` — `baseline-smoke.md` MT-E2E |
 
 ---
 
@@ -130,16 +131,17 @@ Detail in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md#phases-1223-integration-pr-45)
 
 Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47 @ `4abef20`). Code merged; cluster validation and spike gaps remain.
 
-| Item              | Detail                                                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Wave 5 closure    | **Partial complete** W5-P0–P5 (2026-07-01); CPU path signed off; **Full** blocked on `12-binary` — see W5-P5 below            |
-| Binary spike fail | `12-binary` **fail** @ 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; Phase 14 waiver; RHOAI ticket — `binary-kserve-v2.md` |
-| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); MT-R3a **pass** 2026-07-01 — `baseline-smoke.md` L157+                                 |
-| Crop sign-off     | **pass (CPU)** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                                 |
-| GPU deferral      | T4 **pass** (cloud GPU cluster, helm rev 6); L40S/Hopper N/A; single-GPU UX contention — `gpu-servingruntime.md`              |
-| Cluster redeploy  | **pass** W5-P3 frontend + helm rev **3** (PR #82 chart); route **200** — `baseline-smoke.md`                                  |
-| MT-R3a layout     | **pass** — Playwright 100%/150%; DRL-001 **accepted** — PR #83; artifacts `mt-r3a-20260701/`                                  |
-| Detect RCA        | HTTP 500 on 1024 detect — missing `KSERVE_PREFER_BINARY=false`; fixed PR #82 @ `7eb9a76`                                      |
+| Item              | Detail                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wave 5 closure    | **Partial complete** W5-P0–P5 (2026-07-01); CPU path signed off; **Full** blocked on `12-binary` — see W5-P5 below                                                     |
+| Binary spike fail | `12-binary` **fail** @ 3.4.0 (2026-07-01); JSON pass / binary HTTP 500; Phase 14 waiver; RHOAI ticket — `binary-kserve-v2.md`                                          |
+| Phase 13 baseline | Cluster **pass** @ `b367b63` (PR #65); MT-R3a **pass** 2026-07-01 — `baseline-smoke.md` L157+                                                                          |
+| Crop sign-off     | **pass (CPU)** @ `e2a7704`; JSON 256→1024; `KSERVE_PREFER_BINARY=false` — `baseline-smoke.md`                                                                          |
+| GPU deferral      | T4 **pass** (cloud GPU cluster, helm rev 6); L40S/Hopper N/A; single-GPU UX contention — `gpu-servingruntime.md`                                                       |
+| Cluster redeploy  | **pass** W5-P3 frontend + helm rev **3** (PR #82 chart); route **200** — `baseline-smoke.md`                                                                           |
+| MT-R3a layout     | **pass** — Playwright 100%/150%; DRL-001 **accepted** — PR #83; artifacts `mt-r3a-20260701/`                                                                           |
+| Detect RCA        | HTTP 500 on 1024 detect — missing `KSERVE_PREFER_BINARY=false`; fixed PR #82 @ `7eb9a76`                                                                               |
+| Playwright CI     | **defer** scheduled E2E in GHA; manual gate `CAISAT_FRONTEND_URL=… CAISAT_GPU_EXCLUSIVE=1 node scripts/mt-e2e-workflow.mjs` — enablement in `baseline-smoke.md` MT-E2E |
 
 ### Wave 5 detection layout sign-off (W5-P4 / MT-R3a)
 

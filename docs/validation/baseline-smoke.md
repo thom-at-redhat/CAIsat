@@ -249,11 +249,25 @@ Manual checklist when `max_crop` > 256 or tiling is enabled:
 Cluster-only Playwright script for async enhance, detect progress stages, and gpu_exclusive idle header.
 Not CI-blocking (GPU + up to 3m 768 enhance timeout).
 
-**Command:**
+**CI policy (deferred):** Do **not** schedule `scripts/mt-e2e-workflow.mjs` in GitHub Actions (`.github/workflows/`).
+Required CI remains `pre-commit` + `smoke-binary` only — see [`ci-timing.md`](ci-timing.md) for MT-CP job timing (not Playwright policy).
+Manual cluster gate stays the acceptance path until enablement criteria below are met.
+
+**Enablement criteria** (all required before adding a GHA E2E job):
+
+| Criterion       | Requirement                                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Runner / target | Self-hosted GPU runner **or** a mock/stub cluster that can satisfy enhance + detect + health idle without a live L40S |
+| Job budget      | ≥15 min wall-clock (enhance-768 alone can approach 3m; full suite ~4–7m plus setup)                                   |
+| Cluster access  | `oc` (or equivalent) + disposable test namespace; YOLO scale-down for idle header                                     |
+| GPU exclusive   | `CAISAT_GPU_EXCLUSIVE=1` against a real `gpuExclusive` stack **or** an equivalent mock/ns that exposes idle health    |
+| Gate command    | Manual (and future CI) entrypoint below                                                                               |
+
+**Manual gate command:**
 
 ```bash
 export CAISAT_FRONTEND_URL=https://caisat-caisat.apps.<cluster-domain>
-export CAISAT_GPU_EXCLUSIVE=1   # optional — require Detection: idle on gpu_exclusive stacks
+export CAISAT_GPU_EXCLUSIVE=1   # required for strict Detection: idle on gpu_exclusive stacks
 node scripts/mt-e2e-workflow.mjs
 ```
 
