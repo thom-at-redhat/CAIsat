@@ -115,6 +115,22 @@ async def _wait_predictor_ready(http_session: aiohttp.ClientSession, ready_url: 
     raise TimeoutError(f"predictor not ready at {ready_url} within {_ready_timeout():.0f}s")
 
 
+async def is_predictor_ready(predictor: str, *, http_session: aiohttp.ClientSession) -> bool:
+    """Read-only readiness probe; does not scale deployments."""
+    if not gpu_exclusive_enabled():
+        return True
+
+    config = _predictor_config().get(predictor)
+    if config is None:
+        return False
+
+    try:
+        async with http_session.get(config["ready_url"], timeout=aiohttp.ClientTimeout(total=5)) as response:
+            return response.status == 200
+    except (aiohttp.ClientError, TimeoutError):
+        return False
+
+
 async def ensure_predictor_active(
     predictor: str,
     *,

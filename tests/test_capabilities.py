@@ -18,6 +18,7 @@ def test_cpu_profile_defaults(capabilities, backend_dir: str, clear_profile_env)
     assert caps["default_crop"] == 256
     assert caps["inference_accelerator"] == "cpu"
     assert caps["kserve_prefer_binary"] is True
+    assert caps["gpu_exclusive"] is False
     if backend_dir == "backend":
         assert caps["infer_timeout_seconds"] == 300
     else:
@@ -81,3 +82,12 @@ def test_kserve_prefer_binary_env(
     monkeypatch.setenv("KSERVE_PREFER_BINARY", env_value)
     caps = capabilities.get_capabilities()
     assert caps["kserve_prefer_binary"] is expected
+
+
+def test_gpu_exclusive_env(capabilities, clear_profile_env, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GPU_EXCLUSIVE_MODE", "true")
+    caps = capabilities.get_capabilities()
+    assert caps["gpu_exclusive"] is True
+    monkeypatch.setenv("GPU_EXCLUSIVE_MODE", "0")
+    caps = capabilities.get_capabilities()
+    assert caps["gpu_exclusive"] is False

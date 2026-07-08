@@ -22,9 +22,10 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 
 from capabilities import get_capabilities
+from detect_jobs import create_job, get_job
 from kserve_v2 import kserve_infer, sanitize_model_error
 from obb import decode_yolov8_obb
-from predictor_orchestrator import ensure_predictor_active
+from predictor_orchestrator import ensure_predictor_active, is_predictor_ready
 from sahi import generate_slices, merge_detections, offset_detection
 from logging_config import configure_logging, log_event
 
@@ -143,7 +144,11 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy"}
+    caps = get_capabilities()
+    payload = {"status": "healthy", "gpu_exclusive": caps.get("gpu_exclusive", False)}
+    if http_session is not None and caps.get("gpu_exclusive"):
+        payload["predictor_ready"] = await is_predictor_ready("yolo", http_session=http_session)
+    return payload
 
 
 @app.get("/api/capabilities")
@@ -163,56 +168,95 @@ async def get_stats():
 
 @app.post("/api/detect")
 async def detect_objects(image: UploadFile = File(...)):
-    global detection_counter
-
-    if http_session is None:
-        raise HTTPException(status_code=503, detail="Service not ready")
-
     try:
         contents = await image.read()
-        if len(contents) > MAX_UPLOAD_BYTES:
-            raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
-
-        img = Image.open(io.BytesIO(contents))
-        all_detections: list[dict] = []
-        slices = generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)
-
-        try:
-            await ensure_predictor_active("yolo", http_session=http_session)
-            for ox, oy, slice_img in slices:
-                slice_dets = await infer_slice(slice_img)
-                all_detections.extend(offset_detection(d, ox, oy) for d in slice_dets)
-        except RuntimeError as exc:
-            print(f"Predictor orchestration failed: {exc}")
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
-        except TimeoutError as exc:
-            print(f"Predictor readiness timeout: {exc}")
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
-        except aiohttp.ClientResponseError as exc:
-            print(f"Model endpoint error ({exc.status}): {exc.message}")
-            raise HTTPException(
-                status_code=502,
-                detail=sanitize_model_error(exc.status, exc.message or ""),
-            ) from exc
-
-        detections = merge_detections(all_detections, iou_threshold=IOU_THRESHOLD)
-        log_event(logger, "detect complete", count=len(detections), slices=len(slices))
-        detection_counter += 1
-        return JSONResponse(
-            content={
-                "detections": detections,
-                "count": len(detections),
-                "image_size": {"width": img.size[0], "height": img.size[1]},
-                "sahi_slices": len(slices),
-            }
-        )
-
+        payload = await _detect_upload(contents)
+        return JSONResponse(content=payload)
     except HTTPException:
         raise
     except Exception as exc:
         print(f"Error processing image: {type(exc).__name__}: {exc}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Object detection failed") from exc
+
+
+async def _detect_upload(contents: bytes) -> dict:
+    global detection_counter
+
+    if http_session is None:
+        raise HTTPException(status_code=503, detail="Service not ready")
+
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=f"Upload exceeds {MAX_UPLOAD_BYTES} byte limit")
+
+    img = Image.open(io.BytesIO(contents))
+    all_detections: list[dict] = []
+    slices = generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)
+
+    try:
+        await ensure_predictor_active("yolo", http_session=http_session)
+        for ox, oy, slice_img in slices:
+            slice_dets = await infer_slice(slice_img)
+            all_detections.extend(offset_detection(d, ox, oy) for d in slice_dets)
+    except RuntimeError as exc:
+        print(f"Predictor orchestration failed: {exc}")
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except TimeoutError as exc:
+        print(f"Predictor readiness timeout: {exc}")
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except aiohttp.ClientResponseError as exc:
+        print(f"Model endpoint error ({exc.status}): {exc.message}")
+        raise HTTPException(
+            status_code=502,
+            detail=sanitize_model_error(exc.status, exc.message or ""),
+        ) from exc
+
+    detections = merge_detections(all_detections, iou_threshold=IOU_THRESHOLD)
+    log_event(logger, "detect complete", count=len(detections), slices=len(slices))
+    detection_counter += 1
+    return {
+        "detections": detections,
+        "count": len(detections),
+        "image_size": {"width": img.size[0], "height": img.size[1]},
+        "sahi_slices": len(slices),
+    }
+
+
+@app.post("/api/detect/jobs")
+async def create_detect_job(image: UploadFile = File(...)):
+    """Start detection asynchronously; poll GET /api/detect/jobs/{job_id} for the result."""
+    try:
+        contents = await image.read()
+
+        async def work() -> dict:
+            try:
+                return await _detect_upload(contents)
+            except HTTPException as exc:
+                detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+                raise RuntimeError(detail) from exc
+
+        job_id = await create_job(work)
+        return JSONResponse({"job_id": job_id, "status": "pending"}, status_code=202)
+    except HTTPException as exc:
+        raise exc
+    except Exception as exc:
+        print(f"Error queueing detect job: {type(exc).__name__}: {exc}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Object detection failed") from exc
+
+
+@app.get("/api/detect/jobs/{job_id}")
+async def get_detect_job(job_id: str):
+    job = get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Detect job not found")
+
+    payload = {"job_id": job.job_id, "status": job.status}
+    if job.status == "complete" and job.result is not None:
+        payload.update(job.result)
+    elif job.status == "error":
+        payload["error"] = job.error or "Object detection failed"
+    return JSONResponse(payload)
 
 
 if __name__ == "__main__":
