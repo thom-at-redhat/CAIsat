@@ -271,20 +271,24 @@ export CAISAT_GPU_EXCLUSIVE=1   # required for strict Detection: idle on gpu_exc
 node scripts/mt-e2e-workflow.mjs
 ```
 
-**Artifacts:** `docs/validation/artifacts/mt-e2e-20260708/` (report, screenshots, summary JSON).
+**Artifacts:** `docs/validation/artifacts/mt-e2e-20260709/` (report, screenshots, summary JSON).
+Prior tip run (pre-assertion tighten): `docs/validation/artifacts/mt-e2e-20260708/`.
 
-| Check              | Assertion                                              | Cluster result | Notes              |
-| ------------------ | ------------------------------------------------------ | -------------- | ------------------ |
-| Enhance 256        | Default crop; enhanced img naturalWidth > 0            | _(pending)_    |                    |
-| Enhance 768        | 768 crop; complete within 3m; preview naturalWidth > 0 | _(pending)_    | Async job          |
-| Detect progress    | Stage labels before Detected panel                     | _(pending)_    | `workflowUtils.js` |
-| gpu_exclusive idle | Header `Detection: idle` when YOLO scaled down         | _(pending)_    | l40s profile       |
+| Check              | Assertion                                                                 | Cluster result | Notes                              |
+| ------------------ | ------------------------------------------------------------------------- | -------------- | ---------------------------------- |
+| Enhance 256        | Default crop; enhanced img `naturalWidth === 1024`                        | pass           | 4× SwinIR                          |
+| Enhance 768        | 768 crop; ≤3m; `naturalWidth === 2048`; ≥1 `ENHANCE_STAGE_LABELS` visible | pass           | Async job; stage `Preparing crop…` |
+| Detect progress    | `DETECT_STAGE_LABELS` before Detected panel                               | pass           | activating → detecting             |
+| gpu_exclusive idle | Header `Detection: idle` when YOLO scaled down                            | pass           | l40s; `CAISAT_GPU_EXCLUSIVE=1`     |
 
-| Field      | Value       |
-| ---------- | ----------- |
-| Branch SHA | _(pending)_ |
-| Date       | 2026-07-08  |
-| Signed off | _(pending)_ |
+| Field      | Value                                                             |
+| ---------- | ----------------------------------------------------------------- |
+| Branch SHA | `feature/mt-post-156-closure` @ E2E tip `07daa16` (helm rev 10)   |
+| Date       | 2026-07-09                                                        |
+| Signed off | pass — qualitycustomer `caisat`; digests in `mt-e2e-summary.json` |
+
+**YOLO restore:** Script scales `yolov8m-satelite-predictor` to 0 for idle check and does **not** restore.
+After a gpu_exclusive run: `oc scale deploy/yolov8m-satelite-predictor --replicas=1 -n caisat`.
 
 ---
 

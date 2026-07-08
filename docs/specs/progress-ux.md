@@ -131,5 +131,5 @@ Invalid payload or load failure surfaces user error (768×768 regression vector 
 - [x] Header `Detection: idle` when online + gpu_exclusive + `predictor_ready === false`
 - [x] Detection `/health` exposes `predictor_ready`; enhancement `/health` does not
 - [x] Unit tests in `workflowUtils.test.js` — `frontend/src/workflowUtils.test.js`
-- [ ] Playwright asserts stage strings and 768 `naturalWidth > 0` — `scripts/mt-e2e-workflow.mjs` (cluster)
+- [x] Playwright asserts enhance/detect stage strings and 768 `naturalWidth === 2048` — `scripts/mt-e2e-workflow.mjs` (cluster; `mt-e2e-20260709`)
 - [x] `baseline-smoke.md` operator rows — 768 enhance, detect progress, gpu_exclusive idle

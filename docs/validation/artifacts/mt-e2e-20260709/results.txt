@@ -1,0 +1,84 @@
+2026-07-08T22:52:42.361Z prerequisite — scale YOLO predictor to 0 for idle header check
+2026-07-08T22:52:42.849Z prerequisite — predictor_ready=false after scale-down
+2026-07-08T22:52:42.850Z note — restore YOLO after run: oc scale deploy/yolov8m-satelite-predictor --replicas=1 -n caisat
+2026-07-08T22:52:45.121Z health-idle — poll header before any GPU work (YOLO should be scaled down)
+2026-07-08T22:52:45.408Z health-idle — pass header="LIVEDetection: idle"
+2026-07-08T22:52:53.251Z enhance-256 — starting enhance @ 256×256
+2026-07-08T22:53:31.818Z enhance-256 — naturalWidth=1024 pass=true
+2026-07-08T22:53:33.198Z enhance-768 — starting enhance @ 768×768
+2026-07-08T22:53:33.366Z enhance-768 — saw enhance stage: Preparing crop…
+2026-07-08T22:55:57.050Z enhance-768 — naturalWidth=2048 pass=true
+2026-07-08T22:55:57.050Z detect-progress — starting detection
+2026-07-08T22:55:57.467Z detect-progress — saw stage: activating
+2026-07-08T22:55:57.481Z detect-progress — saw stage: detecting
+2026-07-08T22:57:17.454Z detect-progress — pass=true stages=activating,detecting
+
+{
+  "date": "2026-07-08",
+  "frontendUrl": "https://caisat-caisat.apps.<cluster-domain>",
+  "gpuExclusive": true,
+  "deploy": {
+    "gitSha": "07daa16",
+    "capabilities": {
+      "gpu_tier": "l40s",
+      "max_crop": 768,
+      "max_tile": 512,
+      "tiling_enabled": true,
+      "scale_factor": 4,
+      "infer_timeout_seconds": 300,
+      "profile": "l40s",
+      "default_crop": 256,
+      "inference_accelerator": "gpu",
+      "gpu_deferred": false,
+      "kserve_prefer_binary": false,
+      "gpu_exclusive": true
+    },
+    "helmRevision": "10",
+    "images": {
+      "frontend": "sha256:e29be76aa370d97b57985ee8cf3ac2fddb03b89e48bfe4e19274a801da163582",
+      "backend": "sha256:f2afce8f51918e785543e6c316b8171d62039a921b5c15114905f59d91a961b3"
+    }
+  },
+  "scenarios": [
+    {
+      "name": "health-idle-header",
+      "pass": true,
+      "headerText": "LIVEDetection: idle",
+      "error": null,
+      "screenshot": "health-idle-header.png"
+    },
+    {
+      "name": "enhance-256",
+      "pass": true,
+      "cropSize": 256,
+      "naturalWidth": 1024,
+      "stagesSeen": [],
+      "error": null,
+      "screenshot": "enhance-256-enhanced.png"
+    },
+    {
+      "name": "enhance-768",
+      "pass": true,
+      "cropSize": 768,
+      "naturalWidth": 2048,
+      "stagesSeen": [
+        "Preparing crop\u2026"
+      ],
+      "error": null,
+      "screenshot": null,
+      "screenshotNote": "omitted from git (>500KB pre-commit limit); local run retained naturalWidth/stages"
+    },
+    {
+      "name": "detect-progress-stages",
+      "pass": true,
+      "stagesSeen": [
+        "activating",
+        "detecting"
+      ],
+      "error": null,
+      "screenshot": null,
+      "screenshotNote": "omitted from git (>500KB pre-commit limit); local run retained naturalWidth/stages"
+    }
+  ],
+  "verdict": "pass"
+}
