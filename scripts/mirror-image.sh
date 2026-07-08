@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Pull, retag, and push pre-built CAIsat OCI images (model ONNX bundles and mirrored workloads).
+# Pull, retag, and push pre-built CAIsat ONNX/aux OCI tags (not workload builds).
 # Usage: scripts/mirror-image.sh [model|yoloobb|sentinel2|backend-changedetection|all]
 # Env: CAISAT_UPSTREAM_REPO (default quay.io/rh-ai-quickstart/caisat),
 #      CAISAT_IMAGE_REPO (defaults to chart/values.yaml frontend.image.repository),
 #      CONTAINER_CMD=podman
+# Upstream auth failures: docs/spikes/quay-tags.md (set CAISAT_UPSTREAM_REPO to fork Quay).
+# Workloads: scripts/build-image.sh
 # Assisted by: cursor, claude
 set -o errexit -o nounset -o pipefail
 
@@ -21,6 +23,13 @@ if ! command -v "${CONTAINER_CMD}" >/dev/null 2>&1; then
     exit 1
 fi
 
+print_upstream_auth_hint() {
+    local SOURCE_IMAGE="${1}"
+    printf 'mirror-image: pull failed for %s (often unauthorized without rh-ai-quickstart org access).\n' "${SOURCE_IMAGE}" >&2
+    printf 'mirror-image: ONNX/aux tags only; workloads use scripts/build-image.sh.\n' >&2
+    printf 'mirror-image: fork override: set CAISAT_UPSTREAM_REPO to your public fork Quay (see docs/spikes/quay-tags.md).\n' >&2
+}
+
 mirror_tag() {
     local IMAGE_TAG="${1}"
     local UPSTREAM_REPO="${2}"
@@ -29,7 +38,10 @@ mirror_tag() {
     local DEST_IMAGE="${DEST_REPO}:${IMAGE_TAG}"
 
     printf 'Mirroring %s -> %s\n' "${SOURCE_IMAGE}" "${DEST_IMAGE}"
-    "${CONTAINER_CMD}" pull "${SOURCE_IMAGE}"
+    if ! "${CONTAINER_CMD}" pull "${SOURCE_IMAGE}"; then
+        print_upstream_auth_hint "${SOURCE_IMAGE}"
+        exit 1
+    fi
     "${CONTAINER_CMD}" tag "${SOURCE_IMAGE}" "${DEST_IMAGE}"
     "${CONTAINER_CMD}" push "${DEST_IMAGE}"
 }

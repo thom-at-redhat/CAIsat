@@ -1,0 +1,64 @@
+{
+  "date": "2026-07-08",
+  "frontendUrl": "https://caisat-caisat.apps.<cluster-domain>",
+  "gpuExclusive": true,
+  "deploy": {
+    "gitSha": "07daa16",
+    "capabilities": {
+      "gpu_tier": "l40s",
+      "max_crop": 768,
+      "max_tile": 512,
+      "tiling_enabled": true,
+      "scale_factor": 4,
+      "infer_timeout_seconds": 300,
+      "profile": "l40s",
+      "default_crop": 256,
+      "inference_accelerator": "gpu",
+      "gpu_deferred": false,
+      "kserve_prefer_binary": false,
+      "gpu_exclusive": true
+    },
+    "helmRevision": "10",
+    "images": {
+      "frontend": "sha256:e29be76aa370d97b57985ee8cf3ac2fddb03b89e48bfe4e19274a801da163582",
+      "backend": "sha256:f2afce8f51918e785543e6c316b8171d62039a921b5c15114905f59d91a961b3"
+    }
+  },
+  "scenarios": [
+    {
+      "name": "health-idle-header",
+      "pass": true,
+      "headerText": "LIVEDetection: idle",
+      "error": null,
+      "screenshot": "health-idle-header.png"
+    },
+    {
+      "name": "enhance-256",
+      "pass": true,
+      "cropSize": 256,
+      "naturalWidth": 1024,
+      "stagesSeen": [],
+      "error": null,
+      "screenshot": "enhance-256-enhanced.png"
+    },
+    {
+      "name": "enhance-768",
+      "pass": true,
+      "cropSize": 768,
+      "naturalWidth": 2048,
+      "stagesSeen": ["Preparing crop\u2026"],
+      "error": null,
+      "screenshot": null,
+      "screenshotNote": "omitted from git (>500KB pre-commit limit)"
+    },
+    {
+      "name": "detect-progress-stages",
+      "pass": true,
+      "stagesSeen": ["activating", "detecting"],
+      "error": null,
+      "screenshot": null,
+      "screenshotNote": "omitted from git (>500KB pre-commit limit)"
+    }
+  ],
+  "verdict": "pass"
+}

@@ -187,17 +187,15 @@ repos:
         always_run: true
         require_serial: true
 
-  # Containerfile / Dockerfile — hadolint
-  - repo: https://github.com/hadolint/hadolint
-    rev: 57e1618d78fd469a92c1e584e8c9313024656623 # v2.14.0
-    hooks:
-      - id: hadolint-docker
-        files: (Containerfile|Dockerfile)
-        args: [--ignore, DL3006, --ignore, DL3016, --ignore, DL3041, --ignore, DL3059]
-
   # Kubernetes manifests — kube-linter (optional local hook; Phase 21)
   - repo: local
     hooks:
+      - id: hadolint-containerfiles
+        name: Lint Dockerfiles
+        entry: bash scripts/hadolint-pre-commit.sh
+        language: system
+        files: (Containerfile|Dockerfile)
+        pass_filenames: true
       - id: kube-linter-chart
         name: kube-linter (chart templates)
         entry: bash scripts/kube-linter-pre-commit.sh
