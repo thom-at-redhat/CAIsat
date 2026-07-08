@@ -92,6 +92,17 @@ helm upgrade --install caisat ./chart -n <namespace> \
   --set computeProfile.gpuAvailable=true
 ```
 
+### GPU-exclusive mode (dynamic predictor scaling)
+
+On single-GPU clusters, enable `computeProfile.gpuExclusive=true` with `gpuAvailable=true`. Backends scale SwinIR or YOLO predictors on demand before `/api/enhance` or `/api/detect` — no manual `oc scale` between steps. All InferenceService `minReplicas` are set to `0`; the active predictor is scaled to `1` per request.
+
+```bash
+helm upgrade caisat ./chart -n <namespace> --reuse-values --server-side=false \
+  --set computeProfile.gpuExclusive=true
+```
+
+First detect after enhance waits for YOLO to start (~30–90s). Expect a longer spinner while the predictor swaps.
+
 ### T4 single-GPU recipe
 
 On clusters with one GPU, run SwinIR and YOLO sequentially by scaling `minReplicas` — only one GPU InferenceService at a time. Use `--reuse-values` on upgrades to preserve existing overrides (pull secrets, storage class, etc.).

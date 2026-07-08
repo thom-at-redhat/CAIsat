@@ -119,6 +119,40 @@ cpu
 {{- end }}
 
 {{/*
+Single-GPU exclusive mode: backends scale one KServe predictor up on demand.
+*/}}
+{{- define "caisat.gpuExclusiveEnabled" -}}
+{{- and .Values.computeProfile.gpuAvailable .Values.computeProfile.gpuExclusive (ne .Values.computeProfile.name "cpu") -}}
+{{- end }}
+
+{{/*
+InferenceService minReplicas — 0 when gpuExclusive defers scaling to backends.
+*/}}
+{{- define "caisat.modelMinReplicas" -}}
+{{- if include "caisat.gpuExclusiveEnabled" . -}}
+0
+{{- else -}}
+{{ .Values.model.minReplicas }}
+{{- end -}}
+{{- end }}
+
+{{- define "caisat.detectionMinReplicas" -}}
+{{- if include "caisat.gpuExclusiveEnabled" . -}}
+0
+{{- else -}}
+{{ .Values.detection.minReplicas }}
+{{- end -}}
+{{- end }}
+
+{{- define "caisat.sentinel2MinReplicas" -}}
+{{- if include "caisat.gpuExclusiveEnabled" . -}}
+0
+{{- else -}}
+{{ .Values.sentinel2Model.minReplicas }}
+{{- end -}}
+{{- end }}
+
+{{/*
 SwinIR model resources with profile-aware memory floor for CPU MLServer on GPU nodes.
 */}}
 {{- define "caisat.swinirModelResources" -}}

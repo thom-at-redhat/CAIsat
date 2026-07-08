@@ -19,6 +19,9 @@ spec:
         {{- include "caisat.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: detection-backend
     spec:
+      {{- if include "caisat.gpuExclusiveEnabled" . }}
+      serviceAccountName: {{ include "caisat.fullname" . }}-gpu-orchestrator
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -50,6 +53,28 @@ spec:
           value: {{ include "caisat.inferenceAccelerator" . | quote }}
         - name: KSERVE_PREFER_BINARY
           value: {{ .Values.kserve.preferBinary | quote }}
+        {{- if include "caisat.gpuExclusiveEnabled" . }}
+        - name: GPU_EXCLUSIVE_MODE
+          value: "true"
+        - name: PREDICTOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SWINIR_DEPLOYMENT
+          value: {{ printf "%s-predictor" .Values.model.name | quote }}
+        - name: YOLO_DEPLOYMENT
+          value: {{ printf "%s-predictor" .Values.detection.name | quote }}
+        - name: SENTINEL2_DEPLOYMENT
+          value: {{ printf "%s-predictor" .Values.sentinel2Model.name | quote }}
+        - name: SWINIR_MODEL_NAME
+          value: {{ .Values.model.name | quote }}
+        - name: YOLO_MODEL_NAME
+          value: {{ .Values.detection.name | quote }}
+        - name: PREDICTOR_PORT
+          value: {{ .Values.detection.port | quote }}
+        - name: PREDICTOR_READY_TIMEOUT_SECONDS
+          value: {{ .Values.computeProfile.predictorReadyTimeoutSeconds | quote }}
+        {{- end }}
         - name: SAHI_WINDOW
           value: "640"
         - name: SAHI_OVERLAP
