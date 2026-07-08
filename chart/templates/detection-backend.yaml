@@ -73,7 +73,7 @@ spec:
         - name: PREDICTOR_PORT
           value: {{ .Values.detection.port | quote }}
         - name: PREDICTOR_READY_TIMEOUT_SECONDS
-          value: {{ .Values.computeProfile.predictorReadyTimeoutSeconds | quote }}
+          value: {{ .Values.computeProfile.predictorReadyTimeoutSeconds | default 300 | quote }}
         {{- end }}
         - name: SAHI_WINDOW
           value: "640"
