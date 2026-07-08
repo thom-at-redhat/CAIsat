@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build (and optionally push) a CAIsat workload image to Quay.
-# Usage: scripts/build-image.sh [frontend|backend|detection-backend]
+# Usage: scripts/build-image.sh [frontend|backend|detection-backend|backend-changedetection]
 # Env: CAISAT_IMAGE_REPO (defaults to chart/values.yaml frontend.image.repository), PUSH=1, CONTAINER_CMD=podman
 # Assisted by: cursor, claude
 set -o errexit -o nounset -o pipefail
@@ -32,8 +32,12 @@ case "${COMPONENT}" in
         BUILD_CONTEXT="${REPO_ROOT}/backend-detection"
         IMAGE_TAG="detection-backend"
         ;;
+    backend-changedetection)
+        BUILD_CONTEXT="${REPO_ROOT}/backend-changedetection"
+        IMAGE_TAG="backend-changedetection"
+        ;;
     *)
-        printf 'build-image: unknown component %q (use frontend, backend, or detection-backend)\n' "${COMPONENT}" >&2
+        printf 'build-image: unknown component %q (use frontend, backend, detection-backend, or backend-changedetection)\n' "${COMPONENT}" >&2
         exit 1
         ;;
 esac

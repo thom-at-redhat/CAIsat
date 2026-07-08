@@ -40,6 +40,10 @@ function MonitoredAreas({ backendUrl }) {
     }
   };
 
+  const formatPercent = (value, digits = 2) => (
+    typeof value === 'number' ? `${value.toFixed(digits)}%` : 'N/A'
+  );
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'STABLE':
@@ -101,7 +105,7 @@ function MonitoredAreas({ backendUrl }) {
         <div className="detail-view">
           <div className="detail-title-section">
             <div className="detail-category">LOCATION</div>
-            <h2 className="detail-title">{stats.location.replace(/_/g, ' ').toUpperCase()}</h2>
+            <h2 className="detail-title">{(stats.location || selectedArea || '').replace(/_/g, ' ').toUpperCase()}</h2>
           </div>
 
           <div className="stats-grid">
@@ -117,12 +121,12 @@ function MonitoredAreas({ backendUrl }) {
 
             <div className="stat-card">
               <div className="stat-label">Average Change</div>
-              <div className="stat-value">{stats.avgChange.toFixed(2)}%</div>
+              <div className="stat-value">{formatPercent(stats.avgChange)}</div>
             </div>
 
             <div className="stat-card">
               <div className="stat-label">Max Change</div>
-              <div className="stat-value">{stats.maxChange.toFixed(2)}%</div>
+              <div className="stat-value">{formatPercent(stats.maxChange)}</div>
             </div>
 
             <div className="stat-card">
@@ -133,19 +137,23 @@ function MonitoredAreas({ backendUrl }) {
             <div className="stat-card">
               <div className="stat-label">Date Range</div>
               <div className="stat-value small">
-                {stats.dateRange.start} to {stats.dateRange.end}
+                {stats.dateRange?.start && stats.dateRange?.end
+                  ? `${stats.dateRange.start} to ${stats.dateRange.end}`
+                  : 'N/A'}
               </div>
             </div>
 
             <div className="stat-card">
               <div className="stat-label">Standard Deviation</div>
-              <div className="stat-value">{stats.stdChange?.toFixed(2) || 'N/A'}%</div>
+              <div className="stat-value">{formatPercent(stats.stdChange)}</div>
             </div>
           </div>
 
           <div className="time-series-section">
             <h3>Change Detection Over Time</h3>
 
+            {stats.timeSeries?.length ? (
+              <>
             {/* Line Chart */}
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={300}>
@@ -203,7 +211,7 @@ function MonitoredAreas({ backendUrl }) {
               {stats.timeSeries && stats.timeSeries.slice(0, 10).map((entry, idx) => (
                 <div key={idx} className="time-series-row">
                   <div>{entry.date}</div>
-                  <div>{entry.change_pct.toFixed(2)}%</div>
+                  <div>{formatPercent(entry.change_pct)}</div>
                   <div>
                     <span
                       className="status-badge"
@@ -222,6 +230,12 @@ function MonitoredAreas({ backendUrl }) {
             {stats.timeSeries && stats.timeSeries.length > 10 && (
               <div className="time-series-note">
                 Showing 10 of {stats.timeSeries.length} data points in table
+              </div>
+            )}
+              </>
+            ) : (
+              <div className="empty-state">
+                No time-series data yet. Run the analysis pipeline to populate change history.
               </div>
             )}
           </div>
