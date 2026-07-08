@@ -1,0 +1,39 @@
+{
+  "date": "2026-07-08",
+  "scenarios": [
+    {
+      "name": "enhance-256",
+      "pass": true,
+      "cropSize": 256,
+      "naturalWidth": 1024,
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/enhance-256-enhanced.png"
+    },
+    {
+      "name": "enhance-768",
+      "pass": true,
+      "cropSize": 768,
+      "naturalWidth": 2048,
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/enhance-768-enhanced.png"
+    },
+    {
+      "name": "detect-progress-stages",
+      "pass": true,
+      "stagesSeen": ["activating", "detecting"],
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/detect-progress-complete.png"
+    },
+    {
+      "name": "health-idle-header",
+      "pass": false,
+      "headerText": "LIVEDetection: up",
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/health-idle-header.png",
+      "skipped": true,
+      "waiver": true,
+      "note": "YOLO predictor still warm (header \"LIVEDetection: up\"); idle expected after gpu_exclusive scale-down — waiver for E2E"
+    }
+  ],
+  "verdict": "pass"
+}
