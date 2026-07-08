@@ -23,6 +23,7 @@ from PIL import Image
 from capabilities import get_capabilities
 from image_preview import make_jpeg_preview
 from kserve_v2 import sanitize_model_error
+from predictor_orchestrator import ensure_predictor_active
 from tiled_sr import enhance_image_tiled
 from logging_config import configure_logging, log_event
 
@@ -109,6 +110,7 @@ async def enhance_image(image: UploadFile = File(...)):
             )
 
         try:
+            await ensure_predictor_active("swinir", http_session=http_session)
             enhanced_img = await enhance_image_tiled(
                 http_session,
                 MODEL_ENDPOINT,
@@ -120,6 +122,12 @@ async def enhance_image(image: UploadFile = File(...)):
                 tiling_enabled=bool(caps["tiling_enabled"]),
                 timeout_seconds=float(caps["infer_timeout_seconds"]),
             )
+        except RuntimeError as exc:
+            print(f"Predictor orchestration failed: {exc}")
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except TimeoutError as exc:
+            print(f"Predictor readiness timeout: {exc}")
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         except aiohttp.ClientResponseError as exc:
             print(f"Model endpoint error ({exc.status}): {exc.message}")
             raise HTTPException(

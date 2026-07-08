@@ -21,7 +21,7 @@ spec:
     deploymentStrategy:
       type: RollingUpdate
     maxReplicas: 1
-    minReplicas: {{ .Values.sentinel2Model.minReplicas }}
+    minReplicas: {{ include "caisat.sentinel2MinReplicas" . }}
     model:
       modelFormat:
         name: onnx

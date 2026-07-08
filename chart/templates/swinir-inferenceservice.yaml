@@ -21,7 +21,7 @@ spec:
     deploymentStrategy:
       type: RollingUpdate
     maxReplicas: 1
-    minReplicas: {{ .Values.model.minReplicas }}
+    minReplicas: {{ include "caisat.modelMinReplicas" . }}
     {{- include "caisat.gpuTolerations" . | nindent 4 }}
     model:
       modelFormat:

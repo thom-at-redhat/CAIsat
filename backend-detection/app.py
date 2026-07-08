@@ -24,6 +24,7 @@ from PIL import Image
 from capabilities import get_capabilities
 from kserve_v2 import kserve_infer, sanitize_model_error
 from obb import decode_yolov8_obb
+from predictor_orchestrator import ensure_predictor_active
 from sahi import generate_slices, merge_detections, offset_detection
 from logging_config import configure_logging, log_event
 
@@ -177,9 +178,16 @@ async def detect_objects(image: UploadFile = File(...)):
         slices = generate_slices(img, window=SAHI_WINDOW, overlap=SAHI_OVERLAP)
 
         try:
+            await ensure_predictor_active("yolo", http_session=http_session)
             for ox, oy, slice_img in slices:
                 slice_dets = await infer_slice(slice_img)
                 all_detections.extend(offset_detection(d, ox, oy) for d in slice_dets)
+        except RuntimeError as exc:
+            print(f"Predictor orchestration failed: {exc}")
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except TimeoutError as exc:
+            print(f"Predictor readiness timeout: {exc}")
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
         except aiohttp.ClientResponseError as exc:
             print(f"Model endpoint error ({exc.status}): {exc.message}")
             raise HTTPException(

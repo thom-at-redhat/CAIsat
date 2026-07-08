@@ -7,10 +7,13 @@
 computeProfile:
   name: cpu
   gpuAvailable: false
+  # When true with gpuAvailable on a GPU tier, backends scale SwinIR/YOLO predictors on demand (single-GPU clusters).
+  gpuExclusive: false
   gpuTolerations:
     - key: nvidia.com/gpu
       operator: Exists
       effect: NoSchedule
+  predictorReadyTimeoutSeconds: 300
 
 # KServe v2 infer protocol: false avoids MLServer binary bug on RHOAI 3.4.0 (JSON fallback).
 kserve:
