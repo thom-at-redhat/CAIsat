@@ -3,6 +3,8 @@
 // Stage labels imported from workflowUtils for parity with frontend unit tests.
 
 import { chromium } from 'playwright';
+import { execSync } from 'node:child_process';
+import https from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,9 +24,77 @@ const ENHANCE_256_TIMEOUT_MS = 420_000;
 const ENHANCE_768_TIMEOUT_MS = 180_000;
 const DETECT_TIMEOUT_MS = 300_000;
 const HEALTH_IDLE_TIMEOUT_MS = 60_000;
-const HEALTH_IDLE_POLL_MS = Number(process.env.HEALTH_IDLE_WAIT_MS ?? 180_000);
+const HEALTH_IDLE_POLL_MS = Number(process.env.HEALTH_IDLE_WAIT_MS ?? 60_000);
+const GPU_EXCLUSIVE = process.env.CAISAT_GPU_EXCLUSIVE === '1';
+const K8S_NAMESPACE = process.env.CAISAT_NAMESPACE ?? 'caisat';
+const YOLO_DEPLOYMENT = process.env.YOLO_DEPLOYMENT ?? 'yolov8m-satelite-predictor';
 
-fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+function detectionHealthUrl() {
+  const parsed = new URL(FRONTEND_URL);
+  parsed.hostname = parsed.hostname.replace('caisat', 'caisat-detection-backend');
+  return `${parsed.origin}/health`;
+}
+
+function fetchDetectionHealth() {
+  const healthUrl = new URL(detectionHealthUrl());
+  return new Promise((resolve, reject) => {
+    const request = https.get(
+      {
+        hostname: healthUrl.hostname,
+        port: healthUrl.port || 443,
+        path: `${healthUrl.pathname}${healthUrl.search}`,
+        rejectUnauthorized: false,
+        timeout: 10_000,
+      },
+      (response) => {
+        let body = '';
+        response.on('data', (chunk) => {
+          body += chunk;
+        });
+        response.on('end', () => {
+          try {
+            resolve(JSON.parse(body));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      },
+    );
+    request.on('error', reject);
+    request.on('timeout', () => {
+      request.destroy();
+      reject(new Error('detection health request timed out'));
+    });
+  });
+}
+
+async function ensureYoloScaledDown() {
+  if (!GPU_EXCLUSIVE) {
+    return;
+  }
+  log('prerequisite — scale YOLO predictor to 0 for idle header check');
+  try {
+    execSync(`oc scale deploy/${YOLO_DEPLOYMENT} --replicas=0 -n ${K8S_NAMESPACE}`, { stdio: 'pipe' });
+  } catch (error) {
+    throw new Error(`oc scale ${YOLO_DEPLOYMENT} to 0 failed: ${error.message}`);
+  }
+
+  const deadline = Date.now() + 120_000;
+  while (Date.now() < deadline) {
+    try {
+      const payload = await fetchDetectionHealth();
+      if (payload.predictor_ready === false) {
+        log('prerequisite — predictor_ready=false after scale-down');
+        return;
+      }
+    } catch {
+      // retry until deadline
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+  throw new Error(`YOLO still warm after scale-down (GET ${detectionHealthUrl()})`);
+}
+
 
 const results = [];
 
@@ -39,8 +109,12 @@ async function waitForMapReady(page) {
   await page.waitForTimeout(3000);
 }
 
+async function loadFrontend(page) {
+  await page.goto(FRONTEND_URL, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+  await page.waitForSelector('.status', { timeout: HEALTH_IDLE_TIMEOUT_MS });
+}
+
 async function navigateToCropUi(page) {
-  await page.goto(FRONTEND_URL, { waitUntil: 'networkidle', timeout: 120_000 });
   await page.click('button:has-text("Satellite View")');
   await waitForMapReady(page);
   await page.click('button:has-text("Capture & Enhance")');
@@ -142,8 +216,7 @@ async function runDetectProgressScenario(page) {
 async function runHealthIdleScenario(page) {
   const scenario = { name: 'health-idle-header', pass: false, headerText: null, error: null };
   try {
-    log('health-idle — poll header on current session (avoid goto after long detect)');
-    await page.waitForSelector('.status', { timeout: HEALTH_IDLE_TIMEOUT_MS });
+    log('health-idle — poll header before any GPU work (YOLO should be scaled down)');
     const statusLocator = page.locator('.status');
     const pollStart = Date.now();
     let headerText = '';
@@ -164,17 +237,11 @@ async function runHealthIdleScenario(page) {
     if (scenario.pass) {
       log(`health-idle — pass header="${headerText}"`);
     } else if (!/Detection:/i.test(headerText)) {
-      scenario.skipped = true;
-      scenario.note = 'Header did not show Detection status — capabilities or detection health may not have loaded';
-      log(`SKIP/WARN health-idle: ${scenario.note}`);
-    } else if (/Detection:\s*up/i.test(headerText)) {
-      scenario.skipped = true;
-      scenario.waiver = true;
-      scenario.note = `YOLO predictor still warm (header "${headerText}"); idle expected after gpu_exclusive scale-down — waiver for E2E`;
-      log(`SKIP/WARN health-idle (waiver): ${scenario.note}`);
+      scenario.error = 'Header did not show Detection status — capabilities or detection health may not have loaded';
+      log(`FAIL health-idle: ${scenario.error}`);
     } else {
-      scenario.note = `Expected "Detection: idle", got "${headerText}"`;
-      log(`SKIP/WARN health-idle: ${scenario.note}`);
+      scenario.error = `Expected "Detection: idle", got "${headerText}"`;
+      log(`FAIL health-idle: ${scenario.error}`);
     }
   } catch (error) {
     scenario.error = error.message;
@@ -243,6 +310,12 @@ const page = await context.newPage();
 const report = { date: new Date().toISOString().slice(0, 10), scenarios: [] };
 
 try {
+  await ensureYoloScaledDown();
+  await loadFrontend(page);
+
+  const healthIdle = await runHealthIdleScenario(page);
+  report.scenarios.push(healthIdle);
+
   await navigateToCropUi(page);
 
   const enhance256 = await runEnhanceScenario(page, {
@@ -271,12 +344,9 @@ try {
     });
   }
 
-  const healthIdle = await runHealthIdleScenario(page);
-  report.scenarios.push(healthIdle);
-
-  const required = report.scenarios.filter((s) => !s.skipped || s.waiver);
-  const hardFail = report.scenarios.some((s) => !s.pass && !s.skipped && !s.waiver);
-  report.verdict = !hardFail && required.length > 0 && required.every((s) => s.pass || s.waiver) ? 'pass' : 'fail';
+  const required = report.scenarios.filter((s) => !s.skipped);
+  const hardFail = report.scenarios.some((s) => !s.pass && !s.skipped);
+  report.verdict = !hardFail && required.length > 0 && required.every((s) => s.pass) ? 'pass' : 'fail';
 } catch (error) {
   log(`FATAL ${error.message}`);
   report.verdict = 'fail';

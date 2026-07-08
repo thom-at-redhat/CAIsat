@@ -1,17 +1,26 @@
-2026-07-08T16:03:56.988Z enhance-256 — starting enhance @ 256×256
-2026-07-08T16:04:48.025Z enhance-256 — naturalWidth=1024 pass=true
-2026-07-08T16:04:49.210Z enhance-768 — starting enhance @ 768×768
-2026-07-08T16:06:52.801Z enhance-768 — naturalWidth=2048 pass=true
-2026-07-08T16:06:52.802Z detect-progress — starting detection
-2026-07-08T16:06:53.205Z detect-progress — saw stage: activating
-2026-07-08T16:06:53.437Z detect-progress — saw stage: detecting
-2026-07-08T16:07:57.889Z detect-progress — pass=true stages=activating,detecting
-2026-07-08T16:07:57.889Z health-idle — poll header on current session (avoid goto after long detect)
-2026-07-08T16:10:58.737Z SKIP/WARN health-idle (waiver): YOLO predictor still warm (header "LIVEDetection: up"); idle expected after gpu_exclusive scale-down — waiver for E2E
+2026-07-08T16:35:30.049Z prerequisite — scale YOLO predictor to 0 for idle header check
+2026-07-08T16:35:30.543Z prerequisite — predictor_ready=false after scale-down
+2026-07-08T16:35:32.755Z health-idle — poll header before any GPU work (YOLO should be scaled down)
+2026-07-08T16:35:33.197Z health-idle — pass header="LIVEDetection: idle"
+2026-07-08T16:35:40.232Z enhance-256 — starting enhance @ 256×256
+2026-07-08T16:36:32.756Z enhance-256 — naturalWidth=1024 pass=true
+2026-07-08T16:36:33.643Z enhance-768 — starting enhance @ 768×768
+2026-07-08T16:38:36.005Z enhance-768 — naturalWidth=2048 pass=true
+2026-07-08T16:38:36.007Z detect-progress — starting detection
+2026-07-08T16:38:36.429Z detect-progress — saw stage: activating
+2026-07-08T16:38:36.526Z detect-progress — saw stage: detecting
+2026-07-08T16:39:35.073Z detect-progress — pass=true stages=activating,detecting
 
 {
   "date": "2026-07-08",
   "scenarios": [
+    {
+      "name": "health-idle-header",
+      "pass": true,
+      "headerText": "LIVEDetection: idle",
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/health-idle-header.png"
+    },
     {
       "name": "enhance-256",
       "pass": true,
@@ -37,16 +46,6 @@
       ],
       "error": null,
       "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/detect-progress-complete.png"
-    },
-    {
-      "name": "health-idle-header",
-      "pass": false,
-      "headerText": "LIVEDetection: up",
-      "error": null,
-      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/health-idle-header.png",
-      "skipped": true,
-      "waiver": true,
-      "note": "YOLO predictor still warm (header \"LIVEDetection: up\"); idle expected after gpu_exclusive scale-down — waiver for E2E"
     }
   ],
   "verdict": "pass"
