@@ -11,3 +11,7 @@ pythonpath = ["backend", "backend-detection"]
 [[tool.mypy.overrides]]
 module = ["numpy.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["aiohttp", "aiohttp.*", "fastapi", "fastapi.*"]
+ignore_missing_imports = true

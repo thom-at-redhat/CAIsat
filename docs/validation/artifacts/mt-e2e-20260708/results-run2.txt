@@ -1,0 +1,19 @@
+(node:3361652) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/tcarlin/workspace/CAIsat/frontend/src/workflowUtils.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/tcarlin/workspace/CAIsat/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-08T15:36:46.274Z enhance-256 — starting enhance @ 256×256
+2026-07-08T15:37:39.062Z enhance-256 — naturalWidth=1024 pass=true
+2026-07-08T15:37:40.297Z enhance-768 — starting enhance @ 768×768
+2026-07-08T15:39:43.005Z enhance-768 — naturalWidth=2048 pass=true
+2026-07-08T15:39:43.006Z detect-progress — starting detection
+2026-07-08T15:39:43.423Z detect-progress — saw stage: activating
+2026-07-08T15:39:43.532Z detect-progress — saw stage: detecting
+2026-07-08T15:40:44.504Z detect-progress — pass=true stages=activating,detecting
+2026-07-08T15:41:45.341Z FAIL health-idle: page.waitForSelector: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator('text=/Detection:/i') to be visible
+
+
+FINAL: fail
+Artifacts: /home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708

@@ -39,6 +39,7 @@ The enhancement backend uses this response to cap crop size and tile settings; t
 | `kserve_prefer_binary`  | boolean | `KSERVE_PREFER_BINARY` env (default `true`)                          |
 | `default_crop`          | integer | Always `256` — safe default for UI crop selector                     |
 | `inference_accelerator` | string  | `cpu` (MLServer) or `gpu` (Triton); from `INFERENCE_ACCELERATOR` env |
+| `gpu_exclusive`         | boolean | `GPU_EXCLUSIVE_MODE` env — single-GPU predictor swap active          |
 
 ### CAP-001-R3: Profile tier limits
 
@@ -72,14 +73,17 @@ When `COMPUTE_PROFILE` is not `cpu` and `GPU_AVAILABLE` is not truthy (`1`, `tru
 | `GPU_AVAILABLE`         | `false` | When false on non-CPU profile, triggers deferral                    |
 | `INFERENCE_ACCELERATOR` | `cpu`   | `gpu` when Triton runtime active; caps apply when `cpu` on GPU tier |
 | `KSERVE_PREFER_BINARY`  | `true`  | Exposed as `kserve_prefer_binary` in response                       |
+| `GPU_EXCLUSIVE_MODE`    | `false` | Exposed as `gpu_exclusive`; enables predictor scale-to-zero swap    |
 
-Chart values: [`chart/values.yaml`](../../chart/values.yaml) `computeProfile.name`, `computeProfile.gpuAvailable`.
+Chart values: [`chart/values.yaml`](../../chart/values.yaml) `computeProfile.name`, `computeProfile.gpuAvailable`, `computeProfile.gpuExclusive`.
+When `caisat.gpuExclusiveEnabled` (gpu available + gpuExclusive + non-cpu profile), Helm sets `GPU_EXCLUSIVE_MODE=true` on both backends.
 
 ## Acceptance criteria
 
 - [x] Both `backend/` and `backend-detection/` modules implement identical deferral and env parsing logic (timeout differs per module)
 - [x] CPU cluster returns `max_crop=256`, `gpu_tier=cpu`, `tiling_enabled=false`, `gpu_deferred=false` — verified `baseline-smoke.md` L203 @ `e2a7704`
-- [ ] `test_cpu_profile_defaults` — enhancement + detection backends (MT-W12)
-- [ ] `test_gpu_deferred_caps_to_cpu` — `COMPUTE_PROFILE=t4`, `GPU_AVAILABLE=false` (MT-W12)
-- [ ] `test_gpu_available_uses_tier_limits` — hopper profile with GPU available (MT-W12)
-- [ ] `test_kserve_prefer_binary_env` — `KSERVE_PREFER_BINARY=false` reflected in response (MT-W12)
+- [x] `test_cpu_profile_defaults` — enhancement + detection backends (MT-W12)
+- [x] `test_gpu_deferred_caps_to_cpu` — `COMPUTE_PROFILE=t4`, `GPU_AVAILABLE=false` (MT-W12)
+- [x] `test_gpu_available_uses_tier_limits` — hopper profile with GPU available (MT-W12)
+- [x] `test_kserve_prefer_binary_env` — `KSERVE_PREFER_BINARY=false` reflected in response (MT-W12)
+- [x] `test_gpu_exclusive_env` — `GPU_EXCLUSIVE_MODE` truthy/falsy reflected in `gpu_exclusive` (MT-W12)

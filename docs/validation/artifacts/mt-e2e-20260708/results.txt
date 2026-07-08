@@ -1,0 +1,52 @@
+2026-07-08T16:35:30.049Z prerequisite — scale YOLO predictor to 0 for idle header check
+2026-07-08T16:35:30.543Z prerequisite — predictor_ready=false after scale-down
+2026-07-08T16:35:32.755Z health-idle — poll header before any GPU work (YOLO should be scaled down)
+2026-07-08T16:35:33.197Z health-idle — pass header="LIVEDetection: idle"
+2026-07-08T16:35:40.232Z enhance-256 — starting enhance @ 256×256
+2026-07-08T16:36:32.756Z enhance-256 — naturalWidth=1024 pass=true
+2026-07-08T16:36:33.643Z enhance-768 — starting enhance @ 768×768
+2026-07-08T16:38:36.005Z enhance-768 — naturalWidth=2048 pass=true
+2026-07-08T16:38:36.007Z detect-progress — starting detection
+2026-07-08T16:38:36.429Z detect-progress — saw stage: activating
+2026-07-08T16:38:36.526Z detect-progress — saw stage: detecting
+2026-07-08T16:39:35.073Z detect-progress — pass=true stages=activating,detecting
+
+{
+  "date": "2026-07-08",
+  "scenarios": [
+    {
+      "name": "health-idle-header",
+      "pass": true,
+      "headerText": "LIVEDetection: idle",
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/health-idle-header.png"
+    },
+    {
+      "name": "enhance-256",
+      "pass": true,
+      "cropSize": 256,
+      "naturalWidth": 1024,
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/enhance-256-enhanced.png"
+    },
+    {
+      "name": "enhance-768",
+      "pass": true,
+      "cropSize": 768,
+      "naturalWidth": 2048,
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/enhance-768-enhanced.png"
+    },
+    {
+      "name": "detect-progress-stages",
+      "pass": true,
+      "stagesSeen": [
+        "activating",
+        "detecting"
+      ],
+      "error": null,
+      "screenshot": "/home/tcarlin/workspace/CAIsat/docs/validation/artifacts/mt-e2e-20260708/detect-progress-complete.png"
+    }
+  ],
+  "verdict": "pass"
+}

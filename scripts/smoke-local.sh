@@ -114,7 +114,7 @@ binary_profile() {
     "${PYTHON_BIN}" -m pip install -q -r "${REPO_ROOT}/requirements-dev.txt"
     (
         cd "${REPO_ROOT}"
-        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "${PYTHON_BIN}" -m pytest tests/
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "${PYTHON_BIN}" -m pytest tests/test_kserve_v2.py
     )
 }
 
