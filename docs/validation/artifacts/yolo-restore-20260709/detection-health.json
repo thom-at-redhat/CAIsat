@@ -1,0 +1,19 @@
+{
+  "gate0_pass": true,
+  "gate0_caveat": "predictor_ready verified via public route; oc replica count blocked (expired token)",
+  "timestamp_utc": "2026-07-09T00:00:00Z",
+  "cluster": "qualitycustomer",
+  "namespace": "caisat",
+  "deployment": "yolov8m-satelite-predictor",
+  "health_url": "https://caisat-detection-backend-caisat.apps.qualitycustomer-pool-tv8j5.aws.rh-ods.com/health",
+  "status": "healthy",
+  "gpu_exclusive": true,
+  "predictor_ready": true,
+  "health_poll_completed": true,
+  "oc_replica_check": {
+    "attempted": true,
+    "result": "blocked",
+    "error": "You must be logged in to the server (Unauthorized)"
+  },
+  "scale_action": "skipped — health already predictor_ready=true"
+}

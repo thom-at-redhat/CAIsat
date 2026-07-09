@@ -4,7 +4,7 @@
 
 **Canonical source of truth** for operational follow-up, merge gates, and spike outcomes. Edit this file — not Cursor plan artifacts — after bootstrap.
 
-**Branch:** `main` @ `9c0d76e` (2026-07-06). Phases 0–23 **complete**. Wave 5 **Partial** (canonical); **Full** + RHOAI operator cases **deferred** (MT-TICKET, MT-EA2-\*, MT-2-RETEST, MT-W5-FULL).
+**Branch:** `main` @ `b625b56` (2026-07-09). Phases 0–23 **complete**. Wave 5 **Partial** (canonical); **Full** + RHOAI operator cases **deferred** (MT-TICKET, MT-EA2-\*, MT-2-RETEST, MT-W5-FULL).
 Phase 25 SeaweedFS chart merged (PR #85); cluster prove-out **pass**; changedetection image + `/health` **pass**; Wave 7 pipeline runAnalysis E2E **pass** (2026-07-01).
 Wave 8 T4 GPU validation **pass** (PR #94 chart @ `032cefa`, PR #96 MT-GPU artifact); Wave 9 ea.2 **partial pass** (cloudtest2 PR #92; psi-21 Path A operator upgrade **pass** 2026-07-03).
 Wave 10 ecosystem tracks **complete** (PRs #97–#102). OpenSSF Phases **26–29 + 31 complete** @ `31606a8` (PRs #104–107, #108, #114–116); Phase 30 **deferred** @ **2026-09-27** — see tables below.
@@ -37,7 +37,7 @@ RHOAI ticket **pending operator filing**.
 | Baseline smoke phases   | [`baseline-smoke.md`](../validation/baseline-smoke.md)                           | phases 7/13/14/16                                               | ok                    |
 | Quay gate               | [`quay-tags.md`](../spikes/quay-tags.md)                                         | **pass** (fork mirror); upstream **fail**                       | ok                    |
 | Chart image default     | [`values.yaml`](../../chart/values.yaml)                                         | `thom_at_redhat/caisat` (public)                                | ok                    |
-| OpenSSF Scorecard       | [scorecard-analysis.yml](../../.github/workflows/scorecard-analysis.yml)         | **6.8** @ `9c0d76e` (Fuzzing 10; SR **0**; Packaging -1 waiver) | ok                    |
+| OpenSSF Scorecard       | [scorecard-analysis.yml](../../.github/workflows/scorecard-analysis.yml)         | **7.3** @ 2026-07-09; Fuzzing 10; SR **5**; Packaging -1 waiver | ok                    |
 | Scorecard gap plan      | [`scorecard-gaps.md`](../spikes/scorecard-gaps.md)                               | Phases 8–11 + Wave 5                                            | ok                    |
 | SAST (CodeQL)           | [codeql-analysis.yml](../../.github/workflows/codeql-analysis.yml)               | PR #29; Python + JS; **10/10**                                  | ok                    |
 | SECURITY.md             | [`.github/SECURITY.md`](../../.github/SECURITY.md)                               | PR #24; reporting + supported versions                          | ok                    |
@@ -60,10 +60,11 @@ RHOAI ticket **pending operator filing**.
 | Wave 5 Partial closure  | [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md) W5-P5                                   | MT-R6b — R3a pass + MT-2 evidence + waiver                      | ok (W5-P5 Partial)    |
 | MT-GPU cloudtest2       | [`mt-gpu-20260702/report.md`](../validation/artifacts/mt-gpu-20260702/report.md) | MT-3A/3B/4b **pass** @ helm rev 14; PR #96                      | ok                    |
 
-**Last verified:** fork `main` @ `9c0d76e` (2026-07-06); Phase 25 **pass**; Wave 7 E2E **pass** (PR #89);
+**Last verified:** fork `main` @ `b625b56` (2026-07-09); PR #157 merged (post-#156 closure); MT-E2E **pass** @ `mt-e2e-20260709`; Gate 0 YOLO health pass @ `yolo-restore-20260709`;
+Phase 25 **pass**; Wave 7 E2E **pass** (PR #89);
 Wave 8 T4 **pass** (PR #94 + #96); Wave 9 cloudtest2 **partial pass** (PR #92); psi-21 Path A operator upgrade **pass** (2026-07-03);
 Chart GPU **resolved** @ PR #94; Wave 10 **complete**; OpenSSF Phases **26–29 + 31 complete** (PRs #104–107, #108, #114–116);
-Scorecard **6.8** @ `9c0d76e` (Batch 3b: Signed-Releases **0** pass; Packaging **-1** waiver ≤2026-07-11); SAST **10/10**
+Scorecard **7.3** @ API 2026-07-09 (Batch 3b: Signed-Releases **5** pass; Packaging **-1** waiver ≤2026-07-11); SAST **10/10**
 
 **Revalidate:** `docs/project/PLAN.md`, `docs/specs/`, `docs/validation/baseline-smoke.md`, `docs/validation/ci-timing.md`, `docs/spikes/README.md`,
 `docs/spikes/scorecard-gaps.md`, `.github/workflows/`, `.pre-commit-config.yaml`, `chart/values.yaml`
@@ -78,18 +79,17 @@ Scorecard **6.8** @ `9c0d76e` (Batch 3b: Signed-Releases **0** pass; Packaging *
 
 All phased work archived in [`PLAN_COMPLETED.md`](PLAN_COMPLETED.md). Operational follow-up only:
 
-| ID        | Track                  | Status        | Next action                                                                       |
 | --------- | ---------------------- | ------------- | --------------------------------------------------------------------------------- |
-| tests     | Pytest scaffold        | **pass**      | W5-P1a merged — `tests/` + `make test`; CI `smoke-binary`                         |
-| baseline  | Phase 13 sign-off      | **pass**      | MT-R3a pass — `baseline-smoke.md` L157+; DRL-001 accepted                         |
-| binary    | 12-binary / Phase 14   | **waiver**    | JSON pass / binary fail; RHOAI cases **deferred** — `binary-kserve-v2.md`         |
-| crop      | Phase 16 sign-off      | **pass**      | CPU pass @ `e2a7704`; JSON 256→1024 — `baseline-smoke.md`                         |
-| gpu       | Phase 15 deferral      | **pass** (T4) | T4 pass cloudtest2 PR #94/#96; L40S/Hopper N/A — `gpu-servingruntime.md`          |
-| scorecard | Wave 10 + Phases 26–31 | **complete**  | **6.8** @ `9c0d76e`; SR **0** pass; Packaging **-1** waiver — `scorecard-gaps.md` |
-| upstream  | Outbound PR            | **deferred**  | PR to rh-ai-quickstart deferred; MT-1b + MT-2 recorded                            |
-| ci-split  | MT-CP-3 job split      | **defer**     | p50 gate OK; split cancelled — `ci-timing.md`                                     |
-| vite      | CRA → Vite             | **defer**     | MT-VITE-SPIKE merged; CRA sufficient — `vite-migration.md`                        |
-| phase-25  | S4 → SeaweedFS         | **pass**      | PR #85 SeaweedFS; Wave 7 E2E pass PR #88–#89; Phase 25 + Wave 7 summary           |
+| tests | Pytest scaffold | **pass** | W5-P1a merged — `tests/` + `make test`; CI `smoke-binary` |
+| baseline | Phase 13 sign-off | **pass** | MT-R3a pass — `baseline-smoke.md` L157+; DRL-001 accepted |
+| binary | 12-binary / Phase 14 | **waiver** | JSON pass / binary fail; RHOAI cases **deferred** — `binary-kserve-v2.md` |
+| crop | Phase 16 sign-off | **pass** | CPU pass @ `e2a7704`; JSON 256→1024 — `baseline-smoke.md` |
+| gpu | Phase 15 deferral | **pass** (T4) | T4 pass cloudtest2 PR #94/#96; L40S/Hopper N/A — `gpu-servingruntime.md` |
+| scorecard | Wave 10 + Phases 26–31 | **complete** | **7.3** @ API 2026-07-09; SR **5** pass; Packaging **-1** waiver — `scorecard-gaps.md` |
+| upstream | Outbound PR | **deferred** | PR to rh-ai-quickstart deferred; MT-1b + MT-2 recorded |
+| ci-split | MT-CP-3 job split | **defer** | p50 gate OK; split cancelled — `ci-timing.md` |
+| vite | CRA → Vite | **defer** | MT-VITE-SPIKE merged; CRA sufficient — `vite-migration.md` |
+| phase-25 | S4 → SeaweedFS | **pass** | PR #85 SeaweedFS; Wave 7 E2E pass PR #88–#89; Phase 25 + Wave 7 summary |
 
 ---
 
@@ -226,13 +226,13 @@ Follow-up after Phases **0–23** merge (PR #45 @ `ee3f1b3`; PLAN archive PR #47
 
 ### Wave 10 ecosystem (complete — 2026-07-02)
 
-| Item        | Verdict                                                                                                                                                         |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Upstream PR | ~175 commits / 97 files vs `rh-ai-quickstart/main` — **deferred** (user choice)                                                                                 |
-| Scorecard   | **complete** — aggregate **6.8** @ `9c0d76e`; Fuzzing **10**; Signed-Releases **0** (Batch 3b pass); Packaging **-1** waiver ≤2026-07-11; Phase 30 @ 2026-09-27 |
-| MT-CP-3     | **defer** — p50 gate OK; split cancelled — `ci-timing.md`                                                                                                       |
-| Vite        | **defer** — MT-VITE-SPIKE (#101); CRA + overrides sufficient                                                                                                    |
-| L40S/Hopper | **N/A** — GPU tier docs merged (#102)                                                                                                                           |
+| Item        | Verdict                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upstream PR | ~175 commits / 97 files vs `rh-ai-quickstart/main` — **deferred** (user choice)                                                                                      |
+| Scorecard   | **complete** — aggregate **7.3** @ API 2026-07-09; Fuzzing **10**; Signed-Releases **5** (Batch 3b pass); Packaging **-1** waiver ≤2026-07-11; Phase 30 @ 2026-09-27 |
+| MT-CP-3     | **defer** — p50 gate OK; split cancelled — `ci-timing.md`                                                                                                            |
+| Vite        | **defer** — MT-VITE-SPIKE (#101); CRA + overrides sufficient                                                                                                         |
+| L40S/Hopper | **N/A** — GPU tier docs merged (#102)                                                                                                                                |
 
 ### Phases 26–31 — OpenSSF score improvement
 

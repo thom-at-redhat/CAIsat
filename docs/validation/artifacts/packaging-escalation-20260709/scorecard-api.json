@@ -1,0 +1,13 @@
+{
+  "date": "2026-07-08T17:33:14Z",
+  "repo": {
+    "name": "github.com/<contributor-fork>/CAIsat",
+    "commit": "b031b79"
+  },
+  "score": 7.3,
+  "checks_summary": {
+    "Packaging": -1,
+    "Signed-Releases": 5,
+    "Fuzzing": 10
+  }
+}
