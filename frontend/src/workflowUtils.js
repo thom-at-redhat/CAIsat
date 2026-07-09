@@ -1,5 +1,41 @@
 // Assisted by: cursor, claude
 
+/** Derive cross-origin backend Route URLs from the frontend hostname (matches App.js). */
+export function deriveBackendBases(hostname, protocol = 'https:', localPorts = {}) {
+  const ports = {
+    enhance: localPorts.enhance ?? 8080,
+    detection: localPorts.detection ?? 8081,
+    changedetection: localPorts.changedetection ?? 8082,
+  };
+  if (hostname.includes('localhost')) {
+    return {
+      enhance: `http://localhost:${ports.enhance}`,
+      detection: `http://localhost:${ports.detection}`,
+      changedetection: `http://localhost:${ports.changedetection}`,
+    };
+  }
+  return {
+    enhance: `${protocol}//${hostname.replace('caisat', 'caisat-backend')}`,
+    detection: `${protocol}//${hostname.replace('caisat', 'caisat-detection-backend')}`,
+    changedetection: `${protocol}//${hostname.replace('caisat', 'caisat-backend-changedetection')}`,
+  };
+}
+
+/** Browsers reject Allow-Origin * together with Allow-Credentials true. */
+export function isInvalidCorsHeaderPair(allowOrigin, allowCredentials) {
+  return allowOrigin === '*' && String(allowCredentials).toLowerCase() === 'true';
+}
+
+/** Format percentage for Monitored Areas; seed stats may omit numeric fields. */
+export function formatPercent(value, digits = 2) {
+  return typeof value === 'number' ? `${value.toFixed(digits)}%` : 'N/A';
+}
+
+/** True when stats JSON has pipeline time-series (not storage-seed minimal payload). */
+export function statsHasTimeSeries(stats) {
+  return Array.isArray(stats?.timeSeries) && stats.timeSeries.length > 0;
+}
+
 export const ENHANCE_STAGE_LABELS = {
   preparing: 'Preparing crop…',
   uploading: 'Uploading to server…',

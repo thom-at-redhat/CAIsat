@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { formatPercent } from './workflowUtils';
 import './MonitoredAreas.css';
 
 function MonitoredAreas({ backendUrl }) {
@@ -39,10 +40,6 @@ function MonitoredAreas({ backendUrl }) {
       setError('Failed to load area statistics.');
     }
   };
-
-  const formatPercent = (value, digits = 2) => (
-    typeof value === 'number' ? `${value.toFixed(digits)}%` : 'N/A'
-  );
 
   const getStatusColor = (status) => {
     switch (status) {

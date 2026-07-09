@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import './App.css';
 import MonitoredAreas from './MonitoredAreas';
 import {
+  deriveBackendBases,
   ENHANCE_STAGE_LABELS,
   DETECT_STAGE_LABELS,
   getEnhanceTileCount,
@@ -174,18 +175,9 @@ function App() {
     });
   };
 
-  // API endpoints
-  const BACKEND_BASE = window.location.hostname.includes('localhost')
-    ? 'http://localhost:8080'
-    : `${window.location.protocol}//${window.location.hostname.replace('caisat', 'caisat-backend')}`;
-
-  const DETECTION_BASE = window.location.hostname.includes('localhost')
-    ? 'http://localhost:8081'
-    : `${window.location.protocol}//${window.location.hostname.replace('caisat', 'caisat-detection-backend')}`;
-
-  const CHANGEDETECTION_BASE = window.location.hostname.includes('localhost')
-    ? 'http://localhost:8082'
-    : `${window.location.protocol}//${window.location.hostname.replace('caisat', 'caisat-backend-changedetection')}`;
+  // API endpoints (cross-origin Routes — see docs/troubleshooting/frontend-workflow-errors.md)
+  const { enhance: BACKEND_BASE, detection: DETECTION_BASE, changedetection: CHANGEDETECTION_BASE } =
+    deriveBackendBases(window.location.hostname, window.location.protocol);
 
   // Check system health
   useEffect(() => {

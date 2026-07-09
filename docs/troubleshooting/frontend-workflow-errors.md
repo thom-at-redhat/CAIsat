@@ -53,6 +53,26 @@ Record: URL, method, status, and whether the failure is on **OPTIONS** (prefligh
 
 CORS failures are reported in the browser Console or Network tab, not always as a clear HTTP status on the application request.
 
+### Automated probe (operator shell)
+
+From a machine that can reach the cluster Routes (same network as the affected user when possible):
+
+```bash
+FRONTEND_URL=https://<frontend-route>/ bash scripts/cors-probe.sh
+```
+
+The script derives enhance, detection, and change-detection backend URLs from the frontend hostname (same logic as
+`deriveBackendBases` in `frontend/src/workflowUtils.js`), sends requests with the frontend `Origin`, and flags the
+invalid `Allow-Origin: *` + `Allow-Credentials: true` pair that blocked the Brazil user before PR #155.
+
+Override individual backends when needed:
+
+```bash
+FRONTEND_ORIGIN=https://<frontend-route> \
+  CHANGE_URL=https://<changedetection-backend-route> \
+  bash scripts/cors-probe.sh
+```
+
 ### Preflight (OPTIONS)
 
 Enhancement `POST` with `multipart/form-data` triggers a preflight. From a shell (replace hostnames with your Routes):
