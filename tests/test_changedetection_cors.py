@@ -3,16 +3,47 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import importlib
 import importlib.util
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _stub_boto3(mock_s3: MagicMock) -> dict[str, Any]:
+    """Inject fake boto3/botocore so app.py imports without the real package."""
+    mock_boto3 = MagicMock()
+    mock_boto3.client.return_value = mock_s3
+
+    class ClientError(Exception):
+        pass
+
+    mock_botocore_exceptions = MagicMock()
+    mock_botocore_exceptions.ClientError = ClientError
+
+    stubs = {
+        "boto3": mock_boto3,
+        "botocore": MagicMock(),
+        "botocore.exceptions": mock_botocore_exceptions,
+    }
+    saved = {name: sys.modules.get(name) for name in stubs}
+    sys.modules.update(stubs)
+    return saved
+
+
+def _restore_boto3_stubs(saved: dict[str, Any]) -> None:
+    for name, previous in saved.items():
+        if previous is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = previous  # type: ignore[assignment]
 
 
 def _import_changedetection_app(monkeypatch: pytest.MonkeyPatch, cors_origins: str):
@@ -36,11 +67,14 @@ def _import_changedetection_app(monkeypatch: pytest.MonkeyPatch, cors_origins: s
     mock_s3 = MagicMock()
     mock_s3.list_buckets.return_value = {"Buckets": []}
 
-    with patch("boto3.client", return_value=mock_s3):
+    saved_boto3 = _stub_boto3(mock_s3)
+    try:
         spec = importlib.util.spec_from_file_location("caisat_changedetection_app", backend_path / "app.py")
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+    finally:
+        _restore_boto3_stubs(saved_boto3)
     return module
 
 
