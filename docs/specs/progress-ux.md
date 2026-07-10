@@ -2,13 +2,13 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field      | Value                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Status     | accepted                                                                                                                  |
-| Spec ID    | UX-001                                                                                                                    |
-| Tests      | `frontend/src/workflowUtils.test.js`; Playwright `scripts/mt-e2e-workflow.mjs`                                            |
-| Validation | `baseline-smoke.md` MT-E2E — 768 enhance, detect stages, idle header; Playwright GHA deferred (enablement criteria there) |
-| Source     | `frontend/src/workflowUtils.js`, `frontend/src/App.js`                                                                    |
+| Field      | Value                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status     | accepted                                                                                                                                          |
+| Spec ID    | UX-001                                                                                                                                            |
+| Tests      | `frontend/src/workflowUtils.test.js`; Playwright `scripts/mt-e2e-workflow.mjs` (cluster); `scripts/mt-r3a-playwright.mjs` (CI stub layout subset) |
+| Validation | `baseline-smoke.md` MT-E2E — 768 enhance, detect stages, idle header (cluster); CI stub = R3a layout only via `e2e-playwright`                    |
+| Source     | `frontend/src/workflowUtils.js`, `frontend/src/App.js`                                                                                            |
 
 ## Overview
 

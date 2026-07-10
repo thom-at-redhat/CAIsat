@@ -5,11 +5,15 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const FRONTEND_URL = process.env.CAISAT_FRONTEND_URL;
+const IN_CI = process.env.GITHUB_ACTIONS === 'true';
+
+const FRONTEND_URL = process.env.CAISAT_FRONTEND_URL ?? (IN_CI ? 'http://localhost:3000' : undefined);
 if (!FRONTEND_URL) {
   throw new Error('Set CAISAT_FRONTEND_URL to the cluster Route URL (not committed to the repo).');
 }
-const ARTIFACT_DIR = process.env.MT_R3A_ARTIFACT_DIR ?? path.resolve('docs/validation/artifacts/mt-r3a-20260701');
+const ARTIFACT_DIR =
+  process.env.MT_R3A_ARTIFACT_DIR ??
+  (IN_CI ? path.join(process.env.RUNNER_TEMP, 'e2e-artifacts') : path.resolve('docs/validation/artifacts/mt-r3a-20260701'));
 const ENHANCE_TIMEOUT_MS = 420_000;
 const DETECT_TIMEOUT_MS = 180_000;
 
@@ -67,7 +71,7 @@ const page = await context.newPage();
 const report = { date: '2026-07-01', scenarios: [] };
 
 try {
-  await page.goto(FRONTEND_URL, { waitUntil: 'networkidle', timeout: 120_000 });
+  await page.goto(FRONTEND_URL, { waitUntil: 'domcontentloaded', timeout: 120_000 });
   await page.click('button:has-text("Satellite View")');
   await waitForMapReady(page);
   await page.click('button:has-text("Capture & Enhance")');

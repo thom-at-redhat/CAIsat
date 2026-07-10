@@ -249,9 +249,23 @@ Manual checklist when `max_crop` > 256 or tiling is enabled:
 Cluster-only Playwright script for async enhance, detect progress stages, and gpu_exclusive idle header.
 Not CI-blocking (GPU + up to 3m 768 enhance timeout).
 
-**CI policy (deferred):** Do **not** schedule `scripts/mt-e2e-workflow.mjs` in GitHub Actions (`.github/workflows/`).
-Required CI remains `pre-commit` + `smoke-binary` only — see [`ci-timing.md`](ci-timing.md) for MT-CP job timing (not Playwright policy).
-Manual cluster gate stays the acceptance path until enablement criteria below are met.
+### Two-tier Playwright CI policy
+
+| Tier        | Trigger                                            | Entrypoint                                                    | Validates                                             |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| **CI stub** | `e2e-playwright` — dispatch, PR paths, weekly cron | `make e2e-stub-local`; `.github/workflows/e2e-playwright.yml` | DRL-001 layout only (MT-R3a 100%/150%)                |
+| **Cluster** | Manual operator gate                               | `scripts/mt-e2e-workflow.mjs`                                 | UX-001 — async 768, detect stages, gpu_exclusive idle |
+
+**Required CI** remains `pre-commit` + `smoke-binary` only — `e2e-playwright` is optional (not on ruleset `18274842`).
+See [`ci-timing.md`](ci-timing.md) for job timing and post-merge dispatch steps.
+
+**Stub tier (GHA):** No cluster, GPU, or secrets. Stub APIs on `:8080`/`:8081` satisfy enhance/detect contracts; Esri tiles + unpkg CDN for map load.
+Does **not** prove inference quality, Route TLS, or `predictor_ready:false` idle header.
+
+**Cluster tier (manual):** Full MT-E2E acceptance path until enablement criteria below are met for a future Phase 2 stub that covers async jobs + gpu_exclusive idle.
+
+**CI policy (cluster MT-E2E deferred):** Do **not** schedule `scripts/mt-e2e-workflow.mjs` in GitHub Actions.
+Manual cluster gate stays the acceptance path for UX-001 until enablement criteria below are met.
 
 **Enablement criteria** (all required before adding a GHA E2E job):
 

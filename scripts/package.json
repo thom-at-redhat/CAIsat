@@ -1,0 +1,15 @@
+{
+  "name": "caisat-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright E2E stub stack for CAIsat CI (MT-R3a layout)",
+  "type": "module",
+  "scripts": {
+    "e2e-stub": "node e2e-stub-server.mjs"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "playwright": "^1.52.0",
+    "serve": "^14.2.4"
+  }
+}

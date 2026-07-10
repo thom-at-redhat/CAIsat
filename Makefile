@@ -1,7 +1,7 @@
 # CAIsat developer convenience targets
 # Assisted by: cursor, claude
 
-.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test test-frontend fuzz-kserve-binary image push-image image-frontend push-frontend mirror-image mirror-all
+.PHONY: pre-commit check install-hooks helm-template push-check push smoke scorecard-local test test-frontend fuzz-kserve-binary image push-image image-frontend push-frontend mirror-image mirror-all e2e-stub-local
 
 pre-commit:
 	SKIP=no-commit-to-branch pre-commit run --all-files
@@ -75,3 +75,46 @@ fuzz-kserve-binary:
 	else \
 		"$${PY}" .clusterfuzzlite/fuzz_kserve_binary_fuzzer.py -max_total_time="$${FUZZ_TIME}"; \
 	fi
+
+# Local Playwright gate: stub APIs + built frontend + MT-R3a layout check (no cluster).
+e2e-stub-local:
+	@set -o errexit -o nounset -o pipefail; \
+	REPO_ROOT="$$(pwd)"; \
+	STARTED_PIDS=(); \
+	cleanup() { \
+		for PID in "$${STARTED_PIDS[@]}"; do \
+			kill "$${PID}" 2>/dev/null || true; \
+		done; \
+	}; \
+	trap cleanup EXIT; \
+	wait_for_url() { \
+		local URL="$${1}"; \
+		local NAME="$${2}"; \
+		local ATTEMPT=0; \
+		while [ "$${ATTEMPT}" -lt 60 ]; do \
+			ATTEMPT=$$((ATTEMPT + 1)); \
+			if curl -sf "$${URL}" >/dev/null 2>&1; then \
+				echo "OK: $${NAME} ready at $${URL}"; \
+				return 0; \
+			fi; \
+			sleep 1; \
+		done; \
+		echo "FAIL: $${NAME} not ready at $${URL}" >&2; \
+		return 1; \
+	}; \
+	echo "Installing scripts/ dependencies..."; \
+	cd "$${REPO_ROOT}/scripts" && npm ci; \
+	npx playwright install chromium; \
+	echo "Starting stub server..."; \
+	node e2e-stub-server.mjs & \
+	STARTED_PIDS+=("$$!"); \
+	echo "Building frontend..."; \
+	cd "$${REPO_ROOT}/frontend" && npm ci && npm run build; \
+	echo "Serving frontend on :3000..."; \
+	cd "$${REPO_ROOT}/scripts" && npx serve -s ../frontend/build -l 3000 & \
+	STARTED_PIDS+=("$$!"); \
+	wait_for_url "http://127.0.0.1:8080/health" "enhance stub"; \
+	wait_for_url "http://127.0.0.1:8081/health" "detection stub"; \
+	wait_for_url "http://127.0.0.1:3000" "frontend"; \
+	echo "Running MT-R3a Playwright..."; \
+	CAISAT_FRONTEND_URL=http://localhost:3000 node "$${REPO_ROOT}/scripts/mt-r3a-playwright.mjs"

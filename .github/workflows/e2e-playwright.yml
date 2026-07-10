@@ -1,0 +1,158 @@
+# Optional Playwright MT-R3a (DRL-001 layout) against local stub APIs — no cluster.
+# Assisted by: cursor, claude
+---
+name: e2e-playwright
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "scripts/mt-r3a-playwright.mjs"
+      - "scripts/e2e-**"
+      - "scripts/package.json"
+      - "scripts/package-lock.json"
+      - ".github/workflows/e2e-playwright.yml"
+  schedule:
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: e2e-playwright-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  e2e-playwright:
+    name: e2e-playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            actions.githubusercontent.com:443
+            api.github.com:443
+            api.osv.dev:443
+            cdn.playwright.dev:443
+            files.pythonhosted.org:443
+            get.helm.sh:443
+            ghcr.io:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            oss-fuzz-build-logs.storage.googleapis.com:443
+            pkg-containers.githubusercontent.com:443
+            pypi.org:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
+            results-receiver.actions.githubusercontent.com:443
+            server.arcgisonline.com:443
+            unpkg.com:443
+            *.blob.core.windows.net:443
+            *.githubapp.com:443
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('scripts/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Install scripts dependencies and Playwright
+        run: |
+          cd scripts
+          npm ci
+          npx playwright install chromium --with-deps
+
+      - name: Run MT-R3a Playwright (stub stack)
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o errexit -o nounset -o pipefail
+          STARTED_PIDS=()
+          cleanup() {
+            for PID in "${STARTED_PIDS[@]}"; do
+              kill "${PID}" 2>/dev/null || true
+            done
+          }
+          trap cleanup EXIT
+
+          wait_for_url() {
+            local URL="${1}"
+            local NAME="${2}"
+            local ATTEMPT=0
+            while [ "${ATTEMPT}" -lt 60 ]; do
+              ATTEMPT=$((ATTEMPT + 1))
+              if curl -sf "${URL}" >/dev/null 2>&1; then
+                echo "OK: ${NAME} ready at ${URL}"
+                return 0
+              fi
+              sleep 1
+            done
+            echo "FAIL: ${NAME} not ready at ${URL}" >&2
+            return 1
+          }
+
+          node scripts/e2e-stub-server.mjs &
+          STARTED_PIDS+=("$!")
+          cd scripts && npx serve -s ../frontend/build -l 3000 &
+          STARTED_PIDS+=("$!")
+
+          wait_for_url "http://127.0.0.1:8080/health" "enhance stub"
+          wait_for_url "http://127.0.0.1:8081/health" "detection stub"
+          wait_for_url "http://127.0.0.1:3000" "frontend"
+
+          export CAISAT_FRONTEND_URL=http://localhost:3000
+          export MT_R3A_ARTIFACT_DIR="${RUNNER_TEMP}/e2e-artifacts"
+          mkdir -p "${MT_R3A_ARTIFACT_DIR}"
+
+          run_playwright() {
+            node scripts/mt-r3a-playwright.mjs
+          }
+
+          if run_playwright; then
+            echo "result=pass" >> "${GITHUB_OUTPUT}"
+          elif run_playwright; then
+            echo "result=pass" >> "${GITHUB_OUTPUT}"
+          else
+            echo "result=fail" >> "${GITHUB_OUTPUT}"
+            exit 1
+          fi
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-playwright-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/e2e-artifacts/*.png
+            ${{ runner.temp }}/e2e-artifacts/mt-r3a-playwright-summary.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Fail job if Playwright failed
+        if: steps.playwright.outputs.result == 'fail'
+        run: exit 1
