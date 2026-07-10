@@ -2,13 +2,13 @@
 
 <!-- Assisted by: cursor, claude -->
 
-| Field      | Value                                                  |
-| ---------- | ------------------------------------------------------ |
-| Status     | accepted                                               |
-| Spec ID    | DRL-001                                                |
-| Tests      | _(manual — Playwright MT-R3a; no pytest yet)_          |
-| Validation | `baseline-smoke.md` L145–157                           |
-| Source     | `frontend/src/App.js`, `frontend/src/App.css` L653–730 |
+| Field      | Value                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Status     | accepted                                                                                                                  |
+| Spec ID    | DRL-001                                                                                                                   |
+| Tests      | Playwright MT-R3a — `scripts/mt-r3a-playwright.mjs` (CI stub + cluster); cluster MT-E2E via `scripts/mt-e2e-workflow.mjs` |
+| Validation | `baseline-smoke.md` L145–157; CI stub tier in two-tier Playwright policy                                                  |
+| Source     | `frontend/src/App.js`, `frontend/src/App.css` L653–730                                                                    |
 
 ## Overview
 

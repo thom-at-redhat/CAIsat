@@ -108,6 +108,38 @@ Cold first run on PR #61 head (`be3da31`): `pre-commit` 1.07 min, `smoke-binary`
 
 ---
 
+## e2e-playwright (optional stub MT-R3a)
+
+Optional GitHub Actions job for DRL-001 layout validation against local stub APIs (no cluster).
+Workflow: `.github/workflows/e2e-playwright.yml`. Triggers: `workflow_dispatch`, path-filtered `pull_request`, weekly Monday 06:00 UTC.
+**Not** a required check on ruleset `18274842`.
+
+Local gate before merge: `make e2e-stub-local` (exit 0).
+
+### Baseline table (green runs)
+
+| Job              | Run date (UTC) | Commit | Wall time (min) | Notes                                                  |
+| ---------------- | -------------- | ------ | --------------- | ------------------------------------------------------ |
+| `e2e-playwright` | _(pending)_    | —      | —               | Record after first green `workflow_dispatch` on `main` |
+
+**Estimated wall time:** 5–10 min warm (Playwright browser cache hit); 12–18 min cold.
+
+### Post-merge verification (human)
+
+After the Playwright CI PR merges to `main`:
+
+1. **Actions** → **e2e-playwright** → **Run workflow** → branch `main` → **Run workflow**.
+2. Confirm green run; download artifact `e2e-playwright-<run_id>`.
+3. Verify `mt-r3a-playwright-summary.json` has `"verdict": "pass"` and screenshots `01-100pct-detection-results.png`, `02-150pct-detection-results.png`.
+4. Record run date (UTC), commit SHA, and wall time in the baseline table above.
+5. If egress fails (Playwright CDN blocked), add the blocked host to `allowed-endpoints` in the workflow and re-dispatch.
+
+No secrets, no ruleset change, no self-hosted runner required.
+
+**Rollback:** disable cron schedule or restrict to `workflow_dispatch` only; job is not required for merges.
+
+---
+
 ## Path-filter impact (MT-CP-1, removed MT-CP-2)
 
 MT-CP-1 (merged @ `b07bc93`) added `dorny/paths-filter` skips for helm and `smoke-binary`. MT-CP-2 removes all path filters because `smoke-binary` is a required check — skipped jobs would block merges.

@@ -26,9 +26,9 @@ Requirements use `### <SPEC-ID>-R<n>:` headings. Acceptance criteria are checkbo
 | -------- | ------------------------------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
 | CAP-001  | [`capabilities-api.md`](capabilities-api.md)                 | `tests/test_capabilities.py`                                | `baseline-smoke.md` L188, L203                              |
 | ENH-001  | [`async-jobs-api.md`](async-jobs-api.md)                     | `test_enhance_jobs`, `test_detect_jobs`, `test_async_*_api` | `baseline-smoke.md` MT-E2E async 768                        |
-| UX-001   | [`progress-ux.md`](progress-ux.md)                           | `workflowUtils.test.js`, `mt-e2e-workflow.mjs`              | `baseline-smoke.md` MT-E2E stages                           |
+| UX-001   | [`progress-ux.md`](progress-ux.md)                           | `workflowUtils.test.js`, `mt-e2e-workflow.mjs` (cluster)    | MT-E2E stages (cluster); stub layout only                   |
 | KSRV-001 | [`kserve-v2-tensors.md`](kserve-v2-tensors.md)               | `tests/test_kserve_v2.py`                                   | L66; [`binary-kserve-v2.md`](../spikes/binary-kserve-v2.md) |
-| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | _(Playwright MT-R3a)_                                       | L145–157 **accepted** 2026-07-01                            |
+| DRL-001  | [`detection-results-layout.md`](detection-results-layout.md) | `scripts/mt-r3a-playwright.mjs` (CI stub + cluster)         | L145–157 **accepted**; stub CI `e2e-playwright`             |
 
 ## Backend module parity
 
