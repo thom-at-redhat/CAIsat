@@ -118,9 +118,9 @@ Local gate before merge: `make e2e-stub-local` (exit 0).
 
 ### Baseline table (green runs)
 
-| Job              | Run date (UTC) | Commit | Wall time (min) | Notes                                                  |
-| ---------------- | -------------- | ------ | --------------- | ------------------------------------------------------ |
-| `e2e-playwright` | _(pending)_    | —      | —               | Record after first green `workflow_dispatch` on `main` |
+| Job              | Run date (UTC) | Commit    | Wall time (min) | Notes                                                                                                  |
+| ---------------- | -------------- | --------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| `e2e-playwright` | 2026-07-10     | `6fc8b33` | 2.13            | First green stub-stack; PR #160 pull_request; run 29096428608; post-merge main dispatch still operator |
 
 **Estimated wall time:** 5–10 min warm (Playwright browser cache hit); 12–18 min cold.
 
