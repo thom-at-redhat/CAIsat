@@ -13,22 +13,21 @@ function MonitoredAreas({ backendUrl }) {
 
   // Fetch all monitored areas on mount
   useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${backendUrl}/api/areas`);
+        setAreas(response.data.areas || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching areas:', err);
+        setError('Failed to load monitored areas. Check backend connection.');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchAreas();
   }, [backendUrl]);
-
-  const fetchAreas = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${backendUrl}/api/areas`);
-      setAreas(response.data.areas || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching areas:', err);
-      setError('Failed to load monitored areas. Check backend connection.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAreaStats = async (areaId) => {
     try {
