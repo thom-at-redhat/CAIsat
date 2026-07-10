@@ -594,7 +594,7 @@ README badge: `https://api.scorecard.dev/projects/github.com/thom-at-redhat/CAIs
 
 **Waiver (Packaging):** GitHub Release `v0.1.1` with chart asset `caisat-0.1.0.tgz` + `provenance.intoto.jsonl`
 (publish-chart workflow; see [`packaging-escalation-20260709.md`](../validation/artifacts/packaging-escalation-20260709/packaging-escalation-20260709.md)).
-**Escalation if still -1 on 2026-07-11:** human browser `workflow_dispatch` scorecard-analysis (PAT 403 on actions scope);
+**Escalation if still -1 on 2026-07-11:** re-query API (dispatch done 2026-07-10 run `29100012393`; Packaging still **-1** same day);
 verify release asset; close waiver with release URL + attestation — do not revert publish-chart workflow.
 
 ---
@@ -613,7 +613,7 @@ verify release asset; close waiver with release URL + attestation — do not rev
 | Signed-Releases    | -1               | -1                | **0**                          | **5**                  | 3b    | **pass**                                        |
 | Maintained         | 0                | 0                 | 0                              | 0                      | —     | Phase 30 @ **2026-09-27**                       |
 
-**Track A (2026-07-09):** Packaging **-1** persists (_packaging workflow not detected_); PAT cannot `workflow_dispatch` scorecard-analysis (HTTP 403). Human browser dispatch required; artifact [`packaging-escalation-20260709.md`](../validation/artifacts/packaging-escalation-20260709/packaging-escalation-20260709.md).
+**Track A (2026-07-09 / 2026-07-10):** Packaging **-1** persists (_packaging workflow not detected_); scorecard dispatch **done** 2026-07-10 (run `29100012393`); API re-check pending ≥24h — artifact [`packaging-escalation-20260709.md`](../validation/artifacts/packaging-escalation-20260709/packaging-escalation-20260709.md).
 
 ---
 

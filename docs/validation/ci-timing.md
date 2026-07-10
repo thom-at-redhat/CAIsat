@@ -118,15 +118,18 @@ Local gate before merge: `make e2e-stub-local` (exit 0).
 
 ### Baseline table (green runs)
 
-| Job              | Run date (UTC) | Commit    | Wall time (min) | Notes                                                                                                  |
-| ---------------- | -------------- | --------- | --------------- | ------------------------------------------------------------------------------------------------------ |
-| `e2e-playwright` | 2026-07-10     | `6fc8b33` | 2.13            | First green stub-stack; PR #160 pull_request; run 29096428608; post-merge main dispatch still operator |
+| Job              | Run date (UTC) | Commit    | Wall time (min) | Notes                                                                           |
+| ---------------- | -------------- | --------- | --------------- | ------------------------------------------------------------------------------- |
+| `e2e-playwright` | 2026-07-10     | `6fc8b33` | 2.13            | First green stub-stack; PR #160 pull_request; run 29096428608                   |
+| `e2e-playwright` | 2026-07-10     | `b58048c` | 2.05            | Post-merge `main` `workflow_dispatch`; run 29100020669; summary `verdict: pass` |
 
 **Estimated wall time:** 5–10 min warm (Playwright browser cache hit); 12–18 min cold.
 
-### Post-merge verification (human)
+### Post-merge verification
 
-After the Playwright CI PR merges to `main`:
+**Done @ 2026-07-10:** `workflow_dispatch` on `main` (run `29100020669`, commit `b58048c`, 2.05 min, `verdict: pass`).
+
+To re-run manually:
 
 1. **Actions** → **e2e-playwright** → **Run workflow** → branch `main` → **Run workflow**.
 2. Confirm green run; download artifact `e2e-playwright-<run_id>`.
